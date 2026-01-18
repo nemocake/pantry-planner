@@ -1,0 +1,179 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pantry Planner</title>
+  </head>
+  <body>
+    <!-- Navigation -->
+    <header class="header">
+      <nav class="nav">
+        <a href="#" class="nav__logo">Pantry Planner</a>
+        <button class="nav__toggle" id="menuToggle" aria-label="Toggle menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- Menu Overlay -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+    <aside class="nav-menu" id="navMenu">
+      <button class="nav-menu__close" id="menuClose" aria-label="Close menu">×</button>
+      <ul class="nav-menu__list">
+        <li><a href="#" data-nav-target="home">Home</a></li>
+        <li><a href="#" data-nav-target="products">Products</a></li>
+        <li><a href="#" data-nav-target="about">About</a></li>
+        <li><a href="#" data-nav-target="sustainability">R&D</a></li>
+        <li><a href="#" data-nav-target="csr">CSR</a></li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main id="app">
+      <!-- Home Section -->
+      <section class="section section--home" data-section="home">
+        <div class="section__background">
+          <div class="layer layer--back" data-speed="0.6" data-prllx-item data-delta-start="10%" data-delta-end="-10%">
+            <div class="layer__gradient"></div>
+          </div>
+          <div class="layer layer--mid" data-speed="0.8">
+            <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920" alt="Mountains" class="layer__img">
+          </div>
+          <div class="layer layer--front" data-speed="1.2" data-prllx-item data-delta-start="-15%" data-delta-end="15%">
+            <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800" alt="Foreground" class="layer__img layer__img--float">
+          </div>
+        </div>
+        <div class="section__content">
+          <h1 class="section__title">Pantry Planner</h1>
+          <p class="section__subtitle">Organize your kitchen, simplify your life</p>
+          <div class="scroll-indicator" data-lottie-scroll="/assets/lottie/scroll.json"></div>
+        </div>
+      </section>
+
+      <!-- Products Section -->
+      <section class="section section--products" data-section="products">
+        <div class="section__background">
+          <div class="layer layer--back" data-speed="0.7" data-prllx-item data-delta-start="15%" data-delta-end="-15%">
+            <div class="layer__color" style="background: linear-gradient(135deg, #2d5016 0%, #4a7c23 100%);"></div>
+          </div>
+          <div class="layer layer--mid" data-speed="0.85">
+            <img src="https://images.unsplash.com/photo-1518843875459-f738682238a6?w=1920" alt="Citrus" class="layer__img">
+          </div>
+          <div class="layer layer--front" data-speed="1.15" data-prllx-item data-delta-start="-20%" data-delta-end="20%">
+            <img src="https://images.unsplash.com/photo-1587735243615-c03f25aaff15?w=600" alt="Oranges" class="layer__img layer__img--product">
+          </div>
+        </div>
+        <div class="section__content">
+          <h2 class="section__title">Our Products</h2>
+          <div class="products-grid">
+            <div class="product-card" data-speed="1.1">
+              <span class="product-card__icon">🍊</span>
+              <h3>Citrus</h3>
+            </div>
+            <div class="product-card" data-speed="1.05">
+              <span class="product-card__icon">🍇</span>
+              <h3>Grapes</h3>
+            </div>
+            <div class="product-card" data-speed="1.15">
+              <span class="product-card__icon">🥑</span>
+              <h3>Avocados</h3>
+            </div>
+            <div class="product-card" data-speed="1.08">
+              <span class="product-card__icon">🍅</span>
+              <h3>Tomatoes</h3>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- About Section -->
+      <section class="section section--about" data-section="about">
+        <div class="section__background">
+          <div class="layer layer--back" data-speed="0.65" data-prllx-item data-delta-start="12%" data-delta-end="-12%">
+            <div class="layer__color" style="background: linear-gradient(180deg, #1a3a5c 0%, #2c5f8f 100%);"></div>
+          </div>
+          <div class="layer layer--mid" data-speed="0.8">
+            <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=1920" alt="Farm" class="layer__img">
+          </div>
+          <div class="layer layer--front" data-speed="1.25" data-prllx-item data-delta-start="-18%" data-delta-end="18%">
+            <img src="https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=700" alt="Fields" class="layer__img layer__img--circle">
+          </div>
+        </div>
+        <div class="section__content">
+          <h2 class="section__title">About Us</h2>
+          <p class="section__text">Leading agricultural group with a heritage of excellence and sustainable practices.</p>
+          <div class="stats-row">
+            <div class="stat" data-speed="1.1">
+              <span class="stat__number">1940</span>
+              <span class="stat__label">Founded</span>
+            </div>
+            <div class="stat" data-speed="1.05">
+              <span class="stat__number">12K+</span>
+              <span class="stat__label">Hectares</span>
+            </div>
+            <div class="stat" data-speed="1.12">
+              <span class="stat__number">50+</span>
+              <span class="stat__label">Countries</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sustainability Section -->
+      <section class="section section--sustainability" data-section="sustainability">
+        <div class="section__background">
+          <div class="layer layer--back" data-speed="0.7" data-prllx-item data-delta-start="8%" data-delta-end="-8%">
+            <div class="layer__color" style="background: linear-gradient(135deg, #1e5128 0%, #4e9f3d 100%);"></div>
+          </div>
+          <div class="layer layer--mid" data-speed="0.85">
+            <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=1920" alt="Sustainability" class="layer__img">
+          </div>
+          <div class="layer layer--front" data-speed="1.2" data-prllx-item data-delta-start="-15%" data-delta-end="15%">
+            <div class="floating-elements">
+              <span class="floating-leaf" style="--delay: 0s;">🌿</span>
+              <span class="floating-leaf" style="--delay: 0.5s;">🌱</span>
+              <span class="floating-leaf" style="--delay: 1s;">🍃</span>
+            </div>
+          </div>
+        </div>
+        <div class="section__content">
+          <h2 class="section__title">Research & Development</h2>
+          <p class="section__text">Innovation and sustainability at the heart of our operations.</p>
+        </div>
+      </section>
+
+      <!-- CSR Section -->
+      <section class="section section--csr" data-section="csr">
+        <div class="section__background">
+          <div class="layer layer--back" data-speed="0.6" data-prllx-item data-delta-start="10%" data-delta-end="-10%">
+            <div class="layer__color" style="background: linear-gradient(180deg, #4a1c40 0%, #7b3f6e 100%);"></div>
+          </div>
+          <div class="layer layer--mid" data-speed="0.8">
+            <img src="https://images.unsplash.com/photo-1559027615-cd4628902d4a?w=1920" alt="Community" class="layer__img">
+          </div>
+          <div class="layer layer--front" data-speed="1.18" data-prllx-item data-delta-start="-12%" data-delta-end="12%">
+            <div class="csr-badge" data-speed="1.3">
+              <span>Sanady Foundation</span>
+            </div>
+          </div>
+        </div>
+        <div class="section__content">
+          <h2 class="section__title">Corporate Social Responsibility</h2>
+          <p class="section__text">Committed to our communities through the Sanady Foundation.</p>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer class="footer">
+        <p>Pantry Planner</p>
+        <p>Built with GSAP + ScrollTrigger</p>
+      </footer>
+    </main>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

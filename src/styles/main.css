@@ -1,0 +1,479 @@
+/* ========================================
+   Reset & Base Styles
+   ======================================== */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --color-dark: #0a0a0a;
+  --color-light: #ffffff;
+  --color-accent: #4a7c23;
+  --font-primary: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --transition-smooth: cubic-bezier(0.65, 0, 0.35, 1);
+  --header-height: 80px;
+}
+
+html {
+  scroll-behavior: auto; /* Let GSAP handle smooth scrolling */
+}
+
+body {
+  font-family: var(--font-primary);
+  background-color: var(--color-dark);
+  color: var(--color-light);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ========================================
+   Header & Navigation
+   ======================================== */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  padding: 1.5rem 3rem;
+  transition: background-color 0.3s ease;
+}
+
+.header.scrolled {
+  background-color: rgba(10, 10, 10, 0.9);
+  backdrop-filter: blur(10px);
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.nav__logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-light);
+  text-decoration: none;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.nav__toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 10px;
+  z-index: 101;
+}
+
+.nav__toggle span {
+  display: block;
+  width: 30px;
+  height: 2px;
+  background-color: var(--color-light);
+  transition: all 0.3s var(--transition-smooth);
+  transform-origin: center;
+}
+
+.nav__toggle.active span:nth-child(1) {
+  transform: translateY(8px) rotate(45deg);
+}
+
+.nav__toggle.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.nav__toggle.active span:nth-child(3) {
+  transform: translateY(-8px) rotate(-45deg);
+}
+
+/* ========================================
+   Side Menu
+   ======================================== */
+.menu-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 98;
+  transition: opacity 0.3s ease;
+}
+
+.menu-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.nav-menu {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 400px;
+  max-width: 90vw;
+  height: 100vh;
+  background-color: var(--color-dark);
+  z-index: 99;
+  padding: 100px 50px;
+  transform: translateX(100%);
+  transition: transform 0.5s var(--transition-smooth);
+}
+
+.nav-menu.active {
+  transform: translateX(0);
+}
+
+.nav-menu__close {
+  position: absolute;
+  top: 30px;
+  right: 30px;
+  background: none;
+  border: none;
+  color: var(--color-light);
+  font-size: 2rem;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.nav-menu__close:hover {
+  opacity: 1;
+}
+
+.nav-menu__list {
+  list-style: none;
+}
+
+.nav-menu__list li {
+  margin-bottom: 1.5rem;
+}
+
+.nav-menu__list a {
+  color: var(--color-light);
+  text-decoration: none;
+  font-size: 2rem;
+  font-weight: 300;
+  letter-spacing: 1px;
+  opacity: 0.8;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  display: inline-block;
+}
+
+.nav-menu__list a:hover {
+  opacity: 1;
+  transform: translateX(10px);
+}
+
+/* ========================================
+   Section Base Styles
+   ======================================== */
+.section {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.section__background {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+}
+
+/* ========================================
+   Layer System (Parallax)
+   ======================================== */
+.layer {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+.layer--back {
+  z-index: 1;
+}
+
+.layer--mid {
+  z-index: 2;
+}
+
+.layer--front {
+  z-index: 3;
+}
+
+.layer__gradient {
+  width: 100%;
+  height: 120%;
+  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+
+.layer__color {
+  width: 100%;
+  height: 120%;
+}
+
+.layer__img {
+  width: 100%;
+  height: 120%;
+  object-fit: cover;
+  opacity: 0.7;
+}
+
+.layer__img--float {
+  width: 40%;
+  height: auto;
+  position: absolute;
+  bottom: 10%;
+  right: 5%;
+  border-radius: 20px;
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+  opacity: 0.9;
+}
+
+.layer__img--product {
+  width: 300px;
+  height: 300px;
+  position: absolute;
+  bottom: 15%;
+  right: 10%;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.layer__img--circle {
+  width: 350px;
+  height: 350px;
+  position: absolute;
+  top: 20%;
+  left: 5%;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+}
+
+/* ========================================
+   Section Content
+   ======================================== */
+.section__content {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  padding: 2rem;
+  max-width: 800px;
+}
+
+.section__title {
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  font-weight: 700;
+  letter-spacing: -2px;
+  margin-bottom: 1rem;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.section__subtitle {
+  font-size: clamp(1rem, 3vw, 1.5rem);
+  font-weight: 300;
+  opacity: 0.9;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.section__text {
+  font-size: 1.25rem;
+  opacity: 0.85;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.8;
+}
+
+/* ========================================
+   Products Grid
+   ======================================== */
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+  margin-top: 3rem;
+}
+
+.product-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2rem;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  will-change: transform;
+}
+
+.product-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.product-card__icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 1rem;
+}
+
+.product-card h3 {
+  font-size: 1.25rem;
+  font-weight: 500;
+}
+
+/* ========================================
+   Stats Row
+   ======================================== */
+.stats-row {
+  display: flex;
+  justify-content: center;
+  gap: 4rem;
+  margin-top: 3rem;
+}
+
+.stat {
+  text-align: center;
+  will-change: transform;
+}
+
+.stat__number {
+  display: block;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.stat__label {
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  opacity: 0.7;
+}
+
+/* ========================================
+   Floating Elements
+   ======================================== */
+.floating-elements {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.floating-leaf {
+  position: absolute;
+  font-size: 4rem;
+  animation: float 6s ease-in-out infinite;
+  animation-delay: var(--delay);
+}
+
+.floating-leaf:nth-child(1) {
+  top: 20%;
+  left: 10%;
+}
+
+.floating-leaf:nth-child(2) {
+  top: 50%;
+  right: 15%;
+}
+
+.floating-leaf:nth-child(3) {
+  bottom: 20%;
+  left: 30%;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(10deg); }
+}
+
+/* ========================================
+   CSR Badge
+   ======================================== */
+.csr-badge {
+  position: absolute;
+  top: 30%;
+  right: 10%;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem 3rem;
+  border-radius: 50px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  will-change: transform;
+}
+
+/* ========================================
+   Scroll Indicator
+   ======================================== */
+.scroll-indicator {
+  width: 60px;
+  height: 60px;
+  margin: 3rem auto 0;
+  opacity: 0.7;
+}
+
+/* ========================================
+   Footer
+   ======================================== */
+.footer {
+  padding: 4rem 2rem;
+  text-align: center;
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.5) 100%);
+}
+
+.footer p {
+  opacity: 0.6;
+  margin-bottom: 0.5rem;
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+@media (max-width: 1024px) {
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stats-row {
+    gap: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .header {
+    padding: 1rem 1.5rem;
+  }
+
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .stats-row {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .layer__img--float,
+  .layer__img--product,
+  .layer__img--circle {
+    display: none;
+  }
+
+  .csr-badge {
+    position: static;
+    margin-top: 2rem;
+  }
+}
