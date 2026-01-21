@@ -3,13 +3,45 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 
-// Import modules
+// Import core modules
 import { initAllParallax, refreshParallax } from './modules/parallax.js';
 import { initNavigation, initHeaderScroll } from './modules/navigation.js';
 import { initLottieScroll, createScrollIndicatorFallback } from './modules/lottieScroll.js';
 
+// Import pantry modules
+import { loadIngredients, getCategories, getCategoryIcon } from './modules/ingredientManager.js';
+import {
+  initPantry,
+  onPantryChange,
+  getPantryItems,
+  addPantryItem,
+  removePantryItem,
+  downloadPantryJson,
+  importPantryFromFile,
+  getPantryStats,
+  getPantryIngredientIds
+} from './modules/pantryManager.js';
+import { openModal, closeModal } from './modules/modalManager.js';
+import { initAutocomplete, clearAutocomplete } from './components/autocomplete.js';
+import { renderPantryGrid, filterPantryCards } from './components/pantryCard.js';
+
+// Import recipe modules
+import { loadRecipes, getRecipes, applyFilters, getUniqueCuisines } from './modules/recipeManager.js';
+import { getMatchedRecipes, filterByMatchType, countMakeableRecipes } from './modules/matchAlgorithm.js';
+import { renderRecipeGrid, renderRecipeDetail } from './components/recipeCard.js';
+
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+
+// State
+let allRecipes = [];
+let currentFilters = {
+  search: '',
+  difficulty: 'all',
+  cuisine: 'all',
+  matchType: 'all'
+};
+let selectedIngredient = null;
 
 /**
  * Initialize section entry animations
@@ -56,21 +88,24 @@ function initSectionAnimations() {
 }
 
 /**
- * Initialize product card animations
+ * Initialize card animations for a container
  */
-function initProductCardAnimations() {
-  const cards = document.querySelectorAll('.product-card');
+function initCardAnimations(containerSelector, cardSelector) {
+  const container = document.querySelector(containerSelector);
+  if (!container) return;
+
+  const cards = container.querySelectorAll(cardSelector);
 
   cards.forEach((card, index) => {
     gsap.from(card, {
-      y: 100,
+      y: 60,
       opacity: 0,
-      duration: 0.6,
-      delay: index * 0.1,
+      duration: 0.5,
+      delay: index * 0.05,
       ease: 'power2.out',
       scrollTrigger: {
         trigger: card,
-        start: 'top 85%',
+        start: 'top 90%',
         toggleActions: 'play none none reverse'
       }
     });
@@ -84,8 +119,6 @@ function initStatsAnimation() {
   const stats = document.querySelectorAll('.stat');
 
   stats.forEach((stat, index) => {
-    const number = stat.querySelector('.stat__number');
-
     gsap.from(stat, {
       y: 50,
       opacity: 0,
@@ -207,15 +240,320 @@ function addFallbackStyles() {
   document.head.appendChild(style);
 }
 
+// ============================================
+// Pantry Functions
+// ============================================
+
+/**
+ * Initialize pantry UI
+ */
+function initPantryUI() {
+  const pantryGrid = document.getElementById('pantryGrid');
+  const categoryFilter = document.getElementById('categoryFilter');
+
+  // Render pantry items
+  function updatePantryUI() {
+    const items = getPantryItems();
+    renderPantryGrid(items, pantryGrid, {
+      onEdit: handleEditPantryItem,
+      onRemove: handleRemovePantryItem
+    });
+    updatePantryStats();
+    updateRecipeGrid(); // Update recipes when pantry changes
+  }
+
+  // Build category filter buttons
+  function buildCategoryFilter() {
+    const categories = getCategories();
+    categoryFilter.innerHTML = '<button class="category-btn category-btn--active" data-category="all">All</button>';
+
+    categories.forEach(cat => {
+      const btn = document.createElement('button');
+      btn.className = 'category-btn';
+      btn.dataset.category = cat.id;
+      btn.innerHTML = `${getCategoryIcon(cat.id)} ${cat.name}`;
+      categoryFilter.appendChild(btn);
+    });
+
+    // Category filter click handler
+    categoryFilter.addEventListener('click', (e) => {
+      const btn = e.target.closest('.category-btn');
+      if (!btn) return;
+
+      categoryFilter.querySelectorAll('.category-btn').forEach(b => b.classList.remove('category-btn--active'));
+      btn.classList.add('category-btn--active');
+
+      filterPantryCards(pantryGrid, btn.dataset.category);
+    });
+  }
+
+  buildCategoryFilter();
+  updatePantryUI();
+
+  // Listen for pantry changes
+  onPantryChange(() => {
+    updatePantryUI();
+  });
+}
+
+/**
+ * Update pantry stats display
+ */
+function updatePantryStats() {
+  const stats = getPantryStats();
+  const makeableCount = countMakeableRecipes(allRecipes);
+
+  document.getElementById('statTotal').textContent = stats.totalItems;
+  document.getElementById('statCategories').textContent = Object.keys(stats.byCategory).length;
+  document.getElementById('statRecipes').textContent = makeableCount;
+}
+
+/**
+ * Handle edit pantry item (for now, just re-add modal)
+ */
+function handleEditPantryItem(item) {
+  // For simplicity, remove and re-add via modal
+  openModal('addIngredientModal');
+}
+
+/**
+ * Handle remove pantry item
+ */
+function handleRemovePantryItem(ingredientId) {
+  removePantryItem(ingredientId);
+}
+
+/**
+ * Initialize add ingredient modal
+ */
+function initAddIngredientModal() {
+  const modal = document.getElementById('addIngredientModal');
+  const form = document.getElementById('addIngredientForm');
+  const searchInput = document.getElementById('ingredientSearchInput');
+  const resultsContainer = document.getElementById('autocompleteResults');
+  const selectedIdInput = document.getElementById('selectedIngredientId');
+  const submitBtn = document.getElementById('submitAddIngredient');
+  const cancelBtn = document.getElementById('cancelAddIngredient');
+  const addBtn = document.getElementById('addIngredientBtn');
+
+  // Open modal button
+  addBtn.addEventListener('click', () => {
+    selectedIngredient = null;
+    selectedIdInput.value = '';
+    submitBtn.disabled = true;
+    clearAutocomplete(searchInput, resultsContainer);
+    form.reset();
+    openModal('addIngredientModal');
+  });
+
+  // Initialize autocomplete
+  initAutocomplete(searchInput, resultsContainer, (ingredient) => {
+    selectedIngredient = ingredient;
+    selectedIdInput.value = ingredient.id;
+    submitBtn.disabled = false;
+
+    // Set default unit
+    const unitSelect = document.getElementById('ingredientUnit');
+    if (ingredient.defaultUnit) {
+      unitSelect.value = ingredient.defaultUnit;
+    }
+  });
+
+  // Cancel button
+  cancelBtn.addEventListener('click', () => {
+    closeModal('addIngredientModal');
+  });
+
+  // Form submit
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    if (!selectedIngredient) return;
+
+    const quantity = parseFloat(document.getElementById('ingredientQuantity').value) || 1;
+    const unit = document.getElementById('ingredientUnit').value;
+    const storage = document.getElementById('ingredientStorage').value;
+    const notes = document.getElementById('ingredientNotes').value;
+
+    addPantryItem(selectedIngredient.id, quantity, unit, storage, notes);
+
+    closeModal('addIngredientModal');
+    selectedIngredient = null;
+  });
+}
+
+/**
+ * Initialize export/import buttons
+ */
+function initExportImport() {
+  const exportBtn = document.getElementById('exportPantryBtn');
+  const importBtn = document.getElementById('importPantryBtn');
+  const importInput = document.getElementById('importFileInput');
+  const importModal = document.getElementById('importModal');
+  const mergeBtn = document.getElementById('importMerge');
+  const replaceBtn = document.getElementById('importReplace');
+
+  let pendingFile = null;
+
+  exportBtn.addEventListener('click', () => {
+    const filename = downloadPantryJson();
+    console.log('Exported pantry to:', filename);
+  });
+
+  importBtn.addEventListener('click', () => {
+    importInput.click();
+  });
+
+  importInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    pendingFile = file;
+    openModal('importModal');
+    importInput.value = ''; // Reset for next use
+  });
+
+  mergeBtn.addEventListener('click', async () => {
+    if (pendingFile) {
+      const result = await importPantryFromFile(pendingFile, 'merge');
+      console.log('Import result:', result);
+      pendingFile = null;
+    }
+    closeModal('importModal');
+  });
+
+  replaceBtn.addEventListener('click', async () => {
+    if (pendingFile) {
+      const result = await importPantryFromFile(pendingFile, 'replace');
+      console.log('Import result:', result);
+      pendingFile = null;
+    }
+    closeModal('importModal');
+  });
+}
+
+// ============================================
+// Recipe Functions
+// ============================================
+
+/**
+ * Initialize recipe UI
+ */
+function initRecipeUI() {
+  const recipeGrid = document.getElementById('recipeGrid');
+  const searchInput = document.getElementById('recipeSearch');
+  const matchFilter = document.getElementById('matchFilter');
+  const difficultyFilter = document.getElementById('difficultyFilter');
+  const cuisineFilter = document.getElementById('cuisineFilter');
+
+  // Populate cuisine filter
+  const cuisines = getUniqueCuisines(allRecipes);
+  cuisineFilter.innerHTML = '<option value="all">All Cuisines</option>';
+  cuisines.forEach(cuisine => {
+    const option = document.createElement('option');
+    option.value = cuisine;
+    option.textContent = cuisine.charAt(0).toUpperCase() + cuisine.slice(1);
+    cuisineFilter.appendChild(option);
+  });
+
+  // Search input
+  let searchTimeout;
+  searchInput.addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      currentFilters.search = e.target.value;
+      updateRecipeGrid();
+    }, 200);
+  });
+
+  // Filter changes
+  matchFilter.addEventListener('change', (e) => {
+    currentFilters.matchType = e.target.value;
+    updateRecipeGrid();
+  });
+
+  difficultyFilter.addEventListener('change', (e) => {
+    currentFilters.difficulty = e.target.value;
+    updateRecipeGrid();
+  });
+
+  cuisineFilter.addEventListener('change', (e) => {
+    currentFilters.cuisine = e.target.value;
+    updateRecipeGrid();
+  });
+
+  // Initial render
+  updateRecipeGrid();
+}
+
+/**
+ * Update recipe grid based on filters
+ */
+function updateRecipeGrid() {
+  const recipeGrid = document.getElementById('recipeGrid');
+  if (!recipeGrid) return;
+
+  // Apply text/difficulty/cuisine filters
+  let filtered = applyFilters(allRecipes, currentFilters);
+
+  // Calculate match scores
+  const matched = getMatchedRecipes(filtered);
+
+  // Apply match type filter
+  const final = filterByMatchType(matched, currentFilters.matchType);
+
+  // Render
+  renderRecipeGrid(final, recipeGrid, handleRecipeClick);
+}
+
+/**
+ * Handle recipe card click
+ */
+function handleRecipeClick(recipe) {
+  const detailContainer = document.getElementById('recipeDetail');
+  const pantryIds = getPantryIngredientIds();
+
+  renderRecipeDetail(recipe, detailContainer, pantryIds);
+  openModal('recipeModal');
+}
+
+// ============================================
+// Main Initialization
+// ============================================
+
+/**
+ * Load all data
+ */
+async function loadData() {
+  try {
+    // Load ingredients first (needed for pantry)
+    await loadIngredients();
+
+    // Initialize pantry from localStorage
+    initPantry();
+
+    // Load recipes
+    const recipesData = await loadRecipes();
+    allRecipes = recipesData.recipes || [];
+
+    console.log(`Loaded ${allRecipes.length} recipes`);
+  } catch (error) {
+    console.error('Failed to load data:', error);
+  }
+}
+
 /**
  * Main initialization
  */
-function init() {
+async function init() {
   // Add fallback styles for scroll indicator
   addFallbackStyles();
 
-  // Create scroll indicator fallback (since we don't have a Lottie file)
+  // Create scroll indicator fallback
   createScrollIndicatorFallback();
+
+  // Load data
+  await loadData();
 
   // Initialize intro animation first
   const introTl = initIntroAnimation();
@@ -231,10 +569,17 @@ function init() {
 
     // Initialize section animations
     initSectionAnimations();
-    initProductCardAnimations();
     initStatsAnimation();
 
-    // Initialize Lottie (will gracefully handle missing files)
+    // Initialize pantry
+    initPantryUI();
+    initAddIngredientModal();
+    initExportImport();
+
+    // Initialize recipes
+    initRecipeUI();
+
+    // Initialize Lottie
     initLottieScroll();
 
     // Refresh ScrollTrigger after all content is ready
@@ -258,6 +603,6 @@ window.addEventListener('resize', () => {
   }, 250);
 });
 
-// Log GSAP info for debugging
+// Log info
 console.log('GSAP version:', gsap.version);
-console.log('Delassus Clone initialized');
+console.log('Pantry Planner initialized');

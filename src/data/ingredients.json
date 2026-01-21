@@ -1,0 +1,1010 @@
+{
+  "categories": [
+    {
+      "id": "proteins",
+      "name": "Proteins",
+      "icon": "🥩",
+      "subcategories": ["beef", "poultry", "pork", "seafood", "eggs", "plant_based"]
+    },
+    {
+      "id": "vegetables",
+      "name": "Vegetables",
+      "icon": "🥕",
+      "subcategories": ["leafy_greens", "root_vegetables", "alliums", "nightshades", "cruciferous", "squash", "other"]
+    },
+    {
+      "id": "fruits",
+      "name": "Fruits",
+      "icon": "🍎",
+      "subcategories": ["citrus", "berries", "tropical", "stone_fruits", "melons", "apples_pears"]
+    },
+    {
+      "id": "dairy",
+      "name": "Dairy",
+      "icon": "🥛",
+      "subcategories": ["milk", "cheese", "yogurt", "butter", "cream", "eggs"]
+    },
+    {
+      "id": "grains",
+      "name": "Grains & Pasta",
+      "icon": "🍝",
+      "subcategories": ["pasta", "rice", "bread", "cereals", "flour", "other_grains"]
+    },
+    {
+      "id": "canned",
+      "name": "Canned Goods",
+      "icon": "🥫",
+      "subcategories": ["tomatoes", "beans", "soups", "vegetables", "fruits", "fish"]
+    },
+    {
+      "id": "baking",
+      "name": "Baking",
+      "icon": "🧁",
+      "subcategories": ["flour", "sugar", "leaveners", "chocolate", "extracts", "nuts"]
+    },
+    {
+      "id": "spices",
+      "name": "Spices & Seasonings",
+      "icon": "🧂",
+      "subcategories": ["dried_herbs", "ground_spices", "whole_spices", "blends", "salt_pepper"]
+    },
+    {
+      "id": "condiments",
+      "name": "Condiments & Sauces",
+      "icon": "🍯",
+      "subcategories": ["sauces", "oils", "vinegars", "spreads", "dressings", "mustards"]
+    },
+    {
+      "id": "frozen",
+      "name": "Fresh & Frozen",
+      "icon": "❄️",
+      "subcategories": ["fresh_herbs", "frozen_vegetables", "frozen_fruits", "frozen_proteins"]
+    },
+    {
+      "id": "international",
+      "name": "International",
+      "icon": "🌍",
+      "subcategories": ["asian", "mexican", "mediterranean", "indian", "middle_eastern"]
+    },
+    {
+      "id": "beverages",
+      "name": "Beverages",
+      "icon": "☕",
+      "subcategories": ["coffee_tea", "juices", "cooking_wines", "broths", "milk_alternatives"]
+    }
+  ],
+  "ingredients": [
+    {
+      "id": "ing_protein_ground_beef",
+      "name": "Ground Beef",
+      "category": "proteins",
+      "subcategory": "beef",
+      "aliases": ["minced beef", "hamburger meat", "beef mince"],
+      "defaultUnit": "g",
+      "searchTerms": ["beef", "ground", "mince", "hamburger"]
+    },
+    {
+      "id": "ing_protein_chicken_breast",
+      "name": "Chicken Breast",
+      "category": "proteins",
+      "subcategory": "poultry",
+      "aliases": ["boneless chicken", "chicken fillet"],
+      "defaultUnit": "g",
+      "searchTerms": ["chicken", "breast", "poultry"]
+    },
+    {
+      "id": "ing_protein_chicken_thighs",
+      "name": "Chicken Thighs",
+      "category": "proteins",
+      "subcategory": "poultry",
+      "aliases": ["bone-in chicken", "chicken leg quarters"],
+      "defaultUnit": "g",
+      "searchTerms": ["chicken", "thigh", "dark meat"]
+    },
+    {
+      "id": "ing_protein_bacon",
+      "name": "Bacon",
+      "category": "proteins",
+      "subcategory": "pork",
+      "aliases": ["streaky bacon", "pork bacon"],
+      "defaultUnit": "g",
+      "searchTerms": ["bacon", "pork", "streaky"]
+    },
+    {
+      "id": "ing_protein_pork_chops",
+      "name": "Pork Chops",
+      "category": "proteins",
+      "subcategory": "pork",
+      "aliases": ["pork loin chops", "bone-in pork"],
+      "defaultUnit": "g",
+      "searchTerms": ["pork", "chop", "loin"]
+    },
+    {
+      "id": "ing_protein_salmon",
+      "name": "Salmon Fillet",
+      "category": "proteins",
+      "subcategory": "seafood",
+      "aliases": ["salmon", "atlantic salmon", "fresh salmon"],
+      "defaultUnit": "g",
+      "searchTerms": ["salmon", "fish", "seafood"]
+    },
+    {
+      "id": "ing_protein_shrimp",
+      "name": "Shrimp",
+      "category": "proteins",
+      "subcategory": "seafood",
+      "aliases": ["prawns", "jumbo shrimp"],
+      "defaultUnit": "g",
+      "searchTerms": ["shrimp", "prawn", "seafood"]
+    },
+    {
+      "id": "ing_protein_eggs",
+      "name": "Eggs",
+      "category": "proteins",
+      "subcategory": "eggs",
+      "aliases": ["chicken eggs", "large eggs"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["egg", "eggs"]
+    },
+    {
+      "id": "ing_protein_tofu",
+      "name": "Tofu",
+      "category": "proteins",
+      "subcategory": "plant_based",
+      "aliases": ["bean curd", "firm tofu", "silken tofu"],
+      "defaultUnit": "g",
+      "searchTerms": ["tofu", "soy", "bean curd", "vegan"]
+    },
+    {
+      "id": "ing_protein_sausage",
+      "name": "Italian Sausage",
+      "category": "proteins",
+      "subcategory": "pork",
+      "aliases": ["pork sausage", "sweet sausage", "hot sausage"],
+      "defaultUnit": "g",
+      "searchTerms": ["sausage", "italian", "pork"]
+    },
+    {
+      "id": "ing_veg_onion",
+      "name": "Onion",
+      "category": "vegetables",
+      "subcategory": "alliums",
+      "aliases": ["yellow onion", "brown onion", "white onion"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["onion", "yellow", "brown"]
+    },
+    {
+      "id": "ing_veg_garlic",
+      "name": "Garlic",
+      "category": "vegetables",
+      "subcategory": "alliums",
+      "aliases": ["fresh garlic", "garlic cloves"],
+      "defaultUnit": "cloves",
+      "searchTerms": ["garlic", "clove"]
+    },
+    {
+      "id": "ing_veg_tomato",
+      "name": "Tomato",
+      "category": "vegetables",
+      "subcategory": "nightshades",
+      "aliases": ["fresh tomatoes", "roma tomatoes", "vine tomatoes"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["tomato", "fresh", "roma"]
+    },
+    {
+      "id": "ing_veg_bell_pepper",
+      "name": "Bell Pepper",
+      "category": "vegetables",
+      "subcategory": "nightshades",
+      "aliases": ["capsicum", "sweet pepper", "red pepper", "green pepper"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["pepper", "bell", "capsicum", "sweet"]
+    },
+    {
+      "id": "ing_veg_carrot",
+      "name": "Carrot",
+      "category": "vegetables",
+      "subcategory": "root_vegetables",
+      "aliases": ["carrots", "baby carrots"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["carrot", "root"]
+    },
+    {
+      "id": "ing_veg_celery",
+      "name": "Celery",
+      "category": "vegetables",
+      "subcategory": "other",
+      "aliases": ["celery stalks", "celery ribs"],
+      "defaultUnit": "stalks",
+      "searchTerms": ["celery", "stalk"]
+    },
+    {
+      "id": "ing_veg_potato",
+      "name": "Potato",
+      "category": "vegetables",
+      "subcategory": "root_vegetables",
+      "aliases": ["potatoes", "russet potato", "yukon gold"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["potato", "russet", "yukon"]
+    },
+    {
+      "id": "ing_veg_broccoli",
+      "name": "Broccoli",
+      "category": "vegetables",
+      "subcategory": "cruciferous",
+      "aliases": ["broccoli florets", "fresh broccoli"],
+      "defaultUnit": "g",
+      "searchTerms": ["broccoli", "floret"]
+    },
+    {
+      "id": "ing_veg_spinach",
+      "name": "Spinach",
+      "category": "vegetables",
+      "subcategory": "leafy_greens",
+      "aliases": ["baby spinach", "fresh spinach"],
+      "defaultUnit": "g",
+      "searchTerms": ["spinach", "leafy", "greens"]
+    },
+    {
+      "id": "ing_veg_mushroom",
+      "name": "Mushrooms",
+      "category": "vegetables",
+      "subcategory": "other",
+      "aliases": ["button mushrooms", "cremini", "white mushrooms"],
+      "defaultUnit": "g",
+      "searchTerms": ["mushroom", "button", "cremini"]
+    },
+    {
+      "id": "ing_veg_zucchini",
+      "name": "Zucchini",
+      "category": "vegetables",
+      "subcategory": "squash",
+      "aliases": ["courgette", "summer squash"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["zucchini", "courgette", "squash"]
+    },
+    {
+      "id": "ing_veg_corn",
+      "name": "Corn",
+      "category": "vegetables",
+      "subcategory": "other",
+      "aliases": ["sweet corn", "corn kernels", "corn on the cob"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["corn", "sweet", "kernel"]
+    },
+    {
+      "id": "ing_veg_green_beans",
+      "name": "Green Beans",
+      "category": "vegetables",
+      "subcategory": "other",
+      "aliases": ["string beans", "snap beans", "french beans"],
+      "defaultUnit": "g",
+      "searchTerms": ["green beans", "string", "snap"]
+    },
+    {
+      "id": "ing_veg_lettuce",
+      "name": "Lettuce",
+      "category": "vegetables",
+      "subcategory": "leafy_greens",
+      "aliases": ["romaine", "iceberg", "butter lettuce"],
+      "defaultUnit": "heads",
+      "searchTerms": ["lettuce", "romaine", "iceberg", "salad"]
+    },
+    {
+      "id": "ing_veg_cucumber",
+      "name": "Cucumber",
+      "category": "vegetables",
+      "subcategory": "other",
+      "aliases": ["english cucumber", "persian cucumber"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["cucumber", "cuke"]
+    },
+    {
+      "id": "ing_fruit_lemon",
+      "name": "Lemon",
+      "category": "fruits",
+      "subcategory": "citrus",
+      "aliases": ["fresh lemon", "lemons"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["lemon", "citrus"]
+    },
+    {
+      "id": "ing_fruit_lime",
+      "name": "Lime",
+      "category": "fruits",
+      "subcategory": "citrus",
+      "aliases": ["fresh lime", "key lime"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["lime", "citrus"]
+    },
+    {
+      "id": "ing_fruit_orange",
+      "name": "Orange",
+      "category": "fruits",
+      "subcategory": "citrus",
+      "aliases": ["navel orange", "blood orange"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["orange", "citrus", "navel"]
+    },
+    {
+      "id": "ing_fruit_apple",
+      "name": "Apple",
+      "category": "fruits",
+      "subcategory": "apples_pears",
+      "aliases": ["granny smith", "fuji apple", "gala apple"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["apple", "granny smith", "fuji"]
+    },
+    {
+      "id": "ing_fruit_banana",
+      "name": "Banana",
+      "category": "fruits",
+      "subcategory": "tropical",
+      "aliases": ["ripe banana", "bananas"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["banana", "tropical"]
+    },
+    {
+      "id": "ing_fruit_avocado",
+      "name": "Avocado",
+      "category": "fruits",
+      "subcategory": "tropical",
+      "aliases": ["hass avocado", "ripe avocado"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["avocado", "hass", "guacamole"]
+    },
+    {
+      "id": "ing_dairy_milk",
+      "name": "Milk",
+      "category": "dairy",
+      "subcategory": "milk",
+      "aliases": ["whole milk", "2% milk", "skim milk"],
+      "defaultUnit": "ml",
+      "searchTerms": ["milk", "whole", "dairy"]
+    },
+    {
+      "id": "ing_dairy_butter",
+      "name": "Butter",
+      "category": "dairy",
+      "subcategory": "butter",
+      "aliases": ["unsalted butter", "salted butter"],
+      "defaultUnit": "g",
+      "searchTerms": ["butter", "unsalted"]
+    },
+    {
+      "id": "ing_dairy_cheddar",
+      "name": "Cheddar Cheese",
+      "category": "dairy",
+      "subcategory": "cheese",
+      "aliases": ["sharp cheddar", "mild cheddar", "shredded cheddar"],
+      "defaultUnit": "g",
+      "searchTerms": ["cheddar", "cheese", "sharp"]
+    },
+    {
+      "id": "ing_dairy_parmesan",
+      "name": "Parmesan Cheese",
+      "category": "dairy",
+      "subcategory": "cheese",
+      "aliases": ["parmigiano reggiano", "grated parmesan"],
+      "defaultUnit": "g",
+      "searchTerms": ["parmesan", "parmigiano", "cheese"]
+    },
+    {
+      "id": "ing_dairy_mozzarella",
+      "name": "Mozzarella Cheese",
+      "category": "dairy",
+      "subcategory": "cheese",
+      "aliases": ["fresh mozzarella", "shredded mozzarella"],
+      "defaultUnit": "g",
+      "searchTerms": ["mozzarella", "cheese", "pizza"]
+    },
+    {
+      "id": "ing_dairy_cream",
+      "name": "Heavy Cream",
+      "category": "dairy",
+      "subcategory": "cream",
+      "aliases": ["whipping cream", "double cream", "heavy whipping cream"],
+      "defaultUnit": "ml",
+      "searchTerms": ["cream", "heavy", "whipping"]
+    },
+    {
+      "id": "ing_dairy_sour_cream",
+      "name": "Sour Cream",
+      "category": "dairy",
+      "subcategory": "cream",
+      "aliases": ["cultured cream"],
+      "defaultUnit": "g",
+      "searchTerms": ["sour cream", "cultured"]
+    },
+    {
+      "id": "ing_dairy_cream_cheese",
+      "name": "Cream Cheese",
+      "category": "dairy",
+      "subcategory": "cheese",
+      "aliases": ["philadelphia", "neufchatel"],
+      "defaultUnit": "g",
+      "searchTerms": ["cream cheese", "philadelphia"]
+    },
+    {
+      "id": "ing_dairy_yogurt",
+      "name": "Greek Yogurt",
+      "category": "dairy",
+      "subcategory": "yogurt",
+      "aliases": ["plain yogurt", "greek style yogurt"],
+      "defaultUnit": "g",
+      "searchTerms": ["yogurt", "greek", "plain"]
+    },
+    {
+      "id": "ing_grain_pasta_spaghetti",
+      "name": "Spaghetti",
+      "category": "grains",
+      "subcategory": "pasta",
+      "aliases": ["spaghetti pasta", "thin spaghetti"],
+      "defaultUnit": "g",
+      "searchTerms": ["spaghetti", "pasta", "noodle"]
+    },
+    {
+      "id": "ing_grain_pasta_penne",
+      "name": "Penne",
+      "category": "grains",
+      "subcategory": "pasta",
+      "aliases": ["penne rigate", "tube pasta"],
+      "defaultUnit": "g",
+      "searchTerms": ["penne", "pasta", "tube"]
+    },
+    {
+      "id": "ing_grain_rice_white",
+      "name": "White Rice",
+      "category": "grains",
+      "subcategory": "rice",
+      "aliases": ["long grain rice", "jasmine rice", "basmati rice"],
+      "defaultUnit": "g",
+      "searchTerms": ["rice", "white", "jasmine", "basmati"]
+    },
+    {
+      "id": "ing_grain_rice_brown",
+      "name": "Brown Rice",
+      "category": "grains",
+      "subcategory": "rice",
+      "aliases": ["whole grain rice"],
+      "defaultUnit": "g",
+      "searchTerms": ["rice", "brown", "whole grain"]
+    },
+    {
+      "id": "ing_grain_bread",
+      "name": "Bread",
+      "category": "grains",
+      "subcategory": "bread",
+      "aliases": ["white bread", "sandwich bread", "sliced bread"],
+      "defaultUnit": "slices",
+      "searchTerms": ["bread", "white", "sandwich"]
+    },
+    {
+      "id": "ing_grain_tortilla",
+      "name": "Flour Tortillas",
+      "category": "grains",
+      "subcategory": "bread",
+      "aliases": ["soft tortillas", "burrito size tortillas"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["tortilla", "flour", "wrap"]
+    },
+    {
+      "id": "ing_grain_breadcrumbs",
+      "name": "Breadcrumbs",
+      "category": "grains",
+      "subcategory": "bread",
+      "aliases": ["panko", "italian breadcrumbs"],
+      "defaultUnit": "g",
+      "searchTerms": ["breadcrumb", "panko", "coating"]
+    },
+    {
+      "id": "ing_canned_tomatoes",
+      "name": "Canned Diced Tomatoes",
+      "category": "canned",
+      "subcategory": "tomatoes",
+      "aliases": ["diced tomatoes", "tinned tomatoes", "chopped tomatoes"],
+      "defaultUnit": "g",
+      "searchTerms": ["canned tomatoes", "diced", "tinned"]
+    },
+    {
+      "id": "ing_canned_tomato_paste",
+      "name": "Tomato Paste",
+      "category": "canned",
+      "subcategory": "tomatoes",
+      "aliases": ["tomato puree concentrate"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["tomato paste", "paste", "concentrate"]
+    },
+    {
+      "id": "ing_canned_tomato_sauce",
+      "name": "Tomato Sauce",
+      "category": "canned",
+      "subcategory": "tomatoes",
+      "aliases": ["marinara", "passata"],
+      "defaultUnit": "g",
+      "searchTerms": ["tomato sauce", "marinara", "passata"]
+    },
+    {
+      "id": "ing_canned_black_beans",
+      "name": "Black Beans",
+      "category": "canned",
+      "subcategory": "beans",
+      "aliases": ["canned black beans", "turtle beans"],
+      "defaultUnit": "g",
+      "searchTerms": ["black beans", "beans", "canned"]
+    },
+    {
+      "id": "ing_canned_chickpeas",
+      "name": "Chickpeas",
+      "category": "canned",
+      "subcategory": "beans",
+      "aliases": ["garbanzo beans", "canned chickpeas"],
+      "defaultUnit": "g",
+      "searchTerms": ["chickpea", "garbanzo", "beans"]
+    },
+    {
+      "id": "ing_canned_kidney_beans",
+      "name": "Kidney Beans",
+      "category": "canned",
+      "subcategory": "beans",
+      "aliases": ["red kidney beans", "canned kidney beans"],
+      "defaultUnit": "g",
+      "searchTerms": ["kidney beans", "red beans"]
+    },
+    {
+      "id": "ing_canned_coconut_milk",
+      "name": "Coconut Milk",
+      "category": "canned",
+      "subcategory": "other",
+      "aliases": ["full fat coconut milk", "canned coconut"],
+      "defaultUnit": "ml",
+      "searchTerms": ["coconut milk", "coconut", "canned"]
+    },
+    {
+      "id": "ing_canned_chicken_broth",
+      "name": "Chicken Broth",
+      "category": "beverages",
+      "subcategory": "broths",
+      "aliases": ["chicken stock", "chicken bouillon"],
+      "defaultUnit": "ml",
+      "searchTerms": ["chicken broth", "stock", "bouillon"]
+    },
+    {
+      "id": "ing_canned_beef_broth",
+      "name": "Beef Broth",
+      "category": "beverages",
+      "subcategory": "broths",
+      "aliases": ["beef stock", "beef bouillon"],
+      "defaultUnit": "ml",
+      "searchTerms": ["beef broth", "stock", "bouillon"]
+    },
+    {
+      "id": "ing_baking_flour",
+      "name": "All-Purpose Flour",
+      "category": "baking",
+      "subcategory": "flour",
+      "aliases": ["plain flour", "white flour", "AP flour"],
+      "defaultUnit": "g",
+      "searchTerms": ["flour", "all-purpose", "plain"]
+    },
+    {
+      "id": "ing_baking_sugar",
+      "name": "Granulated Sugar",
+      "category": "baking",
+      "subcategory": "sugar",
+      "aliases": ["white sugar", "table sugar"],
+      "defaultUnit": "g",
+      "searchTerms": ["sugar", "white", "granulated"]
+    },
+    {
+      "id": "ing_baking_brown_sugar",
+      "name": "Brown Sugar",
+      "category": "baking",
+      "subcategory": "sugar",
+      "aliases": ["light brown sugar", "dark brown sugar"],
+      "defaultUnit": "g",
+      "searchTerms": ["brown sugar", "light", "dark"]
+    },
+    {
+      "id": "ing_baking_baking_powder",
+      "name": "Baking Powder",
+      "category": "baking",
+      "subcategory": "leaveners",
+      "aliases": ["double acting baking powder"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["baking powder", "leavener"]
+    },
+    {
+      "id": "ing_baking_baking_soda",
+      "name": "Baking Soda",
+      "category": "baking",
+      "subcategory": "leaveners",
+      "aliases": ["bicarbonate of soda", "sodium bicarbonate"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["baking soda", "bicarbonate"]
+    },
+    {
+      "id": "ing_baking_vanilla",
+      "name": "Vanilla Extract",
+      "category": "baking",
+      "subcategory": "extracts",
+      "aliases": ["pure vanilla", "vanilla essence"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["vanilla", "extract", "essence"]
+    },
+    {
+      "id": "ing_baking_chocolate_chips",
+      "name": "Chocolate Chips",
+      "category": "baking",
+      "subcategory": "chocolate",
+      "aliases": ["semi-sweet chocolate chips", "dark chocolate chips"],
+      "defaultUnit": "g",
+      "searchTerms": ["chocolate", "chips", "semi-sweet"]
+    },
+    {
+      "id": "ing_spice_salt",
+      "name": "Salt",
+      "category": "spices",
+      "subcategory": "salt_pepper",
+      "aliases": ["table salt", "kosher salt", "sea salt"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["salt", "kosher", "sea"]
+    },
+    {
+      "id": "ing_spice_black_pepper",
+      "name": "Black Pepper",
+      "category": "spices",
+      "subcategory": "salt_pepper",
+      "aliases": ["ground pepper", "cracked pepper"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["pepper", "black", "ground"]
+    },
+    {
+      "id": "ing_spice_garlic_powder",
+      "name": "Garlic Powder",
+      "category": "spices",
+      "subcategory": "ground_spices",
+      "aliases": ["granulated garlic"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["garlic powder", "granulated garlic"]
+    },
+    {
+      "id": "ing_spice_onion_powder",
+      "name": "Onion Powder",
+      "category": "spices",
+      "subcategory": "ground_spices",
+      "aliases": ["granulated onion"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["onion powder", "granulated onion"]
+    },
+    {
+      "id": "ing_spice_paprika",
+      "name": "Paprika",
+      "category": "spices",
+      "subcategory": "ground_spices",
+      "aliases": ["sweet paprika", "smoked paprika", "hungarian paprika"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["paprika", "smoked", "sweet"]
+    },
+    {
+      "id": "ing_spice_cumin",
+      "name": "Cumin",
+      "category": "spices",
+      "subcategory": "ground_spices",
+      "aliases": ["ground cumin", "cumin powder"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["cumin", "ground"]
+    },
+    {
+      "id": "ing_spice_chili_powder",
+      "name": "Chili Powder",
+      "category": "spices",
+      "subcategory": "blends",
+      "aliases": ["chile powder", "chili seasoning"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["chili", "chile", "powder"]
+    },
+    {
+      "id": "ing_spice_oregano",
+      "name": "Dried Oregano",
+      "category": "spices",
+      "subcategory": "dried_herbs",
+      "aliases": ["oregano", "mediterranean oregano"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["oregano", "dried", "herb"]
+    },
+    {
+      "id": "ing_spice_basil",
+      "name": "Dried Basil",
+      "category": "spices",
+      "subcategory": "dried_herbs",
+      "aliases": ["basil", "sweet basil"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["basil", "dried", "herb"]
+    },
+    {
+      "id": "ing_spice_thyme",
+      "name": "Dried Thyme",
+      "category": "spices",
+      "subcategory": "dried_herbs",
+      "aliases": ["thyme", "thyme leaves"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["thyme", "dried", "herb"]
+    },
+    {
+      "id": "ing_spice_rosemary",
+      "name": "Dried Rosemary",
+      "category": "spices",
+      "subcategory": "dried_herbs",
+      "aliases": ["rosemary", "rosemary leaves"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["rosemary", "dried", "herb"]
+    },
+    {
+      "id": "ing_spice_cinnamon",
+      "name": "Cinnamon",
+      "category": "spices",
+      "subcategory": "ground_spices",
+      "aliases": ["ground cinnamon", "ceylon cinnamon"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["cinnamon", "ground"]
+    },
+    {
+      "id": "ing_spice_italian_seasoning",
+      "name": "Italian Seasoning",
+      "category": "spices",
+      "subcategory": "blends",
+      "aliases": ["italian herb blend", "mediterranean seasoning"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["italian", "seasoning", "blend"]
+    },
+    {
+      "id": "ing_spice_red_pepper_flakes",
+      "name": "Red Pepper Flakes",
+      "category": "spices",
+      "subcategory": "whole_spices",
+      "aliases": ["crushed red pepper", "chili flakes"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["red pepper", "flakes", "crushed"]
+    },
+    {
+      "id": "ing_spice_bay_leaves",
+      "name": "Bay Leaves",
+      "category": "spices",
+      "subcategory": "whole_spices",
+      "aliases": ["dried bay leaves", "laurel leaves"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["bay", "leaves", "laurel"]
+    },
+    {
+      "id": "ing_condiment_olive_oil",
+      "name": "Olive Oil",
+      "category": "condiments",
+      "subcategory": "oils",
+      "aliases": ["extra virgin olive oil", "EVOO"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["olive oil", "evoo", "extra virgin"]
+    },
+    {
+      "id": "ing_condiment_vegetable_oil",
+      "name": "Vegetable Oil",
+      "category": "condiments",
+      "subcategory": "oils",
+      "aliases": ["canola oil", "neutral oil"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["vegetable oil", "canola", "neutral"]
+    },
+    {
+      "id": "ing_condiment_soy_sauce",
+      "name": "Soy Sauce",
+      "category": "condiments",
+      "subcategory": "sauces",
+      "aliases": ["shoyu", "tamari", "light soy sauce"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["soy sauce", "shoyu", "tamari"]
+    },
+    {
+      "id": "ing_condiment_worcestershire",
+      "name": "Worcestershire Sauce",
+      "category": "condiments",
+      "subcategory": "sauces",
+      "aliases": ["worcester sauce"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["worcestershire", "worcester"]
+    },
+    {
+      "id": "ing_condiment_hot_sauce",
+      "name": "Hot Sauce",
+      "category": "condiments",
+      "subcategory": "sauces",
+      "aliases": ["tabasco", "sriracha", "frank's red hot"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["hot sauce", "tabasco", "sriracha"]
+    },
+    {
+      "id": "ing_condiment_ketchup",
+      "name": "Ketchup",
+      "category": "condiments",
+      "subcategory": "sauces",
+      "aliases": ["tomato ketchup", "catsup"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["ketchup", "catsup", "tomato"]
+    },
+    {
+      "id": "ing_condiment_mustard",
+      "name": "Dijon Mustard",
+      "category": "condiments",
+      "subcategory": "mustards",
+      "aliases": ["dijon", "french mustard"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["dijon", "mustard", "french"]
+    },
+    {
+      "id": "ing_condiment_mayo",
+      "name": "Mayonnaise",
+      "category": "condiments",
+      "subcategory": "spreads",
+      "aliases": ["mayo", "hellmann's"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["mayo", "mayonnaise"]
+    },
+    {
+      "id": "ing_condiment_honey",
+      "name": "Honey",
+      "category": "condiments",
+      "subcategory": "spreads",
+      "aliases": ["pure honey", "raw honey"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["honey", "raw"]
+    },
+    {
+      "id": "ing_condiment_vinegar",
+      "name": "White Vinegar",
+      "category": "condiments",
+      "subcategory": "vinegars",
+      "aliases": ["distilled vinegar", "white wine vinegar"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["white vinegar", "distilled"]
+    },
+    {
+      "id": "ing_condiment_balsamic",
+      "name": "Balsamic Vinegar",
+      "category": "condiments",
+      "subcategory": "vinegars",
+      "aliases": ["balsamic", "aged balsamic"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["balsamic", "vinegar"]
+    },
+    {
+      "id": "ing_condiment_red_wine_vinegar",
+      "name": "Red Wine Vinegar",
+      "category": "condiments",
+      "subcategory": "vinegars",
+      "aliases": ["wine vinegar"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["red wine", "vinegar"]
+    },
+    {
+      "id": "ing_intl_sesame_oil",
+      "name": "Sesame Oil",
+      "category": "international",
+      "subcategory": "asian",
+      "aliases": ["toasted sesame oil", "asian sesame oil"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["sesame", "oil", "asian"]
+    },
+    {
+      "id": "ing_intl_fish_sauce",
+      "name": "Fish Sauce",
+      "category": "international",
+      "subcategory": "asian",
+      "aliases": ["nam pla", "nuoc mam"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["fish sauce", "nam pla"]
+    },
+    {
+      "id": "ing_intl_rice_vinegar",
+      "name": "Rice Vinegar",
+      "category": "international",
+      "subcategory": "asian",
+      "aliases": ["rice wine vinegar", "seasoned rice vinegar"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["rice", "vinegar", "asian"]
+    },
+    {
+      "id": "ing_intl_ginger",
+      "name": "Fresh Ginger",
+      "category": "international",
+      "subcategory": "asian",
+      "aliases": ["ginger root", "ginger"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["ginger", "fresh", "root"]
+    },
+    {
+      "id": "ing_intl_curry_powder",
+      "name": "Curry Powder",
+      "category": "international",
+      "subcategory": "indian",
+      "aliases": ["indian curry", "madras curry"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["curry", "powder", "indian"]
+    },
+    {
+      "id": "ing_intl_garam_masala",
+      "name": "Garam Masala",
+      "category": "international",
+      "subcategory": "indian",
+      "aliases": ["indian spice blend"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["garam masala", "indian", "spice"]
+    },
+    {
+      "id": "ing_intl_salsa",
+      "name": "Salsa",
+      "category": "international",
+      "subcategory": "mexican",
+      "aliases": ["tomato salsa", "red salsa", "pico de gallo"],
+      "defaultUnit": "g",
+      "searchTerms": ["salsa", "mexican", "pico"]
+    },
+    {
+      "id": "ing_intl_taco_seasoning",
+      "name": "Taco Seasoning",
+      "category": "international",
+      "subcategory": "mexican",
+      "aliases": ["taco spice mix"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["taco", "seasoning", "mexican"]
+    },
+    {
+      "id": "ing_intl_cilantro",
+      "name": "Fresh Cilantro",
+      "category": "frozen",
+      "subcategory": "fresh_herbs",
+      "aliases": ["coriander", "fresh coriander"],
+      "defaultUnit": "g",
+      "searchTerms": ["cilantro", "coriander", "fresh"]
+    },
+    {
+      "id": "ing_intl_parsley",
+      "name": "Fresh Parsley",
+      "category": "frozen",
+      "subcategory": "fresh_herbs",
+      "aliases": ["italian parsley", "flat leaf parsley"],
+      "defaultUnit": "g",
+      "searchTerms": ["parsley", "fresh", "italian"]
+    },
+    {
+      "id": "ing_frozen_peas",
+      "name": "Frozen Peas",
+      "category": "frozen",
+      "subcategory": "frozen_vegetables",
+      "aliases": ["green peas", "petite peas"],
+      "defaultUnit": "g",
+      "searchTerms": ["peas", "frozen", "green"]
+    },
+    {
+      "id": "ing_frozen_corn",
+      "name": "Frozen Corn",
+      "category": "frozen",
+      "subcategory": "frozen_vegetables",
+      "aliases": ["frozen corn kernels"],
+      "defaultUnit": "g",
+      "searchTerms": ["corn", "frozen", "kernels"]
+    },
+    {
+      "id": "ing_frozen_mixed_veg",
+      "name": "Frozen Mixed Vegetables",
+      "category": "frozen",
+      "subcategory": "frozen_vegetables",
+      "aliases": ["mixed veg", "frozen vegetable medley"],
+      "defaultUnit": "g",
+      "searchTerms": ["mixed", "vegetables", "frozen"]
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "totalIngredients": 105,
+    "lastUpdated": "2026-01-18T00:00:00Z"
+  }
+}
