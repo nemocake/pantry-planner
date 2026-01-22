@@ -3,8 +3,8 @@
  * Displays browsable ingredients by category with quick add/remove functionality
  */
 
-import { getIngredientsByCategory, getIngredientIcon, getCategories, getIngredientById } from '../modules/ingredientManager.js';
-import { getPantryItems, addPantryItem, removePantryItem, updatePantryItemQuantity } from '../modules/pantryManager.js';
+import { getIngredientsByCategory, getIngredientIcon, getCategories } from '../modules/ingredientManager.js';
+import { getPantryItems } from '../modules/pantryManager.js';
 
 // Track if event listener has been added to avoid duplicates
 const initializedContainers = new WeakSet();
@@ -28,13 +28,12 @@ function createBrowserItem(ingredient, quantity) {
   const icon = getIngredientIcon(ingredient);
 
   item.innerHTML = `
-    <button class="browser-item__btn browser-item__btn--remove" data-action="decrease" title="Remove one">−</button>
     <div class="browser-item__content">
       <span class="browser-item__icon">${icon}</span>
       <span class="browser-item__name">${ingredient.name}</span>
       <span class="browser-item__quantity ${quantity > 0 ? 'browser-item__quantity--visible' : ''}">${quantity}</span>
     </div>
-    <button class="browser-item__btn browser-item__btn--add" data-action="increase" title="Add one">+</button>
+    <button class="browser-item__btn browser-item__btn--add" data-action="add" title="Add to pantry">+</button>
   `;
 
   return item;
@@ -57,6 +56,9 @@ function updateBrowserItemDisplay(item, quantity) {
   }
 }
 
+// Store onUpdate callback for use by modal
+let browserOnUpdateCallback = null;
+
 /**
  * Handle click events for ingredient browser
  */
@@ -68,35 +70,24 @@ function handleBrowserClick(e, onUpdate) {
   const ingredientId = item.dataset.ingredientId;
   const action = btn.dataset.action;
 
-  // Get current pantry items fresh
-  const currentPantryItems = getPantryItems();
-  const currentQuantity = getPantryQuantity(ingredientId, currentPantryItems);
+  if (action === 'add') {
+    // Open quantity modal - will be connected in Phase 5
+    // For now, store the callback and dispatch a custom event
+    browserOnUpdateCallback = onUpdate;
 
-  if (action === 'increase') {
-    if (currentQuantity === 0) {
-      // Add new item to pantry with quantity 1 using ingredient's default unit
-      const ingredient = getIngredientById(ingredientId);
-      const defaultUnit = ingredient ? ingredient.defaultUnit : 'unit';
-      addPantryItem(ingredientId, 1, defaultUnit, 'pantry', '');
-    } else {
-      // Increment quantity by exactly 1
-      updatePantryItemQuantity(ingredientId, currentQuantity + 1);
-    }
-    updateBrowserItemDisplay(item, currentQuantity + 1);
-  } else if (action === 'decrease') {
-    if (currentQuantity > 1) {
-      // Decrement quantity by exactly 1
-      updatePantryItemQuantity(ingredientId, currentQuantity - 1);
-      updateBrowserItemDisplay(item, currentQuantity - 1);
-    } else if (currentQuantity === 1) {
-      // Remove from pantry
-      removePantryItem(ingredientId);
-      updateBrowserItemDisplay(item, 0);
-    }
-    // If quantity is 0, do nothing
+    // Dispatch custom event for quantity modal to handle
+    const event = new CustomEvent('openQuantityModal', {
+      detail: { ingredientId, browserItem: item }
+    });
+    document.dispatchEvent(event);
   }
+}
 
-  if (onUpdate) onUpdate();
+/**
+ * Get the stored onUpdate callback (used by quantityModal)
+ */
+export function getBrowserUpdateCallback() {
+  return browserOnUpdateCallback;
 }
 
 /**
@@ -170,7 +161,13 @@ export function getCategoryDisplayName(categoryId) {
   return category ? category.name : categoryId;
 }
 
+// Export updateBrowserItemDisplay for quantity modal to use
+export { updateBrowserItemDisplay, getPantryQuantity };
+
 export default {
   renderIngredientBrowser,
-  getCategoryDisplayName
+  getCategoryDisplayName,
+  updateBrowserItemDisplay,
+  getPantryQuantity,
+  getBrowserUpdateCallback
 };

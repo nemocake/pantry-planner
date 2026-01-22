@@ -2532,3 +2532,132 @@ input[type="date"].form-input::-webkit-calendar-picker-indicator:hover {
     justify-content: center;
   }
 }
+
+/* ========================================
+   Quantity Modal
+   ======================================== */
+.quantity-modal {
+  max-width: 380px;
+}
+
+.quantity-modal__header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.quantity-modal__icon {
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+.quantity-modal__title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.quantity-modal__presets {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.preset-btn {
+  padding: 0.875rem 0.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  color: var(--color-light);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.preset-btn:hover {
+  background: rgba(74, 124, 35, 0.3);
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.preset-btn--selected {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: white;
+}
+
+.preset-btn--selected:hover {
+  background: #5a9c2b;
+}
+
+.quantity-modal__divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
+}
+
+.quantity-modal__divider::before,
+.quantity-modal__divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.quantity-modal__custom {
+  margin-bottom: 1.5rem;
+}
+
+.quantity-modal__input-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.quantity-modal__input-row input {
+  flex: 1;
+  min-width: 0;
+}
+
+.quantity-modal__input-row select {
+  width: 110px;
+  flex-shrink: 0;
+}
+
+.btn--full {
+  width: 100%;
+  justify-content: center;
+}
+
+/* Quantity modal responsive */
+@media (max-width: 480px) {
+  .quantity-modal {
+    max-width: 100%;
+  }
+
+  .quantity-modal__presets {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .preset-btn {
+    padding: 0.75rem 0.25rem;
+    font-size: 0.85rem;
+  }
+
+  .quantity-modal__input-row {
+    flex-direction: column;
+  }
+
+  .quantity-modal__input-row select {
+    width: 100%;
+  }
+}

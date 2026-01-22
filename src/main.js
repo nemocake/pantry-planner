@@ -45,6 +45,7 @@ import {
 } from './modules/mealPlanManager.js';
 import { renderWeekView, navigateWeek, goToCurrentWeek, formatWeekTitle } from './components/calendarView.js';
 import { initAddMealModal, openAddMealModal } from './components/addMealModal.js';
+import { initQuantityModal } from './components/quantityModal.js';
 
 // Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
@@ -802,6 +803,16 @@ function initMealPlannerUI() {
 
   // Initialize add meal modal
   initAddMealModal((date, meal) => {
+    renderCalendar();
+  });
+
+  // Initialize quantity modal for ingredient browser
+  initQuantityModal();
+
+  // Listen for pantry updates from quantity modal
+  document.addEventListener('pantryUpdated', () => {
+    updatePantryUI();
+    updateRecipeGrid();
     renderCalendar();
   });
 

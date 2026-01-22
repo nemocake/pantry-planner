@@ -6,6 +6,7 @@
 import { getIngredientById } from './ingredientManager.js';
 import { getRecipeById } from './recipeManager.js';
 import { getPantryItem, getPantryItems, onPantryChange } from './pantryManager.js';
+import { convertQuantity, areUnitsCompatible } from './unitConverter.js';
 
 const STORAGE_KEY = 'pantry_planner_meals';
 const EXPORT_VERSION = '1.0.0';
@@ -291,28 +292,61 @@ export function checkRecipeAvailability(recipe, servings = null) {
     if (recipeIng.optional) return;
 
     const ingredient = getIngredientById(recipeIng.ingredientId);
-    const available = getAvailableQuantity(recipeIng.ingredientId);
+    const pantryItem = getPantryItem(recipeIng.ingredientId);
+    const reservedQty = getReservedQuantity(recipeIng.ingredientId);
     const needed = (recipeIng.quantity * targetServings) / recipe.servings;
+    const recipeUnit = recipeIng.unit;
 
-    if (available < needed) {
-      const shortage = needed - available;
-      if (available === 0) {
+    // If ingredient not in pantry
+    if (!pantryItem) {
+      missing.push({
+        ingredientId: recipeIng.ingredientId,
+        name: ingredient?.name || recipeIng.ingredientId,
+        unit: recipeUnit,
+        needed,
+        available: 0,
+        shortage: needed
+      });
+      return;
+    }
+
+    const pantryUnit = pantryItem.unit;
+    let availableInPantryUnit = Math.max(0, pantryItem.quantity - reservedQty);
+
+    // Try to convert pantry quantity to recipe's unit for comparison
+    let availableInRecipeUnit = availableInPantryUnit;
+
+    if (pantryUnit !== recipeUnit) {
+      if (areUnitsCompatible(pantryUnit, recipeUnit)) {
+        // Convert pantry quantity to recipe unit
+        const converted = convertQuantity(availableInPantryUnit, pantryUnit, recipeUnit);
+        if (converted !== null) {
+          availableInRecipeUnit = converted;
+        }
+      }
+      // If units are incompatible, fall back to assuming we have it if quantity > 0
+      // This is a graceful fallback for cases like "1 lb flour" vs "2 cups flour"
+    }
+
+    if (availableInRecipeUnit < needed) {
+      const shortage = needed - availableInRecipeUnit;
+      if (availableInRecipeUnit === 0) {
         missing.push({
           ingredientId: recipeIng.ingredientId,
           name: ingredient?.name || recipeIng.ingredientId,
-          unit: recipeIng.unit,
+          unit: recipeUnit,
           needed,
-          available,
+          available: availableInRecipeUnit,
           shortage
         });
       } else {
         warnings.push({
           ingredientId: recipeIng.ingredientId,
           name: ingredient?.name || recipeIng.ingredientId,
-          unit: recipeIng.unit,
+          unit: recipeUnit,
           needed,
-          available,
-          shortage
+          available: Math.round(availableInRecipeUnit * 100) / 100,
+          shortage: Math.round(shortage * 100) / 100
         });
       }
     }

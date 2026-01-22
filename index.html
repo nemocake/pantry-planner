@@ -471,6 +471,40 @@
       </div>
     </div>
 
+    <!-- Quantity Modal -->
+    <div class="modal" id="quantityModal">
+      <div class="modal__backdrop"></div>
+      <div class="modal__container quantity-modal">
+        <button class="modal__close" aria-label="Close modal">&times;</button>
+
+        <div class="quantity-modal__header">
+          <span class="quantity-modal__icon" id="quantityModalIcon"></span>
+          <h2 class="quantity-modal__title" id="quantityModalTitle">Add Ingredient</h2>
+        </div>
+
+        <div class="quantity-modal__presets" id="quantityPresets">
+          <!-- Preset buttons populated dynamically -->
+        </div>
+
+        <div class="quantity-modal__divider">
+          <span>or enter custom amount</span>
+        </div>
+
+        <div class="quantity-modal__custom">
+          <div class="quantity-modal__input-row">
+            <input type="number" id="quantityInput" class="form-input" min="0" step="0.25" placeholder="Amount">
+            <select id="quantityUnit" class="form-input">
+              <!-- Units populated dynamically -->
+            </select>
+          </div>
+        </div>
+
+        <button class="btn btn--primary btn--full" id="quantitySubmit" disabled>
+          Add to Pantry
+        </button>
+      </div>
+    </div>
+
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
