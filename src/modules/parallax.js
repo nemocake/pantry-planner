@@ -3,6 +3,10 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
+// Scrub smoothing value - higher = smoother but more lag
+// 0.5-1 provides good balance between smoothness and responsiveness
+const SCRUB_SMOOTHING = 0.8;
+
 /**
  * Initialize parallax effects on elements with data-speed attribute
  * Speed values:
@@ -26,7 +30,7 @@ export function initParallax(options = {}) {
         trigger: layer.closest('.section'),
         start: 'top bottom',
         end: 'bottom top',
-        scrub: true,
+        scrub: SCRUB_SMOOTHING,
         // markers: true, // Uncomment for debugging
       }
     });
@@ -54,7 +58,7 @@ export function initDeltaParallax(options = {}) {
           trigger: item.closest('.section'),
           start: 'top bottom',
           end: 'bottom top',
-          scrub: true,
+          scrub: SCRUB_SMOOTHING,
         }
       }
     );
@@ -79,7 +83,7 @@ export function initHorizontalParallax() {
           trigger: item.closest('.section'),
           start: 'top bottom',
           end: 'bottom top',
-          scrub: true,
+          scrub: SCRUB_SMOOTHING,
         }
       }
     );
@@ -104,7 +108,7 @@ export function initScaleParallax() {
           trigger: item.closest('.section'),
           start: 'top bottom',
           end: 'bottom top',
-          scrub: true,
+          scrub: SCRUB_SMOOTHING,
         }
       }
     );
@@ -127,7 +131,7 @@ export function initOpacityParallax() {
           trigger: item.closest('.section'),
           start: 'top center',
           end: 'center center',
-          scrub: true,
+          scrub: SCRUB_SMOOTHING,
         }
       }
     );
