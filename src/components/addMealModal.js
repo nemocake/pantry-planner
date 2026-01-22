@@ -58,6 +58,7 @@ export function initAddMealModal(onMealAdded) {
   onMealAddedCallback = onMealAdded;
 
   const form = document.getElementById('addMealForm');
+  const dateInput = document.getElementById('mealDate');
   const recipeSearchInput = document.getElementById('mealRecipeSearch');
   const recipeResultsContainer = document.getElementById('mealRecipeResults');
   const selectedRecipeDisplay = document.getElementById('selectedRecipeDisplay');
@@ -65,6 +66,11 @@ export function initAddMealModal(onMealAdded) {
   const servingsInput = document.getElementById('mealServings');
   const submitBtn = document.getElementById('submitAddMeal');
   const cancelBtn = document.getElementById('cancelAddMeal');
+
+  // Update selected date when date input changes
+  dateInput.addEventListener('change', (e) => {
+    selectedDate = e.target.value;
+  });
 
   // Recipe search with debounce
   recipeSearchInput.addEventListener('input', (e) => {
@@ -332,15 +338,15 @@ export function openAddMealModal(date, recipe = null) {
   selectedDate = date;
   selectedRecipe = null;
 
-  // Update modal title with date
-  const dateDisplay = document.getElementById('addMealDateDisplay');
-  if (dateDisplay) {
-    dateDisplay.textContent = formatDisplayDate(date);
-  }
-
   // Reset form
   const form = document.getElementById('addMealForm');
   form.reset();
+
+  // Set the date input value
+  const dateInput = document.getElementById('mealDate');
+  if (dateInput) {
+    dateInput.value = date;
+  }
 
   // Clear previous selections
   const selectedRecipeDisplay = document.getElementById('selectedRecipeDisplay');

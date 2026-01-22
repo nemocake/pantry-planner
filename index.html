@@ -393,8 +393,11 @@
       <div class="modal__container">
         <button class="modal__close" aria-label="Close modal">&times;</button>
         <h2 class="modal__title">Add Meal to Plan</h2>
-        <p class="modal__date-display" id="addMealDateDisplay">Monday, January 20</p>
         <form class="modal__form" id="addMealForm">
+          <div class="form-group">
+            <label for="mealDate">Date</label>
+            <input type="date" id="mealDate" class="form-input" required>
+          </div>
           <div class="form-group">
             <label for="mealRecipeSearch">Search Recipe</label>
             <div class="autocomplete-wrapper">
