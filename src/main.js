@@ -313,7 +313,9 @@ function initPantryUI() {
       if (!ingredient) return '';
 
       const icon = getCategoryIcon(ingredient.category);
-      const qtyDisplay = item.quantity > 1 ? `${item.quantity} ${item.unit}` : item.unit;
+      // Use ingredient's default unit if stored unit is generic "unit"
+      const displayUnit = (item.unit === 'unit' || !item.unit) ? ingredient.defaultUnit : item.unit;
+      const qtyDisplay = `${item.quantity} ${displayUnit}`;
 
       return `
         <div class="dropdown-item" data-ingredient-id="${item.ingredientId}">
