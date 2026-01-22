@@ -60,6 +60,14 @@ export function getIngredientById(id) {
 }
 
 /**
+ * Get the full ingredients map (ID -> ingredient)
+ * Used for nutrition calculations
+ */
+export function getIngredientsMap() {
+  return ingredientIndex;
+}
+
+/**
  * Search ingredients by query string
  * Returns sorted results by relevance
  */
@@ -228,6 +236,7 @@ export function getIngredientIcon(ingredient) {
 export default {
   loadIngredients,
   getIngredientById,
+  getIngredientsMap,
   searchIngredients,
   getIngredientsByCategory,
   getIngredientsBySubcategory,

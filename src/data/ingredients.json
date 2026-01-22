@@ -81,7 +81,8 @@
       "subcategory": "beef",
       "aliases": ["minced beef", "hamburger meat", "beef mince"],
       "defaultUnit": "g",
-      "searchTerms": ["beef", "ground", "mince", "hamburger"]
+      "searchTerms": ["beef", "ground", "mince", "hamburger"],
+      "nutrition": { "per100g": { "calories": 250, "protein": 26, "fat": 15, "carbs": 0, "fiber": 0 } }
     },
     {
       "id": "ing_protein_chicken_breast",
@@ -90,7 +91,8 @@
       "subcategory": "poultry",
       "aliases": ["boneless chicken", "chicken fillet"],
       "defaultUnit": "g",
-      "searchTerms": ["chicken", "breast", "poultry"]
+      "searchTerms": ["chicken", "breast", "poultry"],
+      "nutrition": { "per100g": { "calories": 165, "protein": 31, "fat": 3.6, "carbs": 0, "fiber": 0 } }
     },
     {
       "id": "ing_protein_chicken_thighs",
@@ -99,7 +101,8 @@
       "subcategory": "poultry",
       "aliases": ["bone-in chicken", "chicken leg quarters"],
       "defaultUnit": "g",
-      "searchTerms": ["chicken", "thigh", "dark meat"]
+      "searchTerms": ["chicken", "thigh", "dark meat"],
+      "nutrition": { "per100g": { "calories": 209, "protein": 26, "fat": 11, "carbs": 0, "fiber": 0 } }
     },
     {
       "id": "ing_protein_bacon",
@@ -108,25 +111,28 @@
       "subcategory": "pork",
       "aliases": ["streaky bacon", "pork bacon"],
       "defaultUnit": "g",
-      "searchTerms": ["bacon", "pork", "streaky"]
+      "searchTerms": ["bacon", "pork", "breakfast"],
+      "nutrition": { "per100g": { "calories": 541, "protein": 37, "fat": 42, "carbs": 1, "fiber": 0 } }
     },
     {
       "id": "ing_protein_pork_chops",
       "name": "Pork Chops",
       "category": "proteins",
       "subcategory": "pork",
-      "aliases": ["pork loin chops", "bone-in pork"],
+      "aliases": ["pork loin chops", "bone-in pork chops"],
       "defaultUnit": "g",
-      "searchTerms": ["pork", "chop", "loin"]
+      "searchTerms": ["pork", "chops", "loin"],
+      "nutrition": { "per100g": { "calories": 231, "protein": 25, "fat": 14, "carbs": 0, "fiber": 0 } }
     },
     {
       "id": "ing_protein_salmon",
-      "name": "Salmon Fillet",
+      "name": "Salmon",
       "category": "proteins",
       "subcategory": "seafood",
-      "aliases": ["salmon", "atlantic salmon", "fresh salmon"],
+      "aliases": ["salmon fillet", "atlantic salmon"],
       "defaultUnit": "g",
-      "searchTerms": ["salmon", "fish", "seafood"]
+      "searchTerms": ["salmon", "fish", "seafood"],
+      "nutrition": { "per100g": { "calories": 208, "protein": 20, "fat": 13, "carbs": 0, "fiber": 0 } }
     },
     {
       "id": "ing_protein_shrimp",
@@ -135,7 +141,8 @@
       "subcategory": "seafood",
       "aliases": ["prawns", "jumbo shrimp"],
       "defaultUnit": "g",
-      "searchTerms": ["shrimp", "prawn", "seafood"]
+      "searchTerms": ["shrimp", "prawns", "seafood"],
+      "nutrition": { "per100g": { "calories": 99, "protein": 24, "fat": 0.3, "carbs": 0.2, "fiber": 0 } }
     },
     {
       "id": "ing_protein_eggs",
@@ -144,61 +151,138 @@
       "subcategory": "eggs",
       "aliases": ["chicken eggs", "large eggs"],
       "defaultUnit": "pieces",
-      "searchTerms": ["egg", "eggs"]
+      "searchTerms": ["eggs", "egg", "breakfast"],
+      "nutrition": { "per100g": { "calories": 155, "protein": 13, "fat": 11, "carbs": 1.1, "fiber": 0 } }
     },
     {
       "id": "ing_protein_tofu",
       "name": "Tofu",
       "category": "proteins",
       "subcategory": "plant_based",
-      "aliases": ["bean curd", "firm tofu", "silken tofu"],
+      "aliases": ["bean curd", "firm tofu"],
       "defaultUnit": "g",
-      "searchTerms": ["tofu", "soy", "bean curd", "vegan"]
+      "searchTerms": ["tofu", "soy", "vegetarian"],
+      "nutrition": { "per100g": { "calories": 76, "protein": 8, "fat": 4.8, "carbs": 1.9, "fiber": 0.3 } }
     },
     {
       "id": "ing_protein_sausage",
+      "name": "Sausage",
+      "category": "proteins",
+      "subcategory": "pork",
+      "aliases": ["breakfast sausage", "pork sausage"],
+      "defaultUnit": "g",
+      "searchTerms": ["sausage", "pork", "breakfast"],
+      "nutrition": { "per100g": { "calories": 301, "protein": 18, "fat": 25, "carbs": 2, "fiber": 0 } }
+    },
+    {
+      "id": "ing_protein_beef_steak",
+      "name": "Beef Steak",
+      "category": "proteins",
+      "subcategory": "beef",
+      "aliases": ["sirloin", "flank steak", "strip steak"],
+      "defaultUnit": "g",
+      "searchTerms": ["beef", "steak", "sirloin"],
+      "nutrition": { "per100g": { "calories": 271, "protein": 26, "fat": 18, "carbs": 0, "fiber": 0 } }
+    },
+    {
+      "id": "ing_protein_chicken_thigh",
+      "name": "Chicken Thighs",
+      "category": "proteins",
+      "subcategory": "poultry",
+      "aliases": ["boneless thighs", "chicken thigh meat"],
+      "defaultUnit": "g",
+      "searchTerms": ["chicken", "thigh", "dark meat"],
+      "nutrition": { "per100g": { "calories": 209, "protein": 26, "fat": 11, "carbs": 0, "fiber": 0 } }
+    },
+    {
+      "id": "ing_protein_italian_sausage",
       "name": "Italian Sausage",
       "category": "proteins",
       "subcategory": "pork",
-      "aliases": ["pork sausage", "sweet sausage", "hot sausage"],
+      "aliases": ["sweet sausage", "hot sausage"],
       "defaultUnit": "g",
-      "searchTerms": ["sausage", "italian", "pork"]
+      "searchTerms": ["sausage", "italian", "pork"],
+      "nutrition": { "per100g": { "calories": 304, "protein": 16, "fat": 26, "carbs": 3, "fiber": 0 } }
+    },
+    {
+      "id": "ing_protein_lamb",
+      "name": "Lamb",
+      "category": "proteins",
+      "subcategory": "other",
+      "aliases": ["ground lamb", "lamb chops", "leg of lamb"],
+      "defaultUnit": "g",
+      "searchTerms": ["lamb", "mutton", "meat"],
+      "nutrition": { "per100g": { "calories": 294, "protein": 25, "fat": 21, "carbs": 0, "fiber": 0 } }
+    },
+    {
+      "id": "ing_protein_pork_shoulder",
+      "name": "Pork Shoulder",
+      "category": "proteins",
+      "subcategory": "pork",
+      "aliases": ["pork butt", "boston butt"],
+      "defaultUnit": "g",
+      "searchTerms": ["pork", "shoulder", "roast"],
+      "nutrition": { "per100g": { "calories": 269, "protein": 17, "fat": 22, "carbs": 0, "fiber": 0 } }
+    },
+    {
+      "id": "ing_protein_tilapia",
+      "name": "Tilapia",
+      "category": "proteins",
+      "subcategory": "seafood",
+      "aliases": ["tilapia fillet", "white fish"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["tilapia", "fish", "fillet"],
+      "nutrition": { "per100g": { "calories": 96, "protein": 20, "fat": 1.7, "carbs": 0, "fiber": 0 } }
+    },
+    {
+      "id": "ing_protein_white_fish",
+      "name": "White Fish",
+      "category": "proteins",
+      "subcategory": "seafood",
+      "aliases": ["cod", "halibut", "mahi mahi"],
+      "defaultUnit": "g",
+      "searchTerms": ["fish", "white", "cod"],
+      "nutrition": { "per100g": { "calories": 82, "protein": 18, "fat": 0.7, "carbs": 0, "fiber": 0 } }
     },
     {
       "id": "ing_veg_onion",
       "name": "Onion",
       "category": "vegetables",
       "subcategory": "alliums",
-      "aliases": ["yellow onion", "brown onion", "white onion"],
+      "aliases": ["yellow onion", "white onion", "cooking onion"],
       "defaultUnit": "pieces",
-      "searchTerms": ["onion", "yellow", "brown"]
+      "searchTerms": ["onion", "yellow", "white"],
+      "nutrition": { "per100g": { "calories": 40, "protein": 1.1, "fat": 0.1, "carbs": 9, "fiber": 1.7 } }
     },
     {
       "id": "ing_veg_garlic",
       "name": "Garlic",
       "category": "vegetables",
       "subcategory": "alliums",
-      "aliases": ["fresh garlic", "garlic cloves"],
+      "aliases": ["garlic cloves", "fresh garlic"],
       "defaultUnit": "cloves",
-      "searchTerms": ["garlic", "clove"]
+      "searchTerms": ["garlic", "cloves", "allium"],
+      "nutrition": { "per100g": { "calories": 149, "protein": 6.4, "fat": 0.5, "carbs": 33, "fiber": 2.1 } }
     },
     {
       "id": "ing_veg_tomato",
       "name": "Tomato",
       "category": "vegetables",
       "subcategory": "nightshades",
-      "aliases": ["fresh tomatoes", "roma tomatoes", "vine tomatoes"],
+      "aliases": ["fresh tomatoes", "roma tomatoes"],
       "defaultUnit": "pieces",
-      "searchTerms": ["tomato", "fresh", "roma"]
+      "searchTerms": ["tomato", "fresh", "roma"],
+      "nutrition": { "per100g": { "calories": 18, "protein": 0.9, "fat": 0.2, "carbs": 3.9, "fiber": 1.2 } }
     },
     {
       "id": "ing_veg_bell_pepper",
       "name": "Bell Pepper",
       "category": "vegetables",
       "subcategory": "nightshades",
-      "aliases": ["capsicum", "sweet pepper", "red pepper", "green pepper"],
+      "aliases": ["sweet pepper", "capsicum"],
       "defaultUnit": "pieces",
-      "searchTerms": ["pepper", "bell", "capsicum", "sweet"]
+      "searchTerms": ["pepper", "bell", "sweet"],
+      "nutrition": { "per100g": { "calories": 31, "protein": 1, "fat": 0.3, "carbs": 6, "fiber": 2.1 } }
     },
     {
       "id": "ing_veg_carrot",
@@ -207,7 +291,8 @@
       "subcategory": "root_vegetables",
       "aliases": ["carrots", "baby carrots"],
       "defaultUnit": "pieces",
-      "searchTerms": ["carrot", "root"]
+      "searchTerms": ["carrot", "root", "orange"],
+      "nutrition": { "per100g": { "calories": 41, "protein": 0.9, "fat": 0.2, "carbs": 10, "fiber": 2.8 } }
     },
     {
       "id": "ing_veg_celery",
@@ -216,16 +301,18 @@
       "subcategory": "other",
       "aliases": ["celery stalks", "celery ribs"],
       "defaultUnit": "stalks",
-      "searchTerms": ["celery", "stalk"]
+      "searchTerms": ["celery", "stalks", "crunchy"],
+      "nutrition": { "per100g": { "calories": 16, "protein": 0.7, "fat": 0.2, "carbs": 3, "fiber": 1.6 } }
     },
     {
       "id": "ing_veg_potato",
       "name": "Potato",
       "category": "vegetables",
       "subcategory": "root_vegetables",
-      "aliases": ["potatoes", "russet potato", "yukon gold"],
+      "aliases": ["russet potato", "yukon gold"],
       "defaultUnit": "pieces",
-      "searchTerms": ["potato", "russet", "yukon"]
+      "searchTerms": ["potato", "russet", "spud"],
+      "nutrition": { "per100g": { "calories": 77, "protein": 2, "fat": 0.1, "carbs": 17, "fiber": 2.2 } }
     },
     {
       "id": "ing_veg_broccoli",
@@ -234,7 +321,8 @@
       "subcategory": "cruciferous",
       "aliases": ["broccoli florets", "fresh broccoli"],
       "defaultUnit": "g",
-      "searchTerms": ["broccoli", "floret"]
+      "searchTerms": ["broccoli", "florets", "green"],
+      "nutrition": { "per100g": { "calories": 34, "protein": 2.8, "fat": 0.4, "carbs": 7, "fiber": 2.6 } }
     },
     {
       "id": "ing_veg_spinach",
@@ -243,16 +331,18 @@
       "subcategory": "leafy_greens",
       "aliases": ["baby spinach", "fresh spinach"],
       "defaultUnit": "g",
-      "searchTerms": ["spinach", "leafy", "greens"]
+      "searchTerms": ["spinach", "greens", "leafy"],
+      "nutrition": { "per100g": { "calories": 23, "protein": 2.9, "fat": 0.4, "carbs": 3.6, "fiber": 2.2 } }
     },
     {
       "id": "ing_veg_mushroom",
       "name": "Mushrooms",
       "category": "vegetables",
       "subcategory": "other",
-      "aliases": ["button mushrooms", "cremini", "white mushrooms"],
+      "aliases": ["button mushrooms", "cremini mushrooms"],
       "defaultUnit": "g",
-      "searchTerms": ["mushroom", "button", "cremini"]
+      "searchTerms": ["mushroom", "button", "cremini"],
+      "nutrition": { "per100g": { "calories": 22, "protein": 3.1, "fat": 0.3, "carbs": 3.3, "fiber": 1 } }
     },
     {
       "id": "ing_veg_zucchini",
@@ -261,88 +351,148 @@
       "subcategory": "squash",
       "aliases": ["courgette", "summer squash"],
       "defaultUnit": "pieces",
-      "searchTerms": ["zucchini", "courgette", "squash"]
+      "searchTerms": ["zucchini", "courgette", "squash"],
+      "nutrition": { "per100g": { "calories": 17, "protein": 1.2, "fat": 0.3, "carbs": 3.1, "fiber": 1 } }
     },
     {
       "id": "ing_veg_corn",
       "name": "Corn",
       "category": "vegetables",
       "subcategory": "other",
-      "aliases": ["sweet corn", "corn kernels", "corn on the cob"],
+      "aliases": ["sweet corn", "corn on the cob"],
       "defaultUnit": "pieces",
-      "searchTerms": ["corn", "sweet", "kernel"]
+      "searchTerms": ["corn", "sweet", "maize"],
+      "nutrition": { "per100g": { "calories": 86, "protein": 3.3, "fat": 1.4, "carbs": 19, "fiber": 2.7 } }
     },
     {
       "id": "ing_veg_green_beans",
       "name": "Green Beans",
       "category": "vegetables",
       "subcategory": "other",
-      "aliases": ["string beans", "snap beans", "french beans"],
+      "aliases": ["string beans", "snap beans"],
       "defaultUnit": "g",
-      "searchTerms": ["green beans", "string", "snap"]
+      "searchTerms": ["green beans", "string", "snap"],
+      "nutrition": { "per100g": { "calories": 31, "protein": 1.8, "fat": 0.1, "carbs": 7, "fiber": 3.4 } }
     },
     {
       "id": "ing_veg_lettuce",
       "name": "Lettuce",
       "category": "vegetables",
       "subcategory": "leafy_greens",
-      "aliases": ["romaine", "iceberg", "butter lettuce"],
-      "defaultUnit": "heads",
-      "searchTerms": ["lettuce", "romaine", "iceberg", "salad"]
+      "aliases": ["romaine", "iceberg lettuce"],
+      "defaultUnit": "g",
+      "searchTerms": ["lettuce", "romaine", "salad"],
+      "nutrition": { "per100g": { "calories": 15, "protein": 1.4, "fat": 0.2, "carbs": 2.9, "fiber": 1.3 } }
     },
     {
       "id": "ing_veg_cucumber",
       "name": "Cucumber",
       "category": "vegetables",
       "subcategory": "other",
-      "aliases": ["english cucumber", "persian cucumber"],
+      "aliases": ["english cucumber", "slicing cucumber"],
       "defaultUnit": "pieces",
-      "searchTerms": ["cucumber", "cuke"]
+      "searchTerms": ["cucumber", "cuke", "salad"],
+      "nutrition": { "per100g": { "calories": 16, "protein": 0.7, "fat": 0.1, "carbs": 3.6, "fiber": 0.5 } }
+    },
+    {
+      "id": "ing_veg_cabbage",
+      "name": "Cabbage",
+      "category": "vegetables",
+      "subcategory": "cruciferous",
+      "aliases": ["green cabbage", "napa cabbage", "red cabbage"],
+      "defaultUnit": "g",
+      "searchTerms": ["cabbage", "slaw", "cruciferous"],
+      "nutrition": { "per100g": { "calories": 25, "protein": 1.3, "fat": 0.1, "carbs": 6, "fiber": 2.5 } }
+    },
+    {
+      "id": "ing_veg_cauliflower",
+      "name": "Cauliflower",
+      "category": "vegetables",
+      "subcategory": "cruciferous",
+      "aliases": ["cauliflower florets"],
+      "defaultUnit": "g",
+      "searchTerms": ["cauliflower", "florets", "cruciferous"],
+      "nutrition": { "per100g": { "calories": 25, "protein": 1.9, "fat": 0.3, "carbs": 5, "fiber": 2 } }
+    },
+    {
+      "id": "ing_veg_green_onion",
+      "name": "Green Onions",
+      "category": "vegetables",
+      "subcategory": "alliums",
+      "aliases": ["scallions", "spring onions"],
+      "defaultUnit": "stalks",
+      "searchTerms": ["green onion", "scallion", "spring"],
+      "nutrition": { "per100g": { "calories": 32, "protein": 1.8, "fat": 0.2, "carbs": 7, "fiber": 2.6 } }
+    },
+    {
+      "id": "ing_veg_peas",
+      "name": "Peas",
+      "category": "vegetables",
+      "subcategory": "other",
+      "aliases": ["green peas", "garden peas", "frozen peas"],
+      "defaultUnit": "g",
+      "searchTerms": ["peas", "green", "frozen"],
+      "nutrition": { "per100g": { "calories": 81, "protein": 5.4, "fat": 0.4, "carbs": 14, "fiber": 5.7 } }
+    },
+    {
+      "id": "ing_veg_red_onion",
+      "name": "Red Onion",
+      "category": "vegetables",
+      "subcategory": "alliums",
+      "aliases": ["purple onion", "salad onion"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["onion", "red", "purple"],
+      "nutrition": { "per100g": { "calories": 40, "protein": 1.1, "fat": 0.1, "carbs": 9, "fiber": 1.7 } }
     },
     {
       "id": "ing_fruit_lemon",
       "name": "Lemon",
       "category": "fruits",
       "subcategory": "citrus",
-      "aliases": ["fresh lemon", "lemons"],
+      "aliases": ["fresh lemon", "lemon juice"],
       "defaultUnit": "pieces",
-      "searchTerms": ["lemon", "citrus"]
+      "searchTerms": ["lemon", "citrus", "juice"],
+      "nutrition": { "per100g": { "calories": 29, "protein": 1.1, "fat": 0.3, "carbs": 9, "fiber": 2.8 } }
     },
     {
       "id": "ing_fruit_lime",
       "name": "Lime",
       "category": "fruits",
       "subcategory": "citrus",
-      "aliases": ["fresh lime", "key lime"],
+      "aliases": ["fresh lime", "lime juice"],
       "defaultUnit": "pieces",
-      "searchTerms": ["lime", "citrus"]
+      "searchTerms": ["lime", "citrus", "juice"],
+      "nutrition": { "per100g": { "calories": 30, "protein": 0.7, "fat": 0.2, "carbs": 11, "fiber": 2.8 } }
     },
     {
       "id": "ing_fruit_orange",
       "name": "Orange",
       "category": "fruits",
       "subcategory": "citrus",
-      "aliases": ["navel orange", "blood orange"],
+      "aliases": ["navel orange", "fresh orange"],
       "defaultUnit": "pieces",
-      "searchTerms": ["orange", "citrus", "navel"]
+      "searchTerms": ["orange", "citrus", "navel"],
+      "nutrition": { "per100g": { "calories": 47, "protein": 0.9, "fat": 0.1, "carbs": 12, "fiber": 2.4 } }
     },
     {
       "id": "ing_fruit_apple",
       "name": "Apple",
       "category": "fruits",
       "subcategory": "apples_pears",
-      "aliases": ["granny smith", "fuji apple", "gala apple"],
+      "aliases": ["gala apple", "granny smith"],
       "defaultUnit": "pieces",
-      "searchTerms": ["apple", "granny smith", "fuji"]
+      "searchTerms": ["apple", "fruit", "gala"],
+      "nutrition": { "per100g": { "calories": 52, "protein": 0.3, "fat": 0.2, "carbs": 14, "fiber": 2.4 } }
     },
     {
       "id": "ing_fruit_banana",
       "name": "Banana",
       "category": "fruits",
       "subcategory": "tropical",
-      "aliases": ["ripe banana", "bananas"],
+      "aliases": ["ripe banana", "yellow banana"],
       "defaultUnit": "pieces",
-      "searchTerms": ["banana", "tropical"]
+      "searchTerms": ["banana", "fruit", "tropical"],
+      "nutrition": { "per100g": { "calories": 89, "protein": 1.1, "fat": 0.3, "carbs": 23, "fiber": 2.6 } }
     },
     {
       "id": "ing_fruit_avocado",
@@ -351,16 +501,28 @@
       "subcategory": "tropical",
       "aliases": ["hass avocado", "ripe avocado"],
       "defaultUnit": "pieces",
-      "searchTerms": ["avocado", "hass", "guacamole"]
+      "searchTerms": ["avocado", "guacamole", "hass"],
+      "nutrition": { "per100g": { "calories": 160, "protein": 2, "fat": 15, "carbs": 9, "fiber": 7 } }
+    },
+    {
+      "id": "ing_fruit_mango",
+      "name": "Mango",
+      "category": "fruits",
+      "subcategory": "tropical",
+      "aliases": ["fresh mango", "ripe mango"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["mango", "tropical", "fruit"],
+      "nutrition": { "per100g": { "calories": 60, "protein": 0.8, "fat": 0.4, "carbs": 15, "fiber": 1.6 } }
     },
     {
       "id": "ing_dairy_milk",
       "name": "Milk",
       "category": "dairy",
       "subcategory": "milk",
-      "aliases": ["whole milk", "2% milk", "skim milk"],
+      "aliases": ["whole milk", "2% milk"],
       "defaultUnit": "ml",
-      "searchTerms": ["milk", "whole", "dairy"]
+      "searchTerms": ["milk", "dairy", "whole"],
+      "nutrition": { "per100g": { "calories": 61, "protein": 3.2, "fat": 3.3, "carbs": 4.8, "fiber": 0 } }
     },
     {
       "id": "ing_dairy_butter",
@@ -369,16 +531,18 @@
       "subcategory": "butter",
       "aliases": ["unsalted butter", "salted butter"],
       "defaultUnit": "g",
-      "searchTerms": ["butter", "unsalted"]
+      "searchTerms": ["butter", "dairy", "fat"],
+      "nutrition": { "per100g": { "calories": 717, "protein": 0.9, "fat": 81, "carbs": 0.1, "fiber": 0 } }
     },
     {
       "id": "ing_dairy_cheddar",
       "name": "Cheddar Cheese",
       "category": "dairy",
       "subcategory": "cheese",
-      "aliases": ["sharp cheddar", "mild cheddar", "shredded cheddar"],
+      "aliases": ["sharp cheddar", "mild cheddar"],
       "defaultUnit": "g",
-      "searchTerms": ["cheddar", "cheese", "sharp"]
+      "searchTerms": ["cheddar", "cheese", "sharp"],
+      "nutrition": { "per100g": { "calories": 403, "protein": 25, "fat": 33, "carbs": 1.3, "fiber": 0 } }
     },
     {
       "id": "ing_dairy_parmesan",
@@ -387,7 +551,8 @@
       "subcategory": "cheese",
       "aliases": ["parmigiano reggiano", "grated parmesan"],
       "defaultUnit": "g",
-      "searchTerms": ["parmesan", "parmigiano", "cheese"]
+      "searchTerms": ["parmesan", "cheese", "italian"],
+      "nutrition": { "per100g": { "calories": 431, "protein": 38, "fat": 29, "carbs": 4.1, "fiber": 0 } }
     },
     {
       "id": "ing_dairy_mozzarella",
@@ -396,16 +561,18 @@
       "subcategory": "cheese",
       "aliases": ["fresh mozzarella", "shredded mozzarella"],
       "defaultUnit": "g",
-      "searchTerms": ["mozzarella", "cheese", "pizza"]
+      "searchTerms": ["mozzarella", "cheese", "pizza"],
+      "nutrition": { "per100g": { "calories": 280, "protein": 28, "fat": 17, "carbs": 3.1, "fiber": 0 } }
     },
     {
       "id": "ing_dairy_cream",
       "name": "Heavy Cream",
       "category": "dairy",
       "subcategory": "cream",
-      "aliases": ["whipping cream", "double cream", "heavy whipping cream"],
+      "aliases": ["whipping cream", "heavy whipping cream"],
       "defaultUnit": "ml",
-      "searchTerms": ["cream", "heavy", "whipping"]
+      "searchTerms": ["cream", "heavy", "whipping"],
+      "nutrition": { "per100g": { "calories": 340, "protein": 2.1, "fat": 36, "carbs": 2.8, "fiber": 0 } }
     },
     {
       "id": "ing_dairy_sour_cream",
@@ -414,16 +581,18 @@
       "subcategory": "cream",
       "aliases": ["cultured cream"],
       "defaultUnit": "g",
-      "searchTerms": ["sour cream", "cultured"]
+      "searchTerms": ["sour cream", "dairy", "cultured"],
+      "nutrition": { "per100g": { "calories": 198, "protein": 2.4, "fat": 19, "carbs": 4.6, "fiber": 0 } }
     },
     {
       "id": "ing_dairy_cream_cheese",
       "name": "Cream Cheese",
       "category": "dairy",
       "subcategory": "cheese",
-      "aliases": ["philadelphia", "neufchatel"],
+      "aliases": ["philadelphia", "soft cheese"],
       "defaultUnit": "g",
-      "searchTerms": ["cream cheese", "philadelphia"]
+      "searchTerms": ["cream cheese", "soft", "spread"],
+      "nutrition": { "per100g": { "calories": 342, "protein": 6, "fat": 34, "carbs": 4.1, "fiber": 0 } }
     },
     {
       "id": "ing_dairy_yogurt",
@@ -432,16 +601,28 @@
       "subcategory": "yogurt",
       "aliases": ["plain yogurt", "greek style yogurt"],
       "defaultUnit": "g",
-      "searchTerms": ["yogurt", "greek", "plain"]
+      "searchTerms": ["yogurt", "greek", "plain"],
+      "nutrition": { "per100g": { "calories": 97, "protein": 9, "fat": 5, "carbs": 3.6, "fiber": 0 } }
+    },
+    {
+      "id": "ing_dairy_feta",
+      "name": "Feta Cheese",
+      "category": "dairy",
+      "subcategory": "cheese",
+      "aliases": ["feta", "greek cheese"],
+      "defaultUnit": "g",
+      "searchTerms": ["feta", "cheese", "greek"],
+      "nutrition": { "per100g": { "calories": 264, "protein": 14, "fat": 21, "carbs": 4.1, "fiber": 0 } }
     },
     {
       "id": "ing_grain_pasta_spaghetti",
       "name": "Spaghetti",
       "category": "grains",
       "subcategory": "pasta",
-      "aliases": ["spaghetti pasta", "thin spaghetti"],
+      "aliases": ["spaghetti noodles", "thin spaghetti"],
       "defaultUnit": "g",
-      "searchTerms": ["spaghetti", "pasta", "noodle"]
+      "searchTerms": ["spaghetti", "pasta", "noodles"],
+      "nutrition": { "per100g": { "calories": 131, "protein": 5, "fat": 1.1, "carbs": 25, "fiber": 1.8 } }
     },
     {
       "id": "ing_grain_pasta_penne",
@@ -450,151 +631,298 @@
       "subcategory": "pasta",
       "aliases": ["penne rigate", "tube pasta"],
       "defaultUnit": "g",
-      "searchTerms": ["penne", "pasta", "tube"]
+      "searchTerms": ["penne", "pasta", "tube"],
+      "nutrition": { "per100g": { "calories": 131, "protein": 5, "fat": 1.1, "carbs": 25, "fiber": 1.8 } }
+    },
+    {
+      "id": "ing_grain_pasta_egg_noodles",
+      "name": "Egg Noodles",
+      "category": "grains",
+      "subcategory": "pasta",
+      "aliases": ["lo mein noodles", "wide noodles"],
+      "defaultUnit": "g",
+      "searchTerms": ["noodles", "egg", "pasta"],
+      "nutrition": { "per100g": { "calories": 138, "protein": 4.5, "fat": 2.1, "carbs": 25, "fiber": 1.2 } }
+    },
+    {
+      "id": "ing_grain_pasta_fettuccine",
+      "name": "Fettuccine",
+      "category": "grains",
+      "subcategory": "pasta",
+      "aliases": ["fettuccini", "ribbon pasta"],
+      "defaultUnit": "g",
+      "searchTerms": ["fettuccine", "pasta", "ribbon"],
+      "nutrition": { "per100g": { "calories": 131, "protein": 5, "fat": 1.1, "carbs": 25, "fiber": 1.8 } }
+    },
+    {
+      "id": "ing_grain_pasta_linguine",
+      "name": "Linguine",
+      "category": "grains",
+      "subcategory": "pasta",
+      "aliases": ["linguini", "flat spaghetti"],
+      "defaultUnit": "g",
+      "searchTerms": ["linguine", "pasta", "long"],
+      "nutrition": { "per100g": { "calories": 131, "protein": 5, "fat": 1.1, "carbs": 25, "fiber": 1.8 } }
+    },
+    {
+      "id": "ing_grain_pasta_macaroni",
+      "name": "Macaroni",
+      "category": "grains",
+      "subcategory": "pasta",
+      "aliases": ["elbow macaroni", "mac"],
+      "defaultUnit": "g",
+      "searchTerms": ["macaroni", "elbow", "pasta"],
+      "nutrition": { "per100g": { "calories": 131, "protein": 5, "fat": 1.1, "carbs": 25, "fiber": 1.8 } }
+    },
+    {
+      "id": "ing_grain_pasta_small",
+      "name": "Small Pasta",
+      "category": "grains",
+      "subcategory": "pasta",
+      "aliases": ["ditalini", "orzo", "pastina"],
+      "defaultUnit": "g",
+      "searchTerms": ["pasta", "small", "soup"],
+      "nutrition": { "per100g": { "calories": 131, "protein": 5, "fat": 1.1, "carbs": 25, "fiber": 1.8 } }
     },
     {
       "id": "ing_grain_rice_white",
       "name": "White Rice",
       "category": "grains",
       "subcategory": "rice",
-      "aliases": ["long grain rice", "jasmine rice", "basmati rice"],
+      "aliases": ["long grain rice", "jasmine rice"],
       "defaultUnit": "g",
-      "searchTerms": ["rice", "white", "jasmine", "basmati"]
+      "searchTerms": ["rice", "white", "grain"],
+      "nutrition": { "per100g": { "calories": 130, "protein": 2.7, "fat": 0.3, "carbs": 28, "fiber": 0.4 } }
     },
     {
       "id": "ing_grain_rice_brown",
       "name": "Brown Rice",
       "category": "grains",
       "subcategory": "rice",
-      "aliases": ["whole grain rice"],
+      "aliases": ["whole grain rice", "brown rice"],
       "defaultUnit": "g",
-      "searchTerms": ["rice", "brown", "whole grain"]
+      "searchTerms": ["rice", "brown", "whole"],
+      "nutrition": { "per100g": { "calories": 111, "protein": 2.6, "fat": 0.9, "carbs": 23, "fiber": 1.8 } }
+    },
+    {
+      "id": "ing_grain_rice_arborio",
+      "name": "Arborio Rice",
+      "category": "grains",
+      "subcategory": "rice",
+      "aliases": ["risotto rice", "short grain rice"],
+      "defaultUnit": "g",
+      "searchTerms": ["arborio", "risotto", "rice"],
+      "nutrition": { "per100g": { "calories": 130, "protein": 2.4, "fat": 0.5, "carbs": 28, "fiber": 0.4 } }
+    },
+    {
+      "id": "ing_grain_rice_noodles",
+      "name": "Rice Noodles",
+      "category": "grains",
+      "subcategory": "pasta",
+      "aliases": ["pad thai noodles", "vermicelli"],
+      "defaultUnit": "g",
+      "searchTerms": ["rice", "noodles", "asian"],
+      "nutrition": { "per100g": { "calories": 109, "protein": 0.9, "fat": 0.2, "carbs": 25, "fiber": 0.9 } }
     },
     {
       "id": "ing_grain_bread",
       "name": "Bread",
       "category": "grains",
       "subcategory": "bread",
-      "aliases": ["white bread", "sandwich bread", "sliced bread"],
-      "defaultUnit": "slices",
-      "searchTerms": ["bread", "white", "sandwich"]
+      "aliases": ["white bread", "sandwich bread", "loaf"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["bread", "loaf", "sandwich"],
+      "nutrition": { "per100g": { "calories": 265, "protein": 9, "fat": 3.2, "carbs": 49, "fiber": 2.7 } }
+    },
+    {
+      "id": "ing_grain_pita",
+      "name": "Pita Bread",
+      "category": "grains",
+      "subcategory": "bread",
+      "aliases": ["pita", "pocket bread", "flatbread"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["pita", "bread", "flatbread"],
+      "nutrition": { "per100g": { "calories": 275, "protein": 9, "fat": 1.2, "carbs": 55, "fiber": 2.2 } }
     },
     {
       "id": "ing_grain_tortilla",
-      "name": "Flour Tortillas",
+      "name": "Flour Tortilla",
       "category": "grains",
       "subcategory": "bread",
-      "aliases": ["soft tortillas", "burrito size tortillas"],
+      "aliases": ["soft tortilla", "burrito wrap"],
       "defaultUnit": "pieces",
-      "searchTerms": ["tortilla", "flour", "wrap"]
+      "searchTerms": ["tortilla", "wrap", "flour"],
+      "nutrition": { "per100g": { "calories": 312, "protein": 8.3, "fat": 8.4, "carbs": 51, "fiber": 2.1 } }
     },
     {
       "id": "ing_grain_breadcrumbs",
       "name": "Breadcrumbs",
       "category": "grains",
       "subcategory": "bread",
-      "aliases": ["panko", "italian breadcrumbs"],
+      "aliases": ["panko", "dried breadcrumbs"],
       "defaultUnit": "g",
-      "searchTerms": ["breadcrumb", "panko", "coating"]
+      "searchTerms": ["breadcrumbs", "panko", "coating"],
+      "nutrition": { "per100g": { "calories": 395, "protein": 13, "fat": 5.3, "carbs": 72, "fiber": 4.5 } }
     },
     {
       "id": "ing_canned_tomatoes",
       "name": "Canned Diced Tomatoes",
       "category": "canned",
       "subcategory": "tomatoes",
-      "aliases": ["diced tomatoes", "tinned tomatoes", "chopped tomatoes"],
+      "aliases": ["diced tomatoes", "chopped tomatoes"],
       "defaultUnit": "g",
-      "searchTerms": ["canned tomatoes", "diced", "tinned"]
+      "searchTerms": ["tomatoes", "canned", "diced"],
+      "nutrition": { "per100g": { "calories": 17, "protein": 0.9, "fat": 0.1, "carbs": 3.5, "fiber": 1 } }
     },
     {
       "id": "ing_canned_tomato_paste",
       "name": "Tomato Paste",
       "category": "canned",
       "subcategory": "tomatoes",
-      "aliases": ["tomato puree concentrate"],
+      "aliases": ["concentrated tomato", "tomato puree"],
       "defaultUnit": "tbsp",
-      "searchTerms": ["tomato paste", "paste", "concentrate"]
+      "searchTerms": ["tomato", "paste", "concentrated"],
+      "nutrition": { "per100g": { "calories": 82, "protein": 4.3, "fat": 0.5, "carbs": 19, "fiber": 4.1 } }
     },
     {
       "id": "ing_canned_tomato_sauce",
       "name": "Tomato Sauce",
       "category": "canned",
       "subcategory": "tomatoes",
-      "aliases": ["marinara", "passata"],
-      "defaultUnit": "g",
-      "searchTerms": ["tomato sauce", "marinara", "passata"]
+      "aliases": ["passata", "tomato puree"],
+      "defaultUnit": "ml",
+      "searchTerms": ["tomato", "sauce", "passata"],
+      "nutrition": { "per100g": { "calories": 29, "protein": 1.3, "fat": 0.2, "carbs": 6, "fiber": 1.5 } }
+    },
+    {
+      "id": "ing_canned_marinara",
+      "name": "Marinara Sauce",
+      "category": "canned",
+      "subcategory": "tomatoes",
+      "aliases": ["pasta sauce", "tomato sauce"],
+      "defaultUnit": "ml",
+      "searchTerms": ["marinara", "pasta", "sauce"],
+      "nutrition": { "per100g": { "calories": 50, "protein": 1.5, "fat": 1.5, "carbs": 8, "fiber": 1.5 } }
     },
     {
       "id": "ing_canned_black_beans",
       "name": "Black Beans",
       "category": "canned",
       "subcategory": "beans",
-      "aliases": ["canned black beans", "turtle beans"],
+      "aliases": ["canned black beans", "frijoles negros"],
       "defaultUnit": "g",
-      "searchTerms": ["black beans", "beans", "canned"]
+      "searchTerms": ["black", "beans", "canned"],
+      "nutrition": { "per100g": { "calories": 91, "protein": 6.1, "fat": 0.4, "carbs": 16, "fiber": 7.6 } }
     },
     {
       "id": "ing_canned_chickpeas",
       "name": "Chickpeas",
       "category": "canned",
       "subcategory": "beans",
-      "aliases": ["garbanzo beans", "canned chickpeas"],
+      "aliases": ["garbanzo beans", "ceci beans"],
       "defaultUnit": "g",
-      "searchTerms": ["chickpea", "garbanzo", "beans"]
+      "searchTerms": ["chickpeas", "garbanzo", "beans"],
+      "nutrition": { "per100g": { "calories": 119, "protein": 5.4, "fat": 2.4, "carbs": 20, "fiber": 5.3 } }
     },
     {
       "id": "ing_canned_kidney_beans",
       "name": "Kidney Beans",
       "category": "canned",
       "subcategory": "beans",
-      "aliases": ["red kidney beans", "canned kidney beans"],
+      "aliases": ["red kidney beans", "canned kidney"],
       "defaultUnit": "g",
-      "searchTerms": ["kidney beans", "red beans"]
+      "searchTerms": ["kidney", "beans", "red"],
+      "nutrition": { "per100g": { "calories": 84, "protein": 5.3, "fat": 0.3, "carbs": 15, "fiber": 5.3 } }
+    },
+    {
+      "id": "ing_canned_beans",
+      "name": "Canned Beans",
+      "category": "canned",
+      "subcategory": "beans",
+      "aliases": ["cannellini beans", "white beans", "kidney beans"],
+      "defaultUnit": "g",
+      "searchTerms": ["beans", "canned", "legumes"],
+      "nutrition": { "per100g": { "calories": 94, "protein": 6.5, "fat": 0.4, "carbs": 16, "fiber": 6 } }
     },
     {
       "id": "ing_canned_coconut_milk",
       "name": "Coconut Milk",
       "category": "canned",
       "subcategory": "other",
-      "aliases": ["full fat coconut milk", "canned coconut"],
+      "aliases": ["canned coconut", "coconut cream"],
       "defaultUnit": "ml",
-      "searchTerms": ["coconut milk", "coconut", "canned"]
+      "searchTerms": ["coconut", "milk", "canned"],
+      "nutrition": { "per100g": { "calories": 197, "protein": 2.2, "fat": 21, "carbs": 2.8, "fiber": 0 } }
     },
     {
       "id": "ing_canned_chicken_broth",
       "name": "Chicken Broth",
-      "category": "beverages",
-      "subcategory": "broths",
-      "aliases": ["chicken stock", "chicken bouillon"],
+      "category": "canned",
+      "subcategory": "soups",
+      "aliases": ["chicken stock", "bouillon"],
       "defaultUnit": "ml",
-      "searchTerms": ["chicken broth", "stock", "bouillon"]
+      "searchTerms": ["broth", "chicken", "stock"],
+      "nutrition": { "per100g": { "calories": 5, "protein": 0.5, "fat": 0.1, "carbs": 0.4, "fiber": 0 } }
     },
     {
       "id": "ing_canned_beef_broth",
       "name": "Beef Broth",
-      "category": "beverages",
-      "subcategory": "broths",
-      "aliases": ["beef stock", "beef bouillon"],
+      "category": "canned",
+      "subcategory": "soups",
+      "aliases": ["beef stock", "bouillon"],
       "defaultUnit": "ml",
-      "searchTerms": ["beef broth", "stock", "bouillon"]
+      "searchTerms": ["broth", "beef", "stock"],
+      "nutrition": { "per100g": { "calories": 8, "protein": 1.1, "fat": 0.2, "carbs": 0.4, "fiber": 0 } }
+    },
+    {
+      "id": "ing_canned_artichoke",
+      "name": "Canned Artichoke Hearts",
+      "category": "canned",
+      "subcategory": "vegetables",
+      "aliases": ["artichoke hearts", "marinated artichokes"],
+      "defaultUnit": "g",
+      "searchTerms": ["artichoke", "canned", "hearts"],
+      "nutrition": { "per100g": { "calories": 47, "protein": 3.3, "fat": 0.2, "carbs": 11, "fiber": 5.4 } }
+    },
+    {
+      "id": "ing_canned_olives",
+      "name": "Olives",
+      "category": "canned",
+      "subcategory": "vegetables",
+      "aliases": ["kalamata olives", "black olives", "green olives"],
+      "defaultUnit": "g",
+      "searchTerms": ["olives", "kalamata", "canned"],
+      "nutrition": { "per100g": { "calories": 115, "protein": 0.8, "fat": 11, "carbs": 6, "fiber": 3.2 } }
+    },
+    {
+      "id": "ing_canned_tuna",
+      "name": "Canned Tuna",
+      "category": "canned",
+      "subcategory": "fish",
+      "aliases": ["tuna in water", "tuna fish"],
+      "defaultUnit": "g",
+      "searchTerms": ["tuna", "canned", "fish"],
+      "nutrition": { "per100g": { "calories": 116, "protein": 26, "fat": 0.8, "carbs": 0, "fiber": 0 } }
     },
     {
       "id": "ing_baking_flour",
       "name": "All-Purpose Flour",
       "category": "baking",
       "subcategory": "flour",
-      "aliases": ["plain flour", "white flour", "AP flour"],
+      "aliases": ["plain flour", "white flour"],
       "defaultUnit": "g",
-      "searchTerms": ["flour", "all-purpose", "plain"]
+      "searchTerms": ["flour", "all purpose", "baking"],
+      "nutrition": { "per100g": { "calories": 364, "protein": 10, "fat": 1, "carbs": 76, "fiber": 2.7 } }
     },
     {
       "id": "ing_baking_sugar",
-      "name": "Granulated Sugar",
+      "name": "White Sugar",
       "category": "baking",
       "subcategory": "sugar",
-      "aliases": ["white sugar", "table sugar"],
+      "aliases": ["granulated sugar", "table sugar"],
       "defaultUnit": "g",
-      "searchTerms": ["sugar", "white", "granulated"]
+      "searchTerms": ["sugar", "white", "granulated"],
+      "nutrition": { "per100g": { "calories": 387, "protein": 0, "fat": 0, "carbs": 100, "fiber": 0 } }
     },
     {
       "id": "ing_baking_brown_sugar",
@@ -603,7 +931,8 @@
       "subcategory": "sugar",
       "aliases": ["light brown sugar", "dark brown sugar"],
       "defaultUnit": "g",
-      "searchTerms": ["brown sugar", "light", "dark"]
+      "searchTerms": ["sugar", "brown", "baking"],
+      "nutrition": { "per100g": { "calories": 380, "protein": 0, "fat": 0, "carbs": 98, "fiber": 0 } }
     },
     {
       "id": "ing_baking_baking_powder",
@@ -612,7 +941,8 @@
       "subcategory": "leaveners",
       "aliases": ["double acting baking powder"],
       "defaultUnit": "tsp",
-      "searchTerms": ["baking powder", "leavener"]
+      "searchTerms": ["baking", "powder", "leavening"],
+      "nutrition": { "per100g": { "calories": 53, "protein": 0, "fat": 0, "carbs": 28, "fiber": 0 } }
     },
     {
       "id": "ing_baking_baking_soda",
@@ -621,7 +951,8 @@
       "subcategory": "leaveners",
       "aliases": ["bicarbonate of soda", "sodium bicarbonate"],
       "defaultUnit": "tsp",
-      "searchTerms": ["baking soda", "bicarbonate"]
+      "searchTerms": ["baking", "soda", "leavening"],
+      "nutrition": { "per100g": { "calories": 0, "protein": 0, "fat": 0, "carbs": 0, "fiber": 0 } }
     },
     {
       "id": "ing_baking_vanilla",
@@ -630,16 +961,38 @@
       "subcategory": "extracts",
       "aliases": ["pure vanilla", "vanilla essence"],
       "defaultUnit": "tsp",
-      "searchTerms": ["vanilla", "extract", "essence"]
+      "searchTerms": ["vanilla", "extract", "baking"],
+      "nutrition": { "per100g": { "calories": 288, "protein": 0.1, "fat": 0.1, "carbs": 13, "fiber": 0 } }
     },
     {
       "id": "ing_baking_chocolate_chips",
       "name": "Chocolate Chips",
       "category": "baking",
       "subcategory": "chocolate",
-      "aliases": ["semi-sweet chocolate chips", "dark chocolate chips"],
+      "aliases": ["semi-sweet chips", "chocolate morsels"],
       "defaultUnit": "g",
-      "searchTerms": ["chocolate", "chips", "semi-sweet"]
+      "searchTerms": ["chocolate", "chips", "baking"],
+      "nutrition": { "per100g": { "calories": 498, "protein": 5.5, "fat": 30, "carbs": 60, "fiber": 5.9 } }
+    },
+    {
+      "id": "ing_baking_breadcrumbs",
+      "name": "Breadcrumbs",
+      "category": "baking",
+      "subcategory": "other",
+      "aliases": ["panko", "bread crumbs"],
+      "defaultUnit": "g",
+      "searchTerms": ["breadcrumbs", "panko", "coating"],
+      "nutrition": { "per100g": { "calories": 395, "protein": 13, "fat": 5.3, "carbs": 72, "fiber": 4.5 } }
+    },
+    {
+      "id": "ing_baking_cornstarch",
+      "name": "Cornstarch",
+      "category": "baking",
+      "subcategory": "flour",
+      "aliases": ["corn starch", "cornflour"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["cornstarch", "thickener", "starch"],
+      "nutrition": { "per100g": { "calories": 381, "protein": 0.3, "fat": 0.1, "carbs": 91, "fiber": 0.9 } }
     },
     {
       "id": "ing_spice_salt",
@@ -648,7 +1001,8 @@
       "subcategory": "salt_pepper",
       "aliases": ["table salt", "kosher salt", "sea salt"],
       "defaultUnit": "tsp",
-      "searchTerms": ["salt", "kosher", "sea"]
+      "searchTerms": ["salt", "sodium", "seasoning"],
+      "nutrition": { "per100g": { "calories": 0, "protein": 0, "fat": 0, "carbs": 0, "fiber": 0 } }
     },
     {
       "id": "ing_spice_black_pepper",
@@ -657,34 +1011,38 @@
       "subcategory": "salt_pepper",
       "aliases": ["ground pepper", "cracked pepper"],
       "defaultUnit": "tsp",
-      "searchTerms": ["pepper", "black", "ground"]
+      "searchTerms": ["pepper", "black", "ground"],
+      "nutrition": { "per100g": { "calories": 251, "protein": 10, "fat": 3.3, "carbs": 64, "fiber": 25 } }
     },
     {
       "id": "ing_spice_garlic_powder",
       "name": "Garlic Powder",
       "category": "spices",
       "subcategory": "ground_spices",
-      "aliases": ["granulated garlic"],
+      "aliases": ["dried garlic", "granulated garlic"],
       "defaultUnit": "tsp",
-      "searchTerms": ["garlic powder", "granulated garlic"]
+      "searchTerms": ["garlic", "powder", "dried"],
+      "nutrition": { "per100g": { "calories": 331, "protein": 17, "fat": 0.7, "carbs": 73, "fiber": 9 } }
     },
     {
       "id": "ing_spice_onion_powder",
       "name": "Onion Powder",
       "category": "spices",
       "subcategory": "ground_spices",
-      "aliases": ["granulated onion"],
+      "aliases": ["dried onion", "granulated onion"],
       "defaultUnit": "tsp",
-      "searchTerms": ["onion powder", "granulated onion"]
+      "searchTerms": ["onion", "powder", "dried"],
+      "nutrition": { "per100g": { "calories": 341, "protein": 10, "fat": 1.1, "carbs": 79, "fiber": 15 } }
     },
     {
       "id": "ing_spice_paprika",
       "name": "Paprika",
       "category": "spices",
       "subcategory": "ground_spices",
-      "aliases": ["sweet paprika", "smoked paprika", "hungarian paprika"],
+      "aliases": ["sweet paprika", "smoked paprika"],
       "defaultUnit": "tsp",
-      "searchTerms": ["paprika", "smoked", "sweet"]
+      "searchTerms": ["paprika", "red", "pepper"],
+      "nutrition": { "per100g": { "calories": 282, "protein": 14, "fat": 13, "carbs": 54, "fiber": 35 } }
     },
     {
       "id": "ing_spice_cumin",
@@ -693,70 +1051,78 @@
       "subcategory": "ground_spices",
       "aliases": ["ground cumin", "cumin powder"],
       "defaultUnit": "tsp",
-      "searchTerms": ["cumin", "ground"]
+      "searchTerms": ["cumin", "ground", "spice"],
+      "nutrition": { "per100g": { "calories": 375, "protein": 18, "fat": 22, "carbs": 44, "fiber": 11 } }
     },
     {
       "id": "ing_spice_chili_powder",
       "name": "Chili Powder",
       "category": "spices",
-      "subcategory": "blends",
-      "aliases": ["chile powder", "chili seasoning"],
+      "subcategory": "ground_spices",
+      "aliases": ["chile powder", "red chili powder"],
       "defaultUnit": "tsp",
-      "searchTerms": ["chili", "chile", "powder"]
+      "searchTerms": ["chili", "powder", "spicy"],
+      "nutrition": { "per100g": { "calories": 282, "protein": 14, "fat": 15, "carbs": 50, "fiber": 35 } }
     },
     {
       "id": "ing_spice_oregano",
-      "name": "Dried Oregano",
+      "name": "Oregano",
       "category": "spices",
       "subcategory": "dried_herbs",
-      "aliases": ["oregano", "mediterranean oregano"],
+      "aliases": ["dried oregano", "italian oregano"],
       "defaultUnit": "tsp",
-      "searchTerms": ["oregano", "dried", "herb"]
+      "searchTerms": ["oregano", "dried", "italian"],
+      "nutrition": { "per100g": { "calories": 265, "protein": 9, "fat": 4.3, "carbs": 69, "fiber": 43 } }
     },
     {
       "id": "ing_spice_basil",
-      "name": "Dried Basil",
+      "name": "Basil",
       "category": "spices",
       "subcategory": "dried_herbs",
-      "aliases": ["basil", "sweet basil"],
+      "aliases": ["dried basil", "sweet basil", "fresh basil"],
       "defaultUnit": "tsp",
-      "searchTerms": ["basil", "dried", "herb"]
+      "searchTerms": ["basil", "herb", "italian"],
+      "nutrition": { "per100g": { "calories": 23, "protein": 3.2, "fat": 0.6, "carbs": 2.7, "fiber": 1.6 } }
     },
     {
       "id": "ing_spice_thyme",
-      "name": "Dried Thyme",
+      "name": "Thyme",
       "category": "spices",
       "subcategory": "dried_herbs",
-      "aliases": ["thyme", "thyme leaves"],
+      "aliases": ["dried thyme", "fresh thyme"],
       "defaultUnit": "tsp",
-      "searchTerms": ["thyme", "dried", "herb"]
+      "searchTerms": ["thyme", "herb", "dried"],
+      "nutrition": { "per100g": { "calories": 101, "protein": 5.6, "fat": 1.7, "carbs": 24, "fiber": 14 } }
     },
     {
       "id": "ing_spice_rosemary",
-      "name": "Dried Rosemary",
+      "name": "Rosemary",
       "category": "spices",
       "subcategory": "dried_herbs",
-      "aliases": ["rosemary", "rosemary leaves"],
+      "aliases": ["dried rosemary", "fresh rosemary"],
       "defaultUnit": "tsp",
-      "searchTerms": ["rosemary", "dried", "herb"]
+      "searchTerms": ["rosemary", "herb", "dried"],
+      "nutrition": { "per100g": { "calories": 131, "protein": 3.3, "fat": 5.9, "carbs": 21, "fiber": 14 } }
     },
     {
       "id": "ing_spice_cinnamon",
       "name": "Cinnamon",
       "category": "spices",
       "subcategory": "ground_spices",
-      "aliases": ["ground cinnamon", "ceylon cinnamon"],
+      "aliases": ["ground cinnamon", "cinnamon sticks"],
       "defaultUnit": "tsp",
-      "searchTerms": ["cinnamon", "ground"]
+      "searchTerms": ["cinnamon", "ground", "sweet"],
+      "nutrition": { "per100g": { "calories": 247, "protein": 4, "fat": 1.2, "carbs": 81, "fiber": 53 } }
     },
     {
       "id": "ing_spice_italian_seasoning",
       "name": "Italian Seasoning",
       "category": "spices",
       "subcategory": "blends",
-      "aliases": ["italian herb blend", "mediterranean seasoning"],
+      "aliases": ["italian herbs", "herb blend"],
       "defaultUnit": "tsp",
-      "searchTerms": ["italian", "seasoning", "blend"]
+      "searchTerms": ["italian", "seasoning", "blend"],
+      "nutrition": { "per100g": { "calories": 250, "protein": 9, "fat": 5, "carbs": 50, "fiber": 20 } }
     },
     {
       "id": "ing_spice_red_pepper_flakes",
@@ -765,7 +1131,8 @@
       "subcategory": "whole_spices",
       "aliases": ["crushed red pepper", "chili flakes"],
       "defaultUnit": "tsp",
-      "searchTerms": ["red pepper", "flakes", "crushed"]
+      "searchTerms": ["pepper", "red", "flakes"],
+      "nutrition": { "per100g": { "calories": 282, "protein": 12, "fat": 14, "carbs": 50, "fiber": 28 } }
     },
     {
       "id": "ing_spice_bay_leaves",
@@ -774,7 +1141,18 @@
       "subcategory": "whole_spices",
       "aliases": ["dried bay leaves", "laurel leaves"],
       "defaultUnit": "pieces",
-      "searchTerms": ["bay", "leaves", "laurel"]
+      "searchTerms": ["bay", "leaves", "dried"],
+      "nutrition": { "per100g": { "calories": 313, "protein": 7.6, "fat": 8.4, "carbs": 75, "fiber": 26 } }
+    },
+    {
+      "id": "ing_spice_parsley",
+      "name": "Parsley",
+      "category": "spices",
+      "subcategory": "dried_herbs",
+      "aliases": ["fresh parsley", "flat leaf parsley", "italian parsley"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["parsley", "herb", "garnish"],
+      "nutrition": { "per100g": { "calories": 36, "protein": 3, "fat": 0.8, "carbs": 6, "fiber": 3.3 } }
     },
     {
       "id": "ing_condiment_olive_oil",
@@ -783,25 +1161,28 @@
       "subcategory": "oils",
       "aliases": ["extra virgin olive oil", "EVOO"],
       "defaultUnit": "tbsp",
-      "searchTerms": ["olive oil", "evoo", "extra virgin"]
+      "searchTerms": ["olive", "oil", "evoo"],
+      "nutrition": { "per100g": { "calories": 884, "protein": 0, "fat": 100, "carbs": 0, "fiber": 0 } }
     },
     {
       "id": "ing_condiment_vegetable_oil",
       "name": "Vegetable Oil",
       "category": "condiments",
       "subcategory": "oils",
-      "aliases": ["canola oil", "neutral oil"],
+      "aliases": ["canola oil", "cooking oil"],
       "defaultUnit": "tbsp",
-      "searchTerms": ["vegetable oil", "canola", "neutral"]
+      "searchTerms": ["vegetable", "oil", "cooking"],
+      "nutrition": { "per100g": { "calories": 884, "protein": 0, "fat": 100, "carbs": 0, "fiber": 0 } }
     },
     {
       "id": "ing_condiment_soy_sauce",
       "name": "Soy Sauce",
       "category": "condiments",
       "subcategory": "sauces",
-      "aliases": ["shoyu", "tamari", "light soy sauce"],
+      "aliases": ["shoyu", "tamari"],
       "defaultUnit": "tbsp",
-      "searchTerms": ["soy sauce", "shoyu", "tamari"]
+      "searchTerms": ["soy", "sauce", "asian"],
+      "nutrition": { "per100g": { "calories": 53, "protein": 8.1, "fat": 0, "carbs": 4.9, "fiber": 0.8 } }
     },
     {
       "id": "ing_condiment_worcestershire",
@@ -810,16 +1191,18 @@
       "subcategory": "sauces",
       "aliases": ["worcester sauce"],
       "defaultUnit": "tbsp",
-      "searchTerms": ["worcestershire", "worcester"]
+      "searchTerms": ["worcestershire", "sauce", "savory"],
+      "nutrition": { "per100g": { "calories": 78, "protein": 0, "fat": 0, "carbs": 19, "fiber": 0 } }
     },
     {
       "id": "ing_condiment_hot_sauce",
       "name": "Hot Sauce",
       "category": "condiments",
       "subcategory": "sauces",
-      "aliases": ["tabasco", "sriracha", "frank's red hot"],
-      "defaultUnit": "tsp",
-      "searchTerms": ["hot sauce", "tabasco", "sriracha"]
+      "aliases": ["tabasco", "sriracha", "chili sauce"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["hot", "sauce", "spicy"],
+      "nutrition": { "per100g": { "calories": 12, "protein": 0.5, "fat": 0.4, "carbs": 2, "fiber": 0.3 } }
     },
     {
       "id": "ing_condiment_ketchup",
@@ -828,25 +1211,28 @@
       "subcategory": "sauces",
       "aliases": ["tomato ketchup", "catsup"],
       "defaultUnit": "tbsp",
-      "searchTerms": ["ketchup", "catsup", "tomato"]
+      "searchTerms": ["ketchup", "tomato", "sauce"],
+      "nutrition": { "per100g": { "calories": 101, "protein": 1.7, "fat": 0.1, "carbs": 26, "fiber": 0.3 } }
     },
     {
       "id": "ing_condiment_mustard",
-      "name": "Dijon Mustard",
+      "name": "Mustard",
       "category": "condiments",
       "subcategory": "mustards",
-      "aliases": ["dijon", "french mustard"],
+      "aliases": ["yellow mustard", "dijon mustard"],
       "defaultUnit": "tbsp",
-      "searchTerms": ["dijon", "mustard", "french"]
+      "searchTerms": ["mustard", "yellow", "dijon"],
+      "nutrition": { "per100g": { "calories": 66, "protein": 4.4, "fat": 4.1, "carbs": 6, "fiber": 3.3 } }
     },
     {
       "id": "ing_condiment_mayo",
       "name": "Mayonnaise",
       "category": "condiments",
       "subcategory": "spreads",
-      "aliases": ["mayo", "hellmann's"],
+      "aliases": ["mayo", "sandwich spread"],
       "defaultUnit": "tbsp",
-      "searchTerms": ["mayo", "mayonnaise"]
+      "searchTerms": ["mayo", "mayonnaise", "spread"],
+      "nutrition": { "per100g": { "calories": 680, "protein": 1, "fat": 75, "carbs": 0.6, "fiber": 0 } }
     },
     {
       "id": "ing_condiment_honey",
@@ -855,7 +1241,8 @@
       "subcategory": "spreads",
       "aliases": ["pure honey", "raw honey"],
       "defaultUnit": "tbsp",
-      "searchTerms": ["honey", "raw"]
+      "searchTerms": ["honey", "sweet", "natural"],
+      "nutrition": { "per100g": { "calories": 304, "protein": 0.3, "fat": 0, "carbs": 82, "fiber": 0.2 } }
     },
     {
       "id": "ing_condiment_vinegar",
@@ -864,16 +1251,18 @@
       "subcategory": "vinegars",
       "aliases": ["distilled vinegar", "white wine vinegar"],
       "defaultUnit": "tbsp",
-      "searchTerms": ["white vinegar", "distilled"]
+      "searchTerms": ["vinegar", "white", "distilled"],
+      "nutrition": { "per100g": { "calories": 18, "protein": 0, "fat": 0, "carbs": 0, "fiber": 0 } }
     },
     {
       "id": "ing_condiment_balsamic",
       "name": "Balsamic Vinegar",
       "category": "condiments",
       "subcategory": "vinegars",
-      "aliases": ["balsamic", "aged balsamic"],
+      "aliases": ["balsamic glaze", "aged balsamic"],
       "defaultUnit": "tbsp",
-      "searchTerms": ["balsamic", "vinegar"]
+      "searchTerms": ["balsamic", "vinegar", "italian"],
+      "nutrition": { "per100g": { "calories": 88, "protein": 0.5, "fat": 0, "carbs": 17, "fiber": 0 } }
     },
     {
       "id": "ing_condiment_red_wine_vinegar",
@@ -882,7 +1271,38 @@
       "subcategory": "vinegars",
       "aliases": ["wine vinegar"],
       "defaultUnit": "tbsp",
-      "searchTerms": ["red wine", "vinegar"]
+      "searchTerms": ["red wine", "vinegar", "wine"],
+      "nutrition": { "per100g": { "calories": 19, "protein": 0, "fat": 0, "carbs": 0.3, "fiber": 0 } }
+    },
+    {
+      "id": "ing_condiment_bbq_sauce",
+      "name": "BBQ Sauce",
+      "category": "condiments",
+      "subcategory": "sauces",
+      "aliases": ["barbecue sauce", "barbeque sauce"],
+      "defaultUnit": "ml",
+      "searchTerms": ["bbq", "barbecue", "sauce"],
+      "nutrition": { "per100g": { "calories": 172, "protein": 0.8, "fat": 0.6, "carbs": 41, "fiber": 0.9 } }
+    },
+    {
+      "id": "ing_condiment_marinara",
+      "name": "Marinara Sauce",
+      "category": "condiments",
+      "subcategory": "sauces",
+      "aliases": ["pasta sauce", "red sauce"],
+      "defaultUnit": "ml",
+      "searchTerms": ["marinara", "pasta", "sauce"],
+      "nutrition": { "per100g": { "calories": 50, "protein": 1.5, "fat": 1.5, "carbs": 8, "fiber": 1.5 } }
+    },
+    {
+      "id": "ing_condiment_pesto",
+      "name": "Pesto",
+      "category": "condiments",
+      "subcategory": "sauces",
+      "aliases": ["basil pesto", "pesto sauce"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["pesto", "basil", "sauce"],
+      "nutrition": { "per100g": { "calories": 418, "protein": 6.4, "fat": 40, "carbs": 6.4, "fiber": 2 } }
     },
     {
       "id": "ing_intl_sesame_oil",
@@ -890,8 +1310,9 @@
       "category": "international",
       "subcategory": "asian",
       "aliases": ["toasted sesame oil", "asian sesame oil"],
-      "defaultUnit": "tsp",
-      "searchTerms": ["sesame", "oil", "asian"]
+      "defaultUnit": "tbsp",
+      "searchTerms": ["sesame", "oil", "asian"],
+      "nutrition": { "per100g": { "calories": 884, "protein": 0, "fat": 100, "carbs": 0, "fiber": 0 } }
     },
     {
       "id": "ing_intl_fish_sauce",
@@ -900,7 +1321,8 @@
       "subcategory": "asian",
       "aliases": ["nam pla", "nuoc mam"],
       "defaultUnit": "tbsp",
-      "searchTerms": ["fish sauce", "nam pla"]
+      "searchTerms": ["fish", "sauce", "asian"],
+      "nutrition": { "per100g": { "calories": 35, "protein": 5.1, "fat": 0, "carbs": 3.6, "fiber": 0 } }
     },
     {
       "id": "ing_intl_rice_vinegar",
@@ -909,25 +1331,28 @@
       "subcategory": "asian",
       "aliases": ["rice wine vinegar", "seasoned rice vinegar"],
       "defaultUnit": "tbsp",
-      "searchTerms": ["rice", "vinegar", "asian"]
+      "searchTerms": ["rice", "vinegar", "asian"],
+      "nutrition": { "per100g": { "calories": 18, "protein": 0, "fat": 0, "carbs": 0.1, "fiber": 0 } }
     },
     {
       "id": "ing_intl_ginger",
       "name": "Fresh Ginger",
       "category": "international",
       "subcategory": "asian",
-      "aliases": ["ginger root", "ginger"],
-      "defaultUnit": "tbsp",
-      "searchTerms": ["ginger", "fresh", "root"]
+      "aliases": ["ginger root", "grated ginger"],
+      "defaultUnit": "g",
+      "searchTerms": ["ginger", "root", "fresh"],
+      "nutrition": { "per100g": { "calories": 80, "protein": 1.8, "fat": 0.8, "carbs": 18, "fiber": 2 } }
     },
     {
       "id": "ing_intl_curry_powder",
       "name": "Curry Powder",
       "category": "international",
       "subcategory": "indian",
-      "aliases": ["indian curry", "madras curry"],
-      "defaultUnit": "tbsp",
-      "searchTerms": ["curry", "powder", "indian"]
+      "aliases": ["indian curry powder", "madras curry"],
+      "defaultUnit": "tsp",
+      "searchTerms": ["curry", "powder", "indian"],
+      "nutrition": { "per100g": { "calories": 325, "protein": 14, "fat": 14, "carbs": 55, "fiber": 33 } }
     },
     {
       "id": "ing_intl_garam_masala",
@@ -936,43 +1361,118 @@
       "subcategory": "indian",
       "aliases": ["indian spice blend"],
       "defaultUnit": "tsp",
-      "searchTerms": ["garam masala", "indian", "spice"]
+      "searchTerms": ["garam", "masala", "indian"],
+      "nutrition": { "per100g": { "calories": 379, "protein": 15, "fat": 15, "carbs": 45, "fiber": 15 } }
     },
     {
       "id": "ing_intl_salsa",
       "name": "Salsa",
       "category": "international",
       "subcategory": "mexican",
-      "aliases": ["tomato salsa", "red salsa", "pico de gallo"],
-      "defaultUnit": "g",
-      "searchTerms": ["salsa", "mexican", "pico"]
+      "aliases": ["tomato salsa", "pico de gallo"],
+      "defaultUnit": "ml",
+      "searchTerms": ["salsa", "mexican", "dip"],
+      "nutrition": { "per100g": { "calories": 36, "protein": 1.5, "fat": 0.2, "carbs": 8, "fiber": 1.5 } }
     },
     {
       "id": "ing_intl_taco_seasoning",
       "name": "Taco Seasoning",
       "category": "international",
       "subcategory": "mexican",
-      "aliases": ["taco spice mix"],
+      "aliases": ["taco spice mix", "fajita seasoning"],
       "defaultUnit": "tbsp",
-      "searchTerms": ["taco", "seasoning", "mexican"]
+      "searchTerms": ["taco", "seasoning", "mexican"],
+      "nutrition": { "per100g": { "calories": 300, "protein": 10, "fat": 8, "carbs": 50, "fiber": 10 } }
     },
     {
       "id": "ing_intl_cilantro",
-      "name": "Fresh Cilantro",
-      "category": "frozen",
-      "subcategory": "fresh_herbs",
-      "aliases": ["coriander", "fresh coriander"],
+      "name": "Cilantro",
+      "category": "international",
+      "subcategory": "mexican",
+      "aliases": ["fresh coriander", "coriander leaves"],
       "defaultUnit": "g",
-      "searchTerms": ["cilantro", "coriander", "fresh"]
+      "searchTerms": ["cilantro", "coriander", "fresh"],
+      "nutrition": { "per100g": { "calories": 23, "protein": 2.1, "fat": 0.5, "carbs": 3.7, "fiber": 2.8 } }
     },
     {
       "id": "ing_intl_parsley",
       "name": "Fresh Parsley",
-      "category": "frozen",
-      "subcategory": "fresh_herbs",
+      "category": "international",
+      "subcategory": "mediterranean",
       "aliases": ["italian parsley", "flat leaf parsley"],
       "defaultUnit": "g",
-      "searchTerms": ["parsley", "fresh", "italian"]
+      "searchTerms": ["parsley", "fresh", "herb"],
+      "nutrition": { "per100g": { "calories": 36, "protein": 3, "fat": 0.8, "carbs": 6, "fiber": 3.3 } }
+    },
+    {
+      "id": "ing_intl_tortillas",
+      "name": "Tortillas",
+      "category": "international",
+      "subcategory": "mexican",
+      "aliases": ["flour tortillas", "corn tortillas", "wraps"],
+      "defaultUnit": "pieces",
+      "searchTerms": ["tortillas", "wraps", "mexican"],
+      "nutrition": { "per100g": { "calories": 312, "protein": 8.3, "fat": 8.4, "carbs": 51, "fiber": 2.1 } }
+    },
+    {
+      "id": "ing_intl_chili_paste",
+      "name": "Chili Paste",
+      "category": "international",
+      "subcategory": "asian",
+      "aliases": ["sambal", "chili garlic sauce"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["chili", "paste", "spicy"],
+      "nutrition": { "per100g": { "calories": 55, "protein": 1.5, "fat": 2.5, "carbs": 7, "fiber": 1.5 } }
+    },
+    {
+      "id": "ing_intl_curry_paste",
+      "name": "Curry Paste",
+      "category": "international",
+      "subcategory": "asian",
+      "aliases": ["thai curry paste", "red curry paste", "green curry paste"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["curry", "paste", "thai"],
+      "nutrition": { "per100g": { "calories": 94, "protein": 2.8, "fat": 4.5, "carbs": 11, "fiber": 3 } }
+    },
+    {
+      "id": "ing_intl_gochujang",
+      "name": "Gochujang",
+      "category": "international",
+      "subcategory": "asian",
+      "aliases": ["korean chili paste", "red pepper paste"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["gochujang", "korean", "chili"],
+      "nutrition": { "per100g": { "calories": 175, "protein": 4.5, "fat": 1.2, "carbs": 37, "fiber": 3.6 } }
+    },
+    {
+      "id": "ing_intl_lemongrass",
+      "name": "Lemongrass",
+      "category": "international",
+      "subcategory": "asian",
+      "aliases": ["lemon grass", "citronella"],
+      "defaultUnit": "stalks",
+      "searchTerms": ["lemongrass", "thai", "citrus"],
+      "nutrition": { "per100g": { "calories": 99, "protein": 1.8, "fat": 0.5, "carbs": 25, "fiber": 0 } }
+    },
+    {
+      "id": "ing_intl_peanuts",
+      "name": "Peanuts",
+      "category": "international",
+      "subcategory": "asian",
+      "aliases": ["roasted peanuts", "groundnuts"],
+      "defaultUnit": "g",
+      "searchTerms": ["peanuts", "nuts", "roasted"],
+      "nutrition": { "per100g": { "calories": 567, "protein": 26, "fat": 49, "carbs": 16, "fiber": 8.5 } }
+    },
+    {
+      "id": "ing_intl_sesame_seeds",
+      "name": "Sesame Seeds",
+      "category": "international",
+      "subcategory": "asian",
+      "aliases": ["white sesame", "black sesame"],
+      "defaultUnit": "tbsp",
+      "searchTerms": ["sesame", "seeds", "garnish"],
+      "nutrition": { "per100g": { "calories": 573, "protein": 18, "fat": 50, "carbs": 23, "fiber": 12 } }
     },
     {
       "id": "ing_frozen_peas",
@@ -981,7 +1481,8 @@
       "subcategory": "frozen_vegetables",
       "aliases": ["green peas", "petite peas"],
       "defaultUnit": "g",
-      "searchTerms": ["peas", "frozen", "green"]
+      "searchTerms": ["peas", "frozen", "green"],
+      "nutrition": { "per100g": { "calories": 77, "protein": 5, "fat": 0.4, "carbs": 14, "fiber": 4.5 } }
     },
     {
       "id": "ing_frozen_corn",
@@ -990,7 +1491,8 @@
       "subcategory": "frozen_vegetables",
       "aliases": ["frozen corn kernels"],
       "defaultUnit": "g",
-      "searchTerms": ["corn", "frozen", "kernels"]
+      "searchTerms": ["corn", "frozen", "kernels"],
+      "nutrition": { "per100g": { "calories": 86, "protein": 3.3, "fat": 1.2, "carbs": 19, "fiber": 2.4 } }
     },
     {
       "id": "ing_frozen_mixed_veg",
@@ -999,12 +1501,25 @@
       "subcategory": "frozen_vegetables",
       "aliases": ["mixed veg", "frozen vegetable medley"],
       "defaultUnit": "g",
-      "searchTerms": ["mixed", "vegetables", "frozen"]
+      "searchTerms": ["mixed", "vegetables", "frozen"],
+      "nutrition": { "per100g": { "calories": 65, "protein": 3.3, "fat": 0.4, "carbs": 13, "fiber": 4 } }
+    },
+    {
+      "id": "ing_bev_white_wine",
+      "name": "White Wine",
+      "category": "beverages",
+      "subcategory": "cooking_wines",
+      "aliases": ["cooking wine", "dry white wine"],
+      "defaultUnit": "ml",
+      "searchTerms": ["wine", "white", "cooking"],
+      "nutrition": { "per100g": { "calories": 82, "protein": 0.1, "fat": 0, "carbs": 2.6, "fiber": 0 } }
     }
   ],
   "metadata": {
-    "version": "1.0.0",
-    "totalIngredients": 105,
-    "lastUpdated": "2026-01-18T00:00:00Z"
+    "version": "1.1.0",
+    "totalIngredients": 149,
+    "lastUpdated": "2026-01-21T00:00:00Z",
+    "nutritionSource": "USDA FoodData Central (approximate values)",
+    "nutritionUnit": "per 100g"
   }
 }

@@ -1,7 +1,20 @@
 /**
  * Recipe Card Component
- * Renders recipe cards with match badges
+ * Renders recipe cards with match badges and nutrition info
  */
+
+import { calculateRecipeNutrition, formatNutritionBadge, generateNutritionHTML } from '../modules/nutritionCalculator.js';
+import { getIngredientsMap } from '../modules/ingredientManager.js';
+
+// Callback for adding to meal plan
+let onAddToMealPlanCallback = null;
+
+/**
+ * Set callback for adding recipes to meal plan
+ */
+export function setAddToMealPlanCallback(callback) {
+  onAddToMealPlanCallback = callback;
+}
 
 /**
  * Get cuisine emoji
@@ -78,12 +91,18 @@ export function createRecipeCard(recipe, onClick) {
     ? `<img src="${recipe.imageUrl}" alt="${recipe.title}" class="recipe-card__image" loading="lazy">`
     : `<div class="recipe-card__image recipe-card__image--placeholder">${getMealEmoji(recipe.mealType)}</div>`;
 
+  // Calculate nutrition
+  const ingredientsMap = getIngredientsMap();
+  const nutrition = calculateRecipeNutrition(recipe, ingredientsMap);
+  const nutritionBadge = formatNutritionBadge(nutrition);
+
   card.innerHTML = `
     ${imageHtml}
     <div class="recipe-card__content">
       <span class="recipe-card__match ${matchBadgeClass}">${matchBadgeText}</span>
       <h3 class="recipe-card__title">${recipe.title}</h3>
       <div class="recipe-card__meta">${totalTime} min · ${capitalize(recipe.difficulty)} · ${recipe.servings} servings</div>
+      <div class="recipe-card__nutrition">${nutritionBadge}</div>
       <span class="recipe-card__cuisine">${getCuisineEmoji(recipe.cuisine)} ${capitalize(recipe.cuisine)}</span>
     </div>
   `;
@@ -122,6 +141,11 @@ export function renderRecipeDetail(recipe, container, pantryIds) {
   const { matchResult } = recipe;
   const totalTime = recipe.prepTime + recipe.cookTime;
 
+  // Calculate nutrition
+  const ingredientsMap = getIngredientsMap();
+  const nutrition = calculateRecipeNutrition(recipe, ingredientsMap);
+  const nutritionHtml = generateNutritionHTML(nutrition);
+
   const ingredientsHtml = recipe.ingredients.map(ing => {
     const hasIt = pantryIds?.has(ing.ingredientId);
     let statusClass = ing.optional
@@ -156,6 +180,8 @@ export function renderRecipeDetail(recipe, container, pantryIds) {
 
     <p class="recipe-detail__description">${recipe.description}</p>
 
+    ${nutritionHtml}
+
     <div class="recipe-detail__section">
       <h3>Ingredients (${matchResult?.requiredHave || 0}/${matchResult?.requiredCount || recipe.ingredients.length} available)</h3>
       <ul class="recipe-detail__ingredients">
@@ -169,7 +195,21 @@ export function renderRecipeDetail(recipe, container, pantryIds) {
         ${instructionsHtml}
       </ol>
     </div>
+
+    <div class="recipe-detail__actions">
+      <button class="btn btn--primary" id="addToMealPlanBtn">
+        <span class="btn__icon">📅</span> Add to Meal Plan
+      </button>
+    </div>
   `;
+
+  // Add click handler for "Add to Meal Plan" button
+  const addBtn = container.querySelector('#addToMealPlanBtn');
+  if (addBtn && onAddToMealPlanCallback) {
+    addBtn.addEventListener('click', () => {
+      onAddToMealPlanCallback(recipe);
+    });
+  }
 }
 
 /**
@@ -183,5 +223,6 @@ function capitalize(str) {
 export default {
   createRecipeCard,
   renderRecipeGrid,
-  renderRecipeDetail
+  renderRecipeDetail,
+  setAddToMealPlanCallback
 };

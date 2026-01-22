@@ -27,6 +27,7 @@
         <li><a href="#" data-nav-target="home">Home</a></li>
         <li><a href="#" data-nav-target="pantry">My Pantry</a></li>
         <li><a href="#" data-nav-target="recipes">Recipes</a></li>
+        <li><a href="#" data-nav-target="mealplanner">Meal Planner</a></li>
         <li><a href="#" data-nav-target="about">About</a></li>
       </ul>
     </aside>
@@ -75,6 +76,25 @@
           <h2 class="section__title">My Pantry</h2>
           <p class="section__subtitle">Manage your kitchen inventory</p>
 
+          <!-- Pantry Dropdown: Current Pantry (Center Top) -->
+          <div class="pantry-dropdown" id="pantryDropdown">
+            <button class="pantry-dropdown__toggle" id="togglePantryDropdown">
+              <span class="pantry-dropdown__icon">📦</span>
+              <span class="pantry-dropdown__label">Your Pantry</span>
+              <span class="pantry-dropdown__count" id="sidepanelCount">0</span>
+              <span class="pantry-dropdown__arrow">▼</span>
+            </button>
+            <div class="pantry-dropdown__content" id="pantryDropdownContent">
+              <div class="pantry-dropdown__list" id="pantryList">
+                <!-- Populated dynamically -->
+              </div>
+              <div class="pantry-dropdown__empty" id="sidepanelEmpty">
+                <p>No items yet</p>
+                <p>Select a category and add ingredients!</p>
+              </div>
+            </div>
+          </div>
+
           <!-- Pantry Controls -->
           <div class="pantry-controls">
             <button class="btn btn--primary" id="addIngredientBtn">
@@ -108,11 +128,14 @@
             <button class="category-btn category-btn--active" data-category="all">All</button>
           </div>
 
-          <!-- Pantry Grid -->
-          <div class="pantry-grid" id="pantryGrid">
-            <div class="pantry-empty" id="pantryEmpty">
-              <p>Your pantry is empty!</p>
-              <p>Add ingredients to get started</p>
+          <!-- Ingredient Browser (shows when category selected) -->
+          <div class="ingredient-browser" id="ingredientBrowser" style="display: none;">
+            <div class="ingredient-browser__header">
+              <h3 class="ingredient-browser__title" id="browserTitle">Browse Ingredients</h3>
+              <button class="ingredient-browser__close" id="closeBrowser">×</button>
+            </div>
+            <div class="ingredient-browser__grid" id="browserGrid">
+              <!-- Populated dynamically -->
             </div>
           </div>
         </div>
@@ -164,6 +187,74 @@
             <div class="recipe-loading" id="recipeLoading">
               <p>Loading recipes...</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Meal Planner Section -->
+      <section class="section section--mealplanner" data-section="mealplanner">
+        <div class="section__background">
+          <div class="layer layer--back" data-speed="0.65" data-prllx-item data-delta-start="12%" data-delta-end="-12%">
+            <div class="layer__color" style="background: linear-gradient(180deg, #1a4a1a 0%, #2d6b2d 100%);"></div>
+          </div>
+          <div class="layer layer--mid" data-speed="0.8">
+            <img src="https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=1920" alt="Meal planning" class="layer__img">
+          </div>
+          <div class="layer layer--front" data-speed="1.2" data-prllx-item data-delta-start="-15%" data-delta-end="15%">
+            <div class="floating-elements">
+              <span class="floating-leaf" style="--delay: 0s;">📅</span>
+              <span class="floating-leaf" style="--delay: 0.4s;">🍱</span>
+              <span class="floating-leaf" style="--delay: 0.8s;">🛒</span>
+            </div>
+          </div>
+        </div>
+        <div class="section__content section__content--wide">
+          <h2 class="section__title">Meal Planner</h2>
+          <p class="section__subtitle">Plan your week, track ingredients</p>
+
+          <!-- Week Navigation -->
+          <div class="week-nav" id="weekNav">
+            <button class="week-nav__btn" id="prevWeekBtn" title="Previous week">
+              <span>←</span> Previous
+            </button>
+            <div class="week-nav__title-container">
+              <span class="week-nav__title" id="weekTitle">Jan 20 - 26, 2026</span>
+              <button class="week-nav__today" id="todayBtn" title="Go to current week">Today</button>
+            </div>
+            <button class="week-nav__btn" id="nextWeekBtn" title="Next week">
+              Next <span>→</span>
+            </button>
+          </div>
+
+          <!-- Week Calendar Grid -->
+          <div class="calendar-week" id="calendarWeek">
+            <!-- Days rendered dynamically -->
+          </div>
+
+          <!-- Meal Plan Stats -->
+          <div class="mealplan-stats" id="mealplanStats">
+            <div class="stat">
+              <span class="stat__number" id="statPlannedMeals">0</span>
+              <span class="stat__label">Planned</span>
+            </div>
+            <div class="stat">
+              <span class="stat__number" id="statCanMake">0</span>
+              <span class="stat__label">Can Make</span>
+            </div>
+            <div class="stat">
+              <span class="stat__number" id="statNeedShopping">0</span>
+              <span class="stat__label">Need Shopping</span>
+            </div>
+          </div>
+
+          <!-- Meal Plan Actions -->
+          <div class="mealplan-actions">
+            <button class="btn btn--primary" id="generateShoppingListBtn">
+              <span class="btn__icon">🛒</span> Shopping List
+            </button>
+            <button class="btn btn--secondary" id="clearWeekBtn">
+              <span class="btn__icon">🗑️</span> Clear Week
+            </button>
           </div>
         </div>
       </section>
@@ -292,6 +383,84 @@
         <div class="import-options">
           <button class="btn btn--primary" id="importMerge">Merge with existing</button>
           <button class="btn btn--secondary" id="importReplace">Replace all</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Meal Modal -->
+    <div class="modal" id="addMealModal">
+      <div class="modal__backdrop"></div>
+      <div class="modal__container">
+        <button class="modal__close" aria-label="Close modal">&times;</button>
+        <h2 class="modal__title">Add Meal to Plan</h2>
+        <p class="modal__date-display" id="addMealDateDisplay">Monday, January 20</p>
+        <form class="modal__form" id="addMealForm">
+          <div class="form-group">
+            <label for="mealRecipeSearch">Search Recipe</label>
+            <div class="autocomplete-wrapper">
+              <input type="text" id="mealRecipeSearch" class="form-input" placeholder="Start typing to search..." autocomplete="off">
+              <div class="autocomplete-results recipe-results" id="mealRecipeResults"></div>
+            </div>
+          </div>
+          <div class="form-group" id="selectedRecipeDisplay" style="display: none;">
+            <!-- Selected recipe shown here -->
+          </div>
+          <div class="form-group" id="mealAvailabilityWarning" style="display: none;">
+            <!-- Availability warnings shown here -->
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="mealType">Meal Type</label>
+              <select id="mealType" class="form-input">
+                <option value="breakfast">🍳 Breakfast</option>
+                <option value="lunch">🥗 Lunch</option>
+                <option value="dinner" selected>🍽️ Dinner</option>
+                <option value="snack">🍪 Snack</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="mealServings">Servings</label>
+              <input type="number" id="mealServings" class="form-input" value="4" min="1" max="20">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="mealNotes">Notes (optional)</label>
+            <input type="text" id="mealNotes" class="form-input" placeholder="e.g., Double the garlic">
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn btn--secondary" id="cancelAddMeal">Cancel</button>
+            <button type="submit" class="btn btn--primary" id="submitAddMeal" disabled>Add to Plan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Shopping List Modal -->
+    <div class="modal" id="shoppingListModal">
+      <div class="modal__backdrop"></div>
+      <div class="modal__container modal__container--large">
+        <button class="modal__close" aria-label="Close modal">&times;</button>
+        <h2 class="modal__title">Shopping List</h2>
+        <p class="modal__subtitle" id="shoppingListSubtitle">Items needed for this week</p>
+        <div class="shopping-list" id="shoppingListContent">
+          <!-- Shopping list items rendered here -->
+        </div>
+        <div class="shopping-list__actions">
+          <button class="btn btn--secondary" id="copyShoppingList">
+            <span class="btn__icon">📋</span> Copy to Clipboard
+          </button>
+          <button class="btn btn--primary" id="closeShoppingList">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Meal Detail Modal -->
+    <div class="modal" id="mealDetailModal">
+      <div class="modal__backdrop"></div>
+      <div class="modal__container">
+        <button class="modal__close" aria-label="Close modal">&times;</button>
+        <div class="meal-detail" id="mealDetailContent">
+          <!-- Meal details rendered here -->
         </div>
       </div>
     </div>

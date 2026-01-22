@@ -153,6 +153,9 @@ export function updatePantryQuantity(ingredientId, quantity, unit = null) {
   );
 }
 
+// Alias for consistency
+export const updatePantryItemQuantity = updatePantryQuantity;
+
 /**
  * Remove an item from the pantry
  */
