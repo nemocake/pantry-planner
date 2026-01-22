@@ -3,7 +3,7 @@
  * Displays browsable ingredients by category with quick add/remove functionality
  */
 
-import { getIngredientsByCategory, getIngredientIcon, getCategories } from '../modules/ingredientManager.js';
+import { getIngredientsByCategory, getIngredientIcon, getCategories, getIngredientById } from '../modules/ingredientManager.js';
 import { getPantryItems, addPantryItem, removePantryItem, updatePantryItemQuantity } from '../modules/pantryManager.js';
 
 // Track if event listener has been added to avoid duplicates
@@ -74,8 +74,10 @@ function handleBrowserClick(e, onUpdate) {
 
   if (action === 'increase') {
     if (currentQuantity === 0) {
-      // Add new item to pantry with quantity 1
-      addPantryItem(ingredientId, 1, 'unit', 'pantry', '');
+      // Add new item to pantry with quantity 1 using ingredient's default unit
+      const ingredient = getIngredientById(ingredientId);
+      const defaultUnit = ingredient ? ingredient.defaultUnit : 'unit';
+      addPantryItem(ingredientId, 1, defaultUnit, 'pantry', '');
     } else {
       // Increment quantity by exactly 1
       updatePantryItemQuantity(ingredientId, currentQuantity + 1);

@@ -13,9 +13,11 @@ export function createPantryCard(pantryItem, onEdit, onRemove) {
   if (!ingredient) return null;
 
   const icon = getIngredientIcon(ingredient);
+  // Use ingredient's default unit if stored unit is generic "unit"
+  const displayUnit = (pantryItem.unit === 'unit' || !pantryItem.unit) ? ingredient.defaultUnit : pantryItem.unit;
   const quantityDisplay = pantryItem.quantity
-    ? `${pantryItem.quantity} ${pantryItem.unit}`
-    : pantryItem.unit;
+    ? `${pantryItem.quantity} ${displayUnit}`
+    : displayUnit;
 
   const card = document.createElement('div');
   card.className = 'pantry-card';
