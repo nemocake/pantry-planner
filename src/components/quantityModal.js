@@ -7,7 +7,7 @@ import { openModal, closeModal } from '../modules/modalManager.js';
 import { getIngredientById, getIngredientIcon } from '../modules/ingredientManager.js';
 import { addPantryItem, updatePantryItemQuantity, getPantryItem } from '../modules/pantryManager.js';
 import { getPresetsForIngredient } from '../data/commonSizes.js';
-import { getCompatibleUnits } from '../modules/unitConverter.js';
+import { getCompatibleUnits, convertQuantity } from '../modules/unitConverter.js';
 
 const MODAL_ID = 'quantityModal';
 
@@ -16,6 +16,8 @@ let currentIngredientId = null;
 let currentBrowserItem = null;
 let selectedQuantity = null;
 let selectedUnit = null;
+let originalPresets = []; // Store original presets for unit conversion
+let currentIngredient = null; // Store current ingredient for re-rendering
 
 // DOM references
 let modalIcon = null;
@@ -61,7 +63,7 @@ export function initQuantityModal() {
 
   // Custom input changes
   quantityInput.addEventListener('input', handleCustomInput);
-  unitSelect.addEventListener('change', handleCustomInput);
+  unitSelect.addEventListener('change', handleUnitChange);
 
   // Submit button
   submitBtn.addEventListener('click', handleSubmit);
@@ -80,19 +82,23 @@ export function openQuantityModal(ingredientId, browserItem = null) {
   // Store state
   currentIngredientId = ingredientId;
   currentBrowserItem = browserItem;
+  currentIngredient = ingredient;
   selectedQuantity = null;
   selectedUnit = ingredient.defaultUnit;
+
+  // Store original presets for unit conversion
+  originalPresets = getPresetsForIngredient(ingredient.id, ingredient.category);
 
   // Update modal header
   const icon = getIngredientIcon(ingredient);
   modalIcon.textContent = icon;
   modalTitle.textContent = ingredient.name;
 
-  // Render presets
-  renderPresets(ingredient);
-
-  // Setup unit dropdown
+  // Setup unit dropdown first (so we know the selected unit)
   setupUnitDropdown(ingredient);
+
+  // Render presets in the default unit
+  renderPresetsInUnit(ingredient.defaultUnit);
 
   // Reset custom inputs
   quantityInput.value = '';
@@ -114,18 +120,101 @@ export function openQuantityModal(ingredientId, browserItem = null) {
 }
 
 /**
- * Render preset buttons for an ingredient
+ * Render preset buttons converted to the specified unit
  */
-function renderPresets(ingredient) {
-  const presets = getPresetsForIngredient(ingredient.id, ingredient.category);
+function renderPresetsInUnit(targetUnit) {
+  const convertedPresets = originalPresets.map(preset => {
+    // Try to convert the preset quantity to the target unit
+    const converted = convertQuantity(preset.quantity, preset.unit, targetUnit);
 
-  presetsContainer.innerHTML = presets.map(preset => `
+    if (converted !== null && preset.unit !== targetUnit) {
+      // Successfully converted - format the label nicely
+      const formattedQty = formatQuantityLabel(converted, targetUnit);
+      return {
+        quantity: converted,
+        unit: targetUnit,
+        label: formattedQty
+      };
+    } else {
+      // Same unit or conversion failed - use original
+      return preset;
+    }
+  });
+
+  presetsContainer.innerHTML = convertedPresets.map(preset => `
     <button class="preset-btn"
             data-quantity="${preset.quantity}"
             data-unit="${preset.unit}">
       ${preset.label}
     </button>
   `).join('');
+}
+
+/**
+ * Format a quantity with unit for display as a preset label
+ */
+function formatQuantityLabel(quantity, unit) {
+  // Round to reasonable precision based on unit
+  let displayQty;
+
+  if (unit === 'g' || unit === 'ml') {
+    // For small units, round to whole numbers
+    displayQty = Math.round(quantity);
+  } else if (unit === 'kg' || unit === 'l') {
+    // For large units, show 1-2 decimals
+    displayQty = Math.round(quantity * 10) / 10;
+  } else if (unit === 'oz') {
+    // Ounces - round to nearest 0.5
+    displayQty = Math.round(quantity * 2) / 2;
+  } else if (unit === 'lb') {
+    // Pounds - show nice fractions or decimals
+    displayQty = Math.round(quantity * 4) / 4; // Round to nearest 1/4
+  } else if (unit === 'cup' || unit === 'tbsp' || unit === 'tsp') {
+    // Volume measures - round to nearest 0.25
+    displayQty = Math.round(quantity * 4) / 4;
+  } else {
+    // Default - round to 2 decimals
+    displayQty = Math.round(quantity * 100) / 100;
+  }
+
+  // Format common fractions nicely
+  const fractionMap = {
+    0.25: '1/4',
+    0.5: '1/2',
+    0.75: '3/4',
+    0.33: '1/3',
+    0.67: '2/3'
+  };
+
+  const decimal = displayQty % 1;
+  const whole = Math.floor(displayQty);
+
+  if (decimal > 0 && fractionMap[Math.round(decimal * 100) / 100]) {
+    const fraction = fractionMap[Math.round(decimal * 100) / 100];
+    if (whole > 0) {
+      return `${whole} ${fraction} ${unit}`;
+    }
+    return `${fraction} ${unit}`;
+  }
+
+  // Unit display names
+  const unitDisplay = {
+    g: 'g',
+    kg: 'kg',
+    oz: 'oz',
+    lb: 'lb',
+    ml: 'ml',
+    l: 'L',
+    tsp: 'tsp',
+    tbsp: 'tbsp',
+    cup: displayQty === 1 ? 'cup' : 'cups',
+    pieces: displayQty === 1 ? 'piece' : 'pieces',
+    cloves: displayQty === 1 ? 'clove' : 'cloves',
+    stalks: displayQty === 1 ? 'stalk' : 'stalks',
+    can: displayQty === 1 ? 'can' : 'cans'
+  };
+
+  return `${displayQty} ${unitDisplay[unit] || unit}`;
 }
 
 /**
@@ -191,6 +280,23 @@ function clearPresetSelection() {
   presetsContainer.querySelectorAll('.preset-btn').forEach(btn => {
     btn.classList.remove('preset-btn--selected');
   });
+}
+
+/**
+ * Handle unit dropdown change - re-render presets in new unit
+ */
+function handleUnitChange() {
+  const newUnit = unitSelect.value;
+  selectedUnit = newUnit;
+
+  // Re-render presets in the new unit
+  renderPresetsInUnit(newUnit);
+
+  // Clear preset selection since values changed
+  clearPresetSelection();
+
+  // Update custom input state
+  handleCustomInput();
 }
 
 /**
