@@ -522,10 +522,9 @@ function initAddIngredientModal() {
 
     const quantity = parseFloat(document.getElementById('ingredientQuantity').value) || 1;
     const unit = document.getElementById('ingredientUnit').value;
-    const storage = document.getElementById('ingredientStorage').value;
     const notes = document.getElementById('ingredientNotes').value;
 
-    addPantryItem(selectedIngredient.id, quantity, unit, storage, notes);
+    addPantryItem(selectedIngredient.id, quantity, unit, 'pantry', notes);
 
     closeModal('addIngredientModal');
     selectedIngredient = null;
