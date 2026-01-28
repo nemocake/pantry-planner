@@ -455,7 +455,6 @@ function updatePantryStats() {
   const makeableCount = countMakeableRecipes(allRecipes);
 
   document.getElementById('statTotal').textContent = stats.totalItems;
-  document.getElementById('statCategories').textContent = Object.keys(stats.byCategory).length;
   document.getElementById('statRecipes').textContent = makeableCount;
 }
 
