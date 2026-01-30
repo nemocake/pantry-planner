@@ -22,6 +22,8 @@ let currentIngredient = null; // Store current ingredient for re-rendering
 // DOM references
 let modalIcon = null;
 let modalTitle = null;
+let currentStockContainer = null;
+let currentStockAmount = null;
 let presetsContainer = null;
 let quantityInput = null;
 let unitSelect = null;
@@ -34,6 +36,8 @@ export function initQuantityModal() {
   // Cache DOM elements
   modalIcon = document.getElementById('quantityModalIcon');
   modalTitle = document.getElementById('quantityModalTitle');
+  currentStockContainer = document.getElementById('quantityCurrentStock');
+  currentStockAmount = document.getElementById('quantityCurrentAmount');
   presetsContainer = document.getElementById('quantityPresets');
   quantityInput = document.getElementById('quantityInput');
   unitSelect = document.getElementById('quantityUnit');
@@ -107,12 +111,22 @@ export function openQuantityModal(ingredientId, browserItem = null) {
   // Clear any preset selection
   clearPresetSelection();
 
-  // Check if item already in pantry
+  // Check if item already in pantry and show current stock
   const existingItem = getPantryItem(ingredientId);
   if (existingItem) {
     submitBtn.textContent = 'Update Pantry';
+    // Show current stock display
+    if (currentStockContainer && currentStockAmount) {
+      const unitDisplay = getUnitDisplayName(existingItem.unit, existingItem.quantity);
+      currentStockAmount.textContent = `${existingItem.quantity} ${unitDisplay}`;
+      currentStockContainer.style.display = 'flex';
+    }
   } else {
     submitBtn.textContent = 'Add to Pantry';
+    // Hide current stock display
+    if (currentStockContainer) {
+      currentStockContainer.style.display = 'none';
+    }
   }
 
   // Open modal
@@ -215,6 +229,28 @@ function formatQuantityLabel(quantity, unit) {
   };
 
   return `${displayQty} ${unitDisplay[unit] || unit}`;
+}
+
+/**
+ * Get display name for a unit (with plural handling)
+ */
+function getUnitDisplayName(unit, quantity) {
+  const unitLabels = {
+    g: 'g',
+    kg: 'kg',
+    oz: 'oz',
+    lb: 'lb',
+    ml: 'ml',
+    l: 'L',
+    tsp: 'tsp',
+    tbsp: 'tbsp',
+    cup: quantity === 1 ? 'cup' : 'cups',
+    pieces: quantity === 1 ? 'piece' : 'pieces',
+    cloves: quantity === 1 ? 'clove' : 'cloves',
+    stalks: quantity === 1 ? 'stalk' : 'stalks',
+    can: quantity === 1 ? 'can' : 'cans'
+  };
+  return unitLabels[unit] || unit;
 }
 
 /**

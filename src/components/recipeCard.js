@@ -87,9 +87,13 @@ export function createRecipeCard(recipe, onClick) {
       matchBadgeText = `${matchResult?.requiredPercent || 0}% Match`;
   }
 
-  const imageHtml = recipe.imageUrl
-    ? `<img src="${recipe.imageUrl}" alt="${recipe.title}" class="recipe-card__image" loading="lazy">`
-    : `<div class="recipe-card__image recipe-card__image--placeholder">${getMealEmoji(recipe.mealType)}</div>`;
+  const imageBackground = recipe.imageUrl
+    ? `background-image: url('${recipe.imageUrl}')`
+    : '';
+
+  const imagePlaceholder = !recipe.imageUrl
+    ? `<span class="recipe-card__placeholder">${getMealEmoji(recipe.mealType)}</span>`
+    : '';
 
   // Calculate nutrition
   const ingredientsMap = getIngredientsMap();
@@ -97,7 +101,12 @@ export function createRecipeCard(recipe, onClick) {
   const nutritionBadge = formatNutritionBadge(nutrition);
 
   card.innerHTML = `
-    ${imageHtml}
+    <div class="recipe-card__image ${!recipe.imageUrl ? 'recipe-card__image--placeholder' : ''}" style="${imageBackground}">
+      ${imagePlaceholder}
+      <div class="recipe-card__overlay">
+        <span class="recipe-card__view-btn">View Recipe</span>
+      </div>
+    </div>
     <div class="recipe-card__content">
       <span class="recipe-card__match ${matchBadgeClass}">${matchBadgeText}</span>
       <h3 class="recipe-card__title">${recipe.title}</h3>
@@ -122,8 +131,13 @@ export function renderRecipeGrid(recipes, container, onClick) {
 
   if (recipes.length === 0) {
     const empty = document.createElement('div');
-    empty.className = 'recipe-loading';
-    empty.innerHTML = '<p>No recipes found matching your criteria</p>';
+    empty.className = 'empty-state';
+    empty.style.gridColumn = '1 / -1';
+    empty.innerHTML = `
+      <div class="empty-state__icon">🍳</div>
+      <h3 class="empty-state__title">No recipes found</h3>
+      <p class="empty-state__text">Try adjusting your filters or add more ingredients to your pantry</p>
+    `;
     container.appendChild(empty);
     return;
   }
@@ -135,33 +149,118 @@ export function renderRecipeGrid(recipes, container, onClick) {
 }
 
 /**
+ * Format quantity for display (handles fractions)
+ */
+function formatQuantity(qty) {
+  if (!qty || qty === 0) return '';
+  if (qty === Math.floor(qty)) return qty.toString();
+
+  // Common fractions
+  if (Math.abs(qty - 0.25) < 0.01) return '¼';
+  if (Math.abs(qty - 0.5) < 0.01) return '½';
+  if (Math.abs(qty - 0.75) < 0.01) return '¾';
+  if (Math.abs(qty - 0.33) < 0.05) return '⅓';
+  if (Math.abs(qty - 0.67) < 0.05) return '⅔';
+  if (Math.abs(qty - 1.5) < 0.01) return '1½';
+  if (Math.abs(qty - 2.5) < 0.01) return '2½';
+
+  // Mixed numbers
+  const whole = Math.floor(qty);
+  const frac = qty - whole;
+  if (whole > 0 && frac > 0.1) {
+    if (Math.abs(frac - 0.25) < 0.05) return `${whole}¼`;
+    if (Math.abs(frac - 0.5) < 0.05) return `${whole}½`;
+    if (Math.abs(frac - 0.75) < 0.05) return `${whole}¾`;
+    if (Math.abs(frac - 0.33) < 0.08) return `${whole}⅓`;
+    if (Math.abs(frac - 0.67) < 0.08) return `${whole}⅔`;
+  }
+
+  // Fall back to decimal
+  return qty % 1 === 0 ? qty.toString() : qty.toFixed(1);
+}
+
+/**
+ * Generate ingredients HTML with scaled quantities
+ */
+function generateIngredientsHtml(recipe, servings, pantryIds) {
+  const ingredientsMap = getIngredientsMap();
+  const scaleFactor = servings / recipe.servings;
+
+  return recipe.ingredients.map(ing => {
+    const hasIt = pantryIds?.has(ing.ingredientId);
+    let statusClass = ing.optional
+      ? 'ingredient-status--optional'
+      : (hasIt ? 'ingredient-status--have' : 'ingredient-status--missing');
+
+    const scaledQty = ing.quantity ? ing.quantity * scaleFactor : 0;
+    const quantityStr = scaledQty ? `${formatQuantity(scaledQty)} ${ing.unit}` : ing.unit;
+    const optionalStr = ing.optional ? ' (optional)' : '';
+
+    // Get ingredient name from ingredients map, fallback to ing.name if provided
+    const ingredientData = ingredientsMap.get(ing.ingredientId);
+    const ingredientName = ingredientData?.name || ing.name || 'Unknown ingredient';
+
+    return `
+      <li>
+        <span class="ingredient-status ${statusClass}"></span>
+        ${quantityStr} ${ingredientName}${optionalStr}
+      </li>
+    `;
+  }).join('');
+}
+
+/**
+ * Generate scaled nutrition HTML
+ */
+function generateScaledNutritionHtml(recipe, servings) {
+  const ingredientsMap = getIngredientsMap();
+  const baseNutrition = calculateRecipeNutrition(recipe, ingredientsMap);
+
+  if (!baseNutrition || !baseNutrition.total) {
+    return '<p class="nutrition-unavailable">Nutrition information unavailable</p>';
+  }
+
+  // Scale from total recipe nutrition to new servings
+  const scaleFactor = servings / recipe.servings;
+
+  // Create properly structured nutrition object for generateNutritionHTML
+  const scaledNutrition = {
+    perServing: {
+      calories: Math.round(baseNutrition.perServing.calories * scaleFactor),
+      protein: Math.round(baseNutrition.perServing.protein * scaleFactor * 10) / 10,
+      carbs: Math.round(baseNutrition.perServing.carbs * scaleFactor * 10) / 10,
+      fat: Math.round(baseNutrition.perServing.fat * scaleFactor * 10) / 10,
+      fiber: Math.round(baseNutrition.perServing.fiber * scaleFactor * 10) / 10
+    },
+    total: {
+      calories: Math.round(baseNutrition.total.calories * scaleFactor),
+      protein: Math.round(baseNutrition.total.protein * scaleFactor * 10) / 10,
+      carbs: Math.round(baseNutrition.total.carbs * scaleFactor * 10) / 10,
+      fat: Math.round(baseNutrition.total.fat * scaleFactor * 10) / 10,
+      fiber: Math.round(baseNutrition.total.fiber * scaleFactor * 10) / 10
+    },
+    servings: servings
+  };
+
+  return generateNutritionHTML(scaledNutrition);
+}
+
+/**
  * Render recipe detail modal content
  */
 export function renderRecipeDetail(recipe, container, pantryIds) {
   const { matchResult } = recipe;
   const totalTime = recipe.prepTime + recipe.cookTime;
 
-  // Calculate nutrition
+  // Track current servings
+  let currentServings = recipe.servings;
+
+  // Calculate initial nutrition
   const ingredientsMap = getIngredientsMap();
   const nutrition = calculateRecipeNutrition(recipe, ingredientsMap);
   const nutritionHtml = generateNutritionHTML(nutrition);
 
-  const ingredientsHtml = recipe.ingredients.map(ing => {
-    const hasIt = pantryIds?.has(ing.ingredientId);
-    let statusClass = ing.optional
-      ? 'ingredient-status--optional'
-      : (hasIt ? 'ingredient-status--have' : 'ingredient-status--missing');
-
-    const quantityStr = ing.quantity ? `${ing.quantity} ${ing.unit}` : ing.unit;
-    const optionalStr = ing.optional ? ' (optional)' : '';
-
-    return `
-      <li>
-        <span class="ingredient-status ${statusClass}"></span>
-        ${quantityStr} ${ing.name}${optionalStr}
-      </li>
-    `;
-  }).join('');
+  const ingredientsHtml = generateIngredientsHtml(recipe, currentServings, pantryIds);
 
   const instructionsHtml = recipe.instructions
     .map(inst => `<li>${inst.text}</li>`)
@@ -174,17 +273,29 @@ export function renderRecipeDetail(recipe, container, pantryIds) {
         <span>${getCuisineEmoji(recipe.cuisine)} ${capitalize(recipe.cuisine)}</span>
         <span>⏱️ ${totalTime} min</span>
         <span>📊 ${capitalize(recipe.difficulty)}</span>
-        <span>👥 ${recipe.servings} servings</span>
       </div>
     </div>
 
     <p class="recipe-detail__description">${recipe.description}</p>
 
-    ${nutritionHtml}
+    <!-- Servings Adjuster -->
+    <div class="servings-adjuster">
+      <span class="servings-adjuster__label">Servings:</span>
+      <div class="servings-adjuster__controls">
+        <button class="servings-adjuster__btn" id="decreaseServings" aria-label="Decrease servings">−</button>
+        <span class="servings-adjuster__value" id="currentServings">${currentServings}</span>
+        <button class="servings-adjuster__btn" id="increaseServings" aria-label="Increase servings">+</button>
+      </div>
+      <span class="servings-adjuster__original">(Original: ${recipe.servings})</span>
+    </div>
+
+    <div id="nutritionContainer">
+      ${nutritionHtml}
+    </div>
 
     <div class="recipe-detail__section">
       <h3>Ingredients (${matchResult?.requiredHave || 0}/${matchResult?.requiredCount || recipe.ingredients.length} available)</h3>
-      <ul class="recipe-detail__ingredients">
+      <ul class="recipe-detail__ingredients" id="ingredientsList">
         ${ingredientsHtml}
       </ul>
     </div>
@@ -203,11 +314,29 @@ export function renderRecipeDetail(recipe, container, pantryIds) {
     </div>
   `;
 
+  // Servings adjustment handlers
+  const servingsDisplay = container.querySelector('#currentServings');
+  const ingredientsList = container.querySelector('#ingredientsList');
+  const nutritionContainer = container.querySelector('#nutritionContainer');
+  const decreaseBtn = container.querySelector('#decreaseServings');
+  const increaseBtn = container.querySelector('#increaseServings');
+
+  function updateServings(newServings) {
+    if (newServings < 1 || newServings > 99) return;
+    currentServings = newServings;
+    servingsDisplay.textContent = currentServings;
+    ingredientsList.innerHTML = generateIngredientsHtml(recipe, currentServings, pantryIds);
+    nutritionContainer.innerHTML = generateScaledNutritionHtml(recipe, currentServings);
+  }
+
+  decreaseBtn?.addEventListener('click', () => updateServings(currentServings - 1));
+  increaseBtn?.addEventListener('click', () => updateServings(currentServings + 1));
+
   // Add click handler for "Add to Meal Plan" button
   const addBtn = container.querySelector('#addToMealPlanBtn');
   if (addBtn && onAddToMealPlanCallback) {
     addBtn.addEventListener('click', () => {
-      onAddToMealPlanCallback(recipe);
+      onAddToMealPlanCallback(recipe, currentServings);
     });
   }
 }

@@ -5,162 +5,229 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pantry Planner</title>
+    <!-- Google Fonts - DM Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
   </head>
   <body>
-    <!-- Navigation -->
-    <header class="header">
-      <nav class="nav">
-        <a href="#" class="nav__logo">Pantry Planner</a>
-        <button class="nav__toggle" id="menuToggle" aria-label="Toggle menu">
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-      </nav>
-    </header>
-
-    <!-- Menu Overlay -->
-    <div class="menu-overlay" id="menuOverlay"></div>
-    <aside class="nav-menu" id="navMenu">
-      <button class="nav-menu__close" id="menuClose" aria-label="Close menu">×</button>
-      <ul class="nav-menu__list">
-        <li><a href="#" data-nav-target="home">Home</a></li>
-        <li><a href="#" data-nav-target="pantry">My Pantry</a></li>
-        <li><a href="#" data-nav-target="recipes">Recipes</a></li>
-        <li><a href="#" data-nav-target="mealplanner">Meal Planner</a></li>
-        <li><a href="#" data-nav-target="about">About</a></li>
-      </ul>
-    </aside>
-
-    <!-- Main Content -->
-    <main id="app">
-      <!-- Hero Section -->
-      <section class="section section--home" data-section="home">
-        <div class="section__background">
-          <div class="layer layer--back" data-speed="0.6" data-prllx-item data-delta-start="10%" data-delta-end="-10%">
-            <div class="layer__gradient"></div>
-          </div>
-          <div class="layer layer--mid" data-speed="0.8">
-            <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1920" alt="Kitchen" class="layer__img">
-          </div>
-          <div class="layer layer--front" data-speed="1.2" data-prllx-item data-delta-start="-15%" data-delta-end="15%">
-            <img src="https://images.unsplash.com/photo-1490818387583-1baba5e638af?w=800" alt="Fresh ingredients" class="layer__img layer__img--float">
-          </div>
+    <div class="app-container">
+      <!-- Sidebar Navigation -->
+      <aside class="sidebar">
+        <div class="brand" data-nav-target="dashboard">
+          <div class="brand-icon">P</div>
+          <div class="brand-text">PantryPlan</div>
         </div>
-        <div class="section__content">
-          <h1 class="section__title">Pantry Planner</h1>
-          <p class="section__subtitle">Track your ingredients, discover new recipes</p>
-          <div class="scroll-indicator" data-lottie-scroll="/assets/lottie/scroll.json"></div>
-        </div>
-      </section>
 
-      <!-- Pantry Section -->
-      <section class="section section--pantry" data-section="pantry">
-        <div class="section__background">
-          <div class="layer layer--back" data-speed="0.7" data-prllx-item data-delta-start="15%" data-delta-end="-15%">
-            <div class="layer__color" style="background: linear-gradient(135deg, #2d5016 0%, #4a7c23 100%);"></div>
-          </div>
-          <div class="layer layer--mid" data-speed="0.85">
-            <img src="https://images.unsplash.com/photo-1606787366850-de6330128bfc?w=1920" alt="Pantry shelves" class="layer__img">
-          </div>
-          <div class="layer layer--front" data-speed="1.15" data-prllx-item data-delta-start="-20%" data-delta-end="20%">
-            <div class="floating-elements">
-              <span class="floating-leaf" style="--delay: 0s;">🥬</span>
-              <span class="floating-leaf" style="--delay: 0.3s;">🥕</span>
-              <span class="floating-leaf" style="--delay: 0.6s;">🧀</span>
-              <span class="floating-leaf" style="--delay: 0.9s;">🥩</span>
-            </div>
-          </div>
+        <div class="nav-section">
+          <div class="nav-label">Main</div>
+          <button class="nav-item active" data-nav-target="dashboard">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+            Dashboard
+          </button>
+          <button class="nav-item" data-nav-target="pantry">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></svg>
+            My Pantry
+          </button>
+          <button class="nav-item" data-nav-target="recipes">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+            Recipes
+          </button>
+          <button class="nav-item" data-nav-target="mealplanner">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+            Meal Planner
+          </button>
+          <button class="nav-item" data-nav-target="shoppinglist">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+            Shopping List
+          </button>
         </div>
-        <div class="section__content">
-          <h2 class="section__title">My Pantry</h2>
-          <p class="section__subtitle">Manage your kitchen inventory</p>
 
-          <!-- Pantry Dropdown: Current Pantry (Center Top) -->
-          <div class="pantry-dropdown" id="pantryDropdown">
-            <button class="pantry-dropdown__toggle" id="togglePantryDropdown">
-              <span class="pantry-dropdown__icon">📦</span>
-              <span class="pantry-dropdown__label">Your Pantry</span>
-              <span class="pantry-dropdown__count" id="sidepanelCount">0</span>
-              <span class="pantry-dropdown__arrow">▼</span>
+        <div class="nav-section">
+          <div class="nav-label">Categories</div>
+          <button class="nav-item" data-category-filter="proteins">Proteins</button>
+          <button class="nav-item" data-category-filter="dairy">Dairy & Eggs</button>
+          <button class="nav-item" data-category-filter="vegetables">Vegetables</button>
+          <button class="nav-item" data-category-filter="fruits">Fruits</button>
+          <button class="nav-item" data-category-filter="grains">Grains</button>
+          <button class="nav-item" data-category-filter="spices">Spices</button>
+        </div>
+
+        <!-- Nav Footer - Login/Profile -->
+        <div class="nav-footer" id="navAuth">
+          <!-- Login button (shown when logged out) -->
+          <button class="nav-item" id="loginBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+            Sign In
+          </button>
+          <!-- Profile dropdown (shown when logged in) -->
+          <div class="profile-dropdown hidden" id="profileDropdown">
+            <button class="profile-dropdown__toggle" id="profileToggle">
+              <span class="profile-dropdown__avatar" id="profileAvatar">U</span>
+              <span class="profile-dropdown__name" id="profileName">User</span>
+              <span class="profile-dropdown__arrow">▼</span>
             </button>
-            <div class="pantry-dropdown__content" id="pantryDropdownContent">
-              <div class="pantry-dropdown__list" id="pantryList">
-                <!-- Populated dynamically -->
-              </div>
-              <div class="pantry-dropdown__empty" id="sidepanelEmpty">
-                <p>No items yet</p>
-                <p>Select a category and add ingredients!</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Pantry Controls -->
-          <div class="pantry-controls">
-            <button class="btn btn--primary" id="addIngredientBtn">
-              <span class="btn__icon">+</span> Add Ingredient
-            </button>
-            <div class="pantry-controls__actions">
-              <button class="btn btn--secondary" id="exportPantryBtn">Export</button>
-              <button class="btn btn--secondary" id="importPantryBtn">Import</button>
-              <input type="file" id="importFileInput" accept=".json" hidden>
-            </div>
-          </div>
-
-          <!-- Pantry Stats -->
-          <div class="pantry-stats" id="pantryStats">
-            <div class="stat" data-speed="1.1">
-              <span class="stat__number" id="statTotal">0</span>
-              <span class="stat__label">Ingredients</span>
-            </div>
-            <div class="stat" data-speed="1.08">
-              <span class="stat__number" id="statRecipes">0</span>
-              <span class="stat__label">Recipes Available</span>
-            </div>
-          </div>
-
-          <!-- Category Filter -->
-          <div class="category-filter" id="categoryFilter">
-            <button class="category-btn category-btn--active" data-category="all">All</button>
-          </div>
-
-          <!-- Ingredient Browser (shows when category selected) -->
-          <div class="ingredient-browser" id="ingredientBrowser" style="display: none;">
-            <div class="ingredient-browser__header">
-              <h3 class="ingredient-browser__title" id="browserTitle">Browse Ingredients</h3>
-              <button class="ingredient-browser__close" id="closeBrowser">×</button>
-            </div>
-            <div class="ingredient-browser__grid" id="browserGrid">
-              <!-- Populated dynamically -->
+            <div class="profile-dropdown__menu" id="profileMenu">
+              <a href="#" class="profile-dropdown__item" id="myRecipesLink">
+                <span>📖</span> My Recipes
+              </a>
+              <a href="#" class="profile-dropdown__item" id="myProfileLink">
+                <span>👤</span> My Profile
+              </a>
+              <hr class="profile-dropdown__divider">
+              <button class="profile-dropdown__item profile-dropdown__item--logout" id="logoutBtn">
+                <span>🚪</span> Sign Out
+              </button>
             </div>
           </div>
         </div>
-      </section>
+      </aside>
 
-      <!-- Recipes Section -->
-      <section class="section section--recipes" data-section="recipes">
-        <div class="section__background">
-          <div class="layer layer--back" data-speed="0.65" data-prllx-item data-delta-start="12%" data-delta-end="-12%">
-            <div class="layer__color" style="background: linear-gradient(180deg, #8B4513 0%, #D2691E 100%);"></div>
-          </div>
-          <div class="layer layer--mid" data-speed="0.8">
-            <img src="https://images.unsplash.com/photo-1466637574441-749b8f19452f?w=1920" alt="Cooking" class="layer__img">
-          </div>
-          <div class="layer layer--front" data-speed="1.25" data-prllx-item data-delta-start="-18%" data-delta-end="18%">
-            <img src="https://images.unsplash.com/photo-1547592180-85f173990554?w=700" alt="Recipe book" class="layer__img layer__img--circle">
-          </div>
-        </div>
-        <div class="section__content">
-          <h2 class="section__title">Recipes</h2>
-          <p class="section__subtitle">Discover what you can make</p>
+      <!-- Main Content Area -->
+      <main class="main-content" id="app">
+        <div class="canvas-sheet">
 
-          <!-- Recipe Filters -->
-          <div class="recipe-filters">
-            <div class="search-box">
-              <input type="text" id="recipeSearch" placeholder="Search recipes..." class="search-input">
+          <!-- Dashboard View -->
+          <div class="view active" id="view-dashboard" data-view="dashboard">
+            <header class="page-header">
+              <div class="page-title">
+                <h1>Kitchen Inventory</h1>
+                <p>Track your ingredients and discover recipes</p>
+              </div>
+              <div class="page-actions">
+                <button class="btn btn--secondary" id="exportPantryBtn">Export</button>
+                <button class="btn btn--primary" id="addIngredientBtn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  Add Item
+                </button>
+                <input type="file" id="importFileInput" accept=".json" hidden>
+                <button class="btn btn--secondary hidden" id="importPantryBtn">Import</button>
+              </div>
+            </header>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+              <div class="stat-card">
+                <span class="stat-value" id="statTotal">0</span>
+                <span class="stat-label">Total Items</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-value stat-value--accent" id="statExpiring">0</span>
+                <span class="stat-label">Expiring Soon</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-value" id="statLowStock">0</span>
+                <span class="stat-label">Low Stock</span>
+              </div>
+              <div class="stat-card">
+                <span class="stat-value" id="statRecipes">0</span>
+                <span class="stat-label">Recipes Available</span>
+              </div>
             </div>
-            <div class="filter-row">
-              <select id="matchFilter" class="filter-select">
+
+            <!-- Category Filter -->
+            <div class="inventory-header">
+              <div class="filter-tabs" id="categoryFilter">
+                <button class="filter-tab active" data-category="all">All Items</button>
+                <button class="filter-tab" data-category="proteins">Proteins</button>
+                <button class="filter-tab" data-category="dairy">Dairy</button>
+                <button class="filter-tab" data-category="vegetables">Vegetables</button>
+                <button class="filter-tab" data-category="fruits">Fruits</button>
+                <button class="filter-tab" data-category="grains">Grains</button>
+              </div>
+            </div>
+
+            <!-- Ingredient Browser Grid -->
+            <div class="grid" id="browserGrid">
+              <!-- Pantry items rendered dynamically -->
+            </div>
+
+            <!-- Legacy hidden elements for compatibility -->
+            <div class="hidden">
+              <div id="pantryDropdown"></div>
+              <button id="togglePantryDropdown"></button>
+              <span id="sidepanelCount">0</span>
+              <div id="pantryList"></div>
+              <div id="ingredientBrowser"></div>
+              <h3 id="browserTitle">Browse</h3>
+              <button id="closeBrowser"></button>
+            </div>
+          </div>
+
+          <!-- Pantry View (Full inventory) -->
+          <div class="view" id="view-pantry" data-view="pantry">
+            <header class="page-header">
+              <div class="page-title">
+                <h1>My Pantry</h1>
+                <p>Full inventory management</p>
+              </div>
+              <div class="page-actions">
+                <button class="btn btn--secondary" data-action="export">Export</button>
+                <button class="btn btn--secondary" data-action="import">Import</button>
+                <button class="btn btn--primary" data-action="add-ingredient">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  Add Item
+                </button>
+              </div>
+            </header>
+
+            <!-- Category Filter Buttons -->
+            <div class="category-filter" id="pantryCategories">
+              <button class="category-btn category-btn--active" data-category="all">All</button>
+              <!-- Categories populated dynamically -->
+            </div>
+
+            <!-- Pantry Grid -->
+            <div class="grid" id="pantryGrid">
+              <!-- Pantry items rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Recipes View -->
+          <div class="view" id="view-recipes" data-view="recipes">
+            <header class="page-header">
+              <div class="page-title">
+                <h1>Recipes</h1>
+                <p>Discover what you can make with your ingredients</p>
+              </div>
+            </header>
+
+            <!-- Recipe Stats -->
+            <div class="recipe-stats">
+              <div class="recipe-stat">
+                <span class="recipe-stat__value text-green" id="recipeStatCanMake">0</span>
+                <span class="recipe-stat__label">Can Make Now</span>
+              </div>
+              <div class="recipe-stat">
+                <span class="recipe-stat__value text-orange" id="recipeStatAlmost">0</span>
+                <span class="recipe-stat__label">Almost There</span>
+              </div>
+              <div class="recipe-stat">
+                <span class="recipe-stat__value" id="recipeStatTotal">0</span>
+                <span class="recipe-stat__label">Total Recipes</span>
+              </div>
+            </div>
+
+            <!-- Quick Filter Tabs -->
+            <div class="inventory-header">
+              <div class="filter-tabs" id="recipeQuickFilter">
+                <button class="filter-tab active" data-match="all">All Recipes</button>
+                <button class="filter-tab" data-match="full">Can Make Now</button>
+                <button class="filter-tab" data-match="partial">Almost There</button>
+                <button class="filter-tab" data-match="minimal">Missing Few</button>
+              </div>
+              <div class="recipe-count">
+                <span id="recipeResultCount">0</span> recipes found
+              </div>
+            </div>
+
+            <!-- Recipe Filters -->
+            <div class="recipe-filters">
+              <div class="recipe-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+                <input type="text" id="recipeSearch" placeholder="Search by name, ingredient, or cuisine..." class="form-input">
+              </div>
+              <select id="matchFilter" class="filter-select hidden">
                 <option value="all">All Recipes</option>
                 <option value="full">Can Make Now (100%)</option>
                 <option value="partial">Almost There (70%+)</option>
@@ -176,180 +243,300 @@
                 <option value="all">All Cuisines</option>
               </select>
             </div>
-          </div>
 
-          <!-- Recipe Grid -->
-          <div class="recipe-grid" id="recipeGrid">
-            <div class="recipe-loading" id="recipeLoading">
-              <p>Loading recipes...</p>
+            <!-- Recipe Grid -->
+            <div class="grid grid--recipes" id="recipeGrid">
+              <div class="loading-spinner" id="recipeLoading"></div>
             </div>
           </div>
-        </div>
-      </section>
 
-      <!-- Meal Planner Section -->
-      <section class="section section--mealplanner" data-section="mealplanner">
-        <div class="section__background">
-          <div class="layer layer--back" data-speed="0.65" data-prllx-item data-delta-start="12%" data-delta-end="-12%">
-            <div class="layer__color" style="background: linear-gradient(180deg, #1a4a1a 0%, #2d6b2d 100%);"></div>
-          </div>
-          <div class="layer layer--mid" data-speed="0.8">
-            <img src="https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=1920" alt="Meal planning" class="layer__img">
-          </div>
-          <div class="layer layer--front" data-speed="1.2" data-prllx-item data-delta-start="-15%" data-delta-end="15%">
-            <div class="floating-elements">
-              <span class="floating-leaf" style="--delay: 0s;">📅</span>
-              <span class="floating-leaf" style="--delay: 0.4s;">🍱</span>
-              <span class="floating-leaf" style="--delay: 0.8s;">🛒</span>
-            </div>
-          </div>
-        </div>
-        <div class="section__content section__content--wide">
-          <h2 class="section__title">Meal Planner</h2>
-          <p class="section__subtitle">Plan your week, track ingredients</p>
+          <!-- Meal Planner View -->
+          <div class="view" id="view-mealplanner" data-view="mealplanner">
+            <header class="page-header">
+              <div class="page-title">
+                <h1>Meal Planner</h1>
+                <p>Plan your week ahead</p>
+              </div>
+              <div class="page-actions">
+                <button class="btn btn--secondary" id="clearWeekBtn">
+                  Clear Week
+                </button>
+                <button class="btn btn--primary" id="generateShoppingListBtn">
+                  Shopping List
+                </button>
+              </div>
+            </header>
 
-          <!-- Week Navigation -->
-          <div class="week-nav" id="weekNav">
-            <button class="week-nav__btn" id="prevWeekBtn" title="Previous week">
-              <span>←</span> Previous
-            </button>
-            <div class="week-nav__title-container">
+            <!-- Week Navigation -->
+            <div class="week-nav">
+              <button class="week-nav__btn" id="prevWeekBtn" title="Previous week">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+              </button>
               <span class="week-nav__title" id="weekTitle">Jan 20 - 26, 2026</span>
-              <button class="week-nav__today" id="todayBtn" title="Go to current week">Today</button>
+              <button class="btn btn--small btn--ghost" id="todayBtn">Today</button>
+              <button class="week-nav__btn" id="nextWeekBtn" title="Next week">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+              </button>
             </div>
-            <button class="week-nav__btn" id="nextWeekBtn" title="Next week">
-              Next <span>→</span>
-            </button>
+
+            <!-- Planner Layout -->
+            <div class="planner-layout">
+              <!-- Week Calendar Grid -->
+              <div class="calendar-section">
+                <div class="calendar-week" id="calendarWeek">
+                  <!-- Days rendered dynamically -->
+                </div>
+
+                <!-- Meal Plan Stats -->
+                <div class="stats-grid" style="grid-template-columns: repeat(2, 1fr); margin-top: var(--spacing-xl);">
+                  <div class="stat-card">
+                    <span class="stat-value text-green" id="statCanMake">0</span>
+                    <span class="stat-label">Can Make</span>
+                  </div>
+                  <div class="stat-card">
+                    <span class="stat-value text-orange" id="statNeedShopping">0</span>
+                    <span class="stat-label">Need Shopping</span>
+                  </div>
+                </div>
+
+                <!-- Shopping List Banner -->
+                <div class="shopping-banner" id="shoppingBanner">
+                  <div class="shopping-banner__info">
+                    <h3>Generate Shopping List</h3>
+                    <p id="shoppingBannerText">Add meals to your plan to see missing ingredients.</p>
+                  </div>
+                  <button class="btn btn--primary" id="bannerShoppingBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                    View List
+                  </button>
+                </div>
+              </div>
+
+              <!-- Recipe Sidebar -->
+              <aside class="recipe-sidebar">
+                <h3 class="recipe-sidebar__title">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+                  Quick Add Recipe
+                </h3>
+                <input type="text" class="recipe-sidebar__search" placeholder="Search recipes..." id="sidebarRecipeSearch">
+                <div class="recipe-sidebar__list" id="sidebarRecipeList">
+                  <!-- Recipe items rendered dynamically -->
+                </div>
+              </aside>
+            </div>
           </div>
 
-          <!-- Week Calendar Grid -->
-          <div class="calendar-week" id="calendarWeek">
-            <!-- Days rendered dynamically -->
+          <!-- Shopping List View -->
+          <div class="view" id="view-shoppinglist" data-view="shoppinglist">
+            <header class="page-header">
+              <div class="page-title">
+                <h1>Shopping List</h1>
+                <p>Manage your weekly groceries and restock alerts</p>
+              </div>
+              <div class="page-actions">
+                <button class="btn btn--secondary" id="copyShoppingListView">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                  Copy List
+                </button>
+                <button class="btn btn--secondary" id="clearCheckedBtn">
+                  Clear Checked
+                </button>
+                <button class="btn btn--primary" id="refreshShoppingList">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                  Refresh
+                </button>
+              </div>
+            </header>
+
+            <!-- Shopping List Stats -->
+            <div class="shopping-stats">
+              <div class="shopping-stat">
+                <span class="shopping-stat__value" id="shoppingTotalItems">0</span>
+                <span class="shopping-stat__label">Items</span>
+              </div>
+              <div class="shopping-stat">
+                <span class="shopping-stat__value text-green" id="shoppingCheckedItems">0</span>
+                <span class="shopping-stat__label">Checked</span>
+              </div>
+              <div class="shopping-stat">
+                <span class="shopping-stat__value text-orange" id="shoppingRemainingItems">0</span>
+                <span class="shopping-stat__label">Remaining</span>
+              </div>
+            </div>
+
+            <div class="shopping-layout">
+              <div class="shopping-main" id="shoppingListView">
+                <!-- Shopping list categories rendered dynamically -->
+                <div class="empty-state" id="shoppingEmptyState">
+                  <div class="empty-state__icon">🛒</div>
+                  <h3 class="empty-state__title">No items in shopping list</h3>
+                  <p class="empty-state__text">Plan some meals and generate a shopping list</p>
+                  <button class="btn btn--primary" data-nav-target="mealplanner">Go to Meal Planner</button>
+                </div>
+              </div>
+
+              <aside class="suggested-panel" id="suggestedPanel">
+                <div class="suggested-panel__inner">
+                  <h3 class="suggested-title">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-orange)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                    Low Stock Alerts
+                  </h3>
+                  <p class="suggested-desc">Based on your pantry inventory, you might want to add these items.</p>
+                  <div id="lowStockSuggestions">
+                    <!-- Low stock suggestions rendered dynamically -->
+                  </div>
+                  <button class="btn btn--secondary btn--full" id="addAllLowStock" style="margin-top: var(--spacing-xl);">
+                    Add All to List
+                  </button>
+                </div>
+              </aside>
+            </div>
           </div>
 
-          <!-- Meal Plan Stats -->
-          <div class="mealplan-stats" id="mealplanStats">
-            <div class="stat">
-              <span class="stat__number" id="statPlannedMeals">0</span>
-              <span class="stat__label">Planned</span>
+          <!-- Profile View -->
+          <div class="view" id="view-profile" data-view="profile">
+            <!-- Profile Header -->
+            <div class="profile-header" id="profileHeader">
+              <div class="profile-header__avatar" id="profileLargeAvatar">
+                <span class="profile-header__avatar-letter">U</span>
+              </div>
+              <div class="profile-header__info">
+                <h2 class="profile-header__name" id="profileDisplayName">User Name</h2>
+                <p class="profile-header__username" id="profileUsername">@username</p>
+                <p class="profile-header__bio" id="profileBio">No bio yet</p>
+                <p class="profile-header__member-since" id="profileMemberSince">Member since January 2026</p>
+              </div>
+              <div class="profile-header__actions hidden" id="profileOwnerActions">
+                <button class="btn btn--secondary" id="editProfileBtn">Edit Profile</button>
+                <button class="btn btn--secondary" id="syncDataBtn">
+                  <span>☁️</span> Sync Data
+                </button>
+              </div>
             </div>
-            <div class="stat">
-              <span class="stat__number" id="statCanMake">0</span>
-              <span class="stat__label">Can Make</span>
+
+            <!-- Stats Dashboard -->
+            <div class="profile-stats-dashboard" id="profileStatsDashboard">
+              <h3 class="profile-section-title">Cooking Stats</h3>
+              <div class="profile-stats-grid">
+                <div class="profile-stat-card">
+                  <span class="profile-stat-card__icon">📅</span>
+                  <span class="profile-stat-card__number" id="statMealsPlannedProfile">0</span>
+                  <span class="profile-stat-card__label">Meals Planned</span>
+                </div>
+                <div class="profile-stat-card">
+                  <span class="profile-stat-card__icon">🍳</span>
+                  <span class="profile-stat-card__number" id="statRecipesTried">0</span>
+                  <span class="profile-stat-card__label">Recipes Tried</span>
+                </div>
+                <div class="profile-stat-card">
+                  <span class="profile-stat-card__icon">🔥</span>
+                  <span class="profile-stat-card__number" id="statCurrentStreak">0</span>
+                  <span class="profile-stat-card__label">Day Streak</span>
+                </div>
+                <div class="profile-stat-card">
+                  <span class="profile-stat-card__icon">🏆</span>
+                  <span class="profile-stat-card__number" id="statLongestStreak">0</span>
+                  <span class="profile-stat-card__label">Best Streak</span>
+                </div>
+              </div>
             </div>
-            <div class="stat">
-              <span class="stat__number" id="statNeedShopping">0</span>
-              <span class="stat__label">Need Shopping</span>
+
+            <!-- Favorite Cuisines -->
+            <div class="profile-cuisines" id="profileCuisines">
+              <h3 class="profile-section-title">Favorite Cuisines</h3>
+              <div class="profile-cuisines-grid" id="cuisinesGrid">
+                <p class="profile-cuisines__empty">No favorite cuisines yet. Start planning meals!</p>
+              </div>
+            </div>
+
+            <!-- Sync Status (Owner Only) -->
+            <div class="profile-sync-status hidden" id="profileSyncStatus">
+              <div class="profile-sync-status__info">
+                <span class="profile-sync-status__label">Cloud Sync Status</span>
+                <span class="profile-sync-status__time">Last synced: <span id="lastSyncTime">Never</span></span>
+              </div>
+              <div class="profile-sync-status__actions">
+                <button class="btn btn--small" id="syncPantryBtn">Sync Pantry</button>
+                <button class="btn btn--small" id="syncMealPlansBtn">Sync Meals</button>
+              </div>
+            </div>
+
+            <!-- Profile Message -->
+            <div class="profile-message hidden" id="profileMessage">
+              <p id="profileMessageText"></p>
+            </div>
+
+            <!-- Hidden elements for compatibility -->
+            <div class="hidden">
+              <span id="pantrySyncStatus"></span>
+              <span id="mealPlanSyncStatus"></span>
             </div>
           </div>
 
-          <!-- Meal Plan Actions -->
-          <div class="mealplan-actions">
-            <button class="btn btn--primary" id="generateShoppingListBtn">
-              <span class="btn__icon">🛒</span> Shopping List
-            </button>
-            <button class="btn btn--secondary" id="clearWeekBtn">
-              <span class="btn__icon">🗑️</span> Clear Week
-            </button>
-          </div>
         </div>
-      </section>
-
-      <!-- About Section -->
-      <section class="section section--about" data-section="about">
-        <div class="section__background">
-          <div class="layer layer--back" data-speed="0.6" data-prllx-item data-delta-start="10%" data-delta-end="-10%">
-            <div class="layer__color" style="background: linear-gradient(180deg, #1a3a5c 0%, #2c5f8f 100%);"></div>
-          </div>
-          <div class="layer layer--mid" data-speed="0.8">
-            <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1920" alt="Kitchen" class="layer__img">
-          </div>
-          <div class="layer layer--front" data-speed="1.18" data-prllx-item data-delta-start="-12%" data-delta-end="12%">
-            <div class="floating-elements">
-              <span class="floating-leaf" style="--delay: 0s;">🍳</span>
-              <span class="floating-leaf" style="--delay: 0.5s;">📖</span>
-              <span class="floating-leaf" style="--delay: 1s;">🥗</span>
-            </div>
-          </div>
-        </div>
-        <div class="section__content">
-          <h2 class="section__title">About Pantry Planner</h2>
-          <p class="section__text">A simple tool to help you manage your kitchen inventory and discover recipes based on ingredients you already have.</p>
-          <div class="features-row">
-            <div class="feature" data-speed="1.1">
-              <span class="feature__icon">📦</span>
-              <h3>Track Ingredients</h3>
-              <p>Keep an organized inventory of your pantry, fridge, and freezer</p>
-            </div>
-            <div class="feature" data-speed="1.05">
-              <span class="feature__icon">🔍</span>
-              <h3>Find Recipes</h3>
-              <p>Discover meals you can make with what you have on hand</p>
-            </div>
-            <div class="feature" data-speed="1.12">
-              <span class="feature__icon">💾</span>
-              <h3>Export & Import</h3>
-              <p>Save your pantry as JSON and restore it anytime</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Footer -->
-      <footer class="footer">
-        <p>Pantry Planner</p>
-        <p>Built with GSAP + ScrollTrigger</p>
-      </footer>
-    </main>
+      </main>
+    </div>
 
     <!-- Add Ingredient Modal -->
     <div class="modal" id="addIngredientModal">
       <div class="modal__backdrop"></div>
-      <div class="modal__container">
+      <div class="modal__container modal__container--xlarge">
         <button class="modal__close" aria-label="Close modal">&times;</button>
-        <h2 class="modal__title">Add Ingredient</h2>
-        <form class="modal__form" id="addIngredientForm">
-          <div class="form-group">
-            <label for="ingredientSearch">Search Ingredient</label>
-            <div class="autocomplete-wrapper">
-              <input type="text" id="ingredientSearchInput" class="form-input" placeholder="Start typing..." autocomplete="off">
-              <div class="autocomplete-results" id="autocompleteResults"></div>
-            </div>
+
+        <div class="modal__header">
+          <h2 class="modal__title">Add to Pantry</h2>
+          <p class="modal__subtitle">Browse or search for ingredients to add</p>
+        </div>
+
+        <div class="modal__body ingredient-browser">
+          <!-- Search Bar -->
+          <div class="ingredient-browser__search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <input type="text" id="ingredientSearchInput" class="form-input" placeholder="Search ingredients..." autocomplete="off">
             <input type="hidden" id="selectedIngredientId">
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="ingredientQuantity">Quantity</label>
-              <input type="number" id="ingredientQuantity" class="form-input" value="1" min="0" step="0.1">
-            </div>
-            <div class="form-group">
-              <label for="ingredientUnit">Unit</label>
-              <select id="ingredientUnit" class="form-input">
-                <option value="pieces">pieces</option>
-                <option value="cup">cups</option>
-                <option value="tbsp">tbsp</option>
-                <option value="tsp">tsp</option>
-                <option value="oz">oz</option>
-                <option value="lb">lb</option>
-                <option value="g">grams</option>
-                <option value="kg">kg</option>
-                <option value="ml">ml</option>
-                <option value="l">liters</option>
-                <option value="cloves">cloves</option>
-                <option value="stalks">stalks</option>
-                <option value="can">can</option>
-              </select>
-            </div>
+
+          <!-- Category Tabs -->
+          <div class="ingredient-browser__categories" id="ingredientCategoryTabs">
+            <!-- Categories populated by JavaScript -->
           </div>
-          <div class="form-group">
-            <label for="ingredientNotes">Notes (optional)</label>
-            <input type="text" id="ingredientNotes" class="form-input" placeholder="e.g., expires soon">
+
+          <!-- Ingredients Grid -->
+          <div class="ingredient-browser__grid" id="ingredientBrowserGrid">
+            <!-- Ingredients populated by JavaScript -->
           </div>
-          <div class="form-actions">
-            <button type="button" class="btn btn--secondary" id="cancelAddIngredient">Cancel</button>
-            <button type="submit" class="btn btn--primary" id="submitAddIngredient" disabled>Add to Pantry</button>
+        </div>
+
+        <!-- Selection Panel (shows when ingredient selected) -->
+        <div class="ingredient-browser__selection" id="ingredientSelectionPanel" style="display: none;">
+          <div class="selection-info">
+            <span class="selection-name" id="selectionName">Selected Ingredient</span>
           </div>
-        </form>
+          <div class="selection-controls">
+            <input type="number" id="ingredientQuantity" class="form-input" value="1" min="0.1" step="0.5" style="width: 80px;">
+            <select id="ingredientUnit" class="form-input" style="width: 100px;">
+              <option value="pieces">pieces</option>
+              <option value="cup">cups</option>
+              <option value="tbsp">tbsp</option>
+              <option value="tsp">tsp</option>
+              <option value="oz">oz</option>
+              <option value="lb">lb</option>
+              <option value="g">grams</option>
+              <option value="kg">kg</option>
+              <option value="ml">ml</option>
+              <option value="l">liters</option>
+              <option value="cloves">cloves</option>
+              <option value="stalks">stalks</option>
+              <option value="can">can</option>
+            </select>
+            <button type="button" class="btn btn--primary" id="submitAddIngredient">
+              Add to Pantry
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -369,11 +556,83 @@
       <div class="modal__backdrop"></div>
       <div class="modal__container">
         <button class="modal__close" aria-label="Close modal">&times;</button>
-        <h2 class="modal__title">Import Pantry</h2>
-        <p class="modal__text">How would you like to import?</p>
-        <div class="import-options">
-          <button class="btn btn--primary" id="importMerge">Merge with existing</button>
-          <button class="btn btn--secondary" id="importReplace">Replace all</button>
+        <div class="modal__header">
+          <h2 class="modal__title">Import Pantry</h2>
+        </div>
+        <div class="modal__body">
+          <p>How would you like to import?</p>
+        </div>
+        <div class="modal__footer">
+          <button class="btn btn--secondary" id="importMerge">Merge with existing</button>
+          <button class="btn btn--primary" id="importReplace">Replace all</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Recipe Browser Modal (Full Screen) -->
+    <div class="modal" id="recipeBrowserModal">
+      <div class="modal__backdrop"></div>
+      <div class="modal__container modal__container--xlarge">
+        <button class="modal__close" aria-label="Close modal">&times;</button>
+
+        <div class="modal__header">
+          <h2 class="modal__title">Choose a Recipe</h2>
+          <span class="recipe-browser__date" id="browserSelectedDate">Monday, January 20</span>
+        </div>
+
+        <div class="modal__body">
+          <div class="recipe-filters mb-lg">
+            <div class="recipe-search">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+              <input type="text" id="browserSearchInput" class="form-input" placeholder="Search recipes...">
+            </div>
+            <select id="browserCuisineFilter" class="filter-select">
+              <option value="">All Cuisines</option>
+            </select>
+            <select id="browserMealTypeFilter" class="filter-select">
+              <option value="">All Meals</option>
+              <option value="breakfast">Breakfast</option>
+              <option value="lunch">Lunch</option>
+              <option value="dinner">Dinner</option>
+              <option value="snack">Snack</option>
+            </select>
+            <select id="browserDifficultyFilter" class="filter-select">
+              <option value="">Any Difficulty</option>
+              <option value="easy">Easy</option>
+              <option value="medium">Medium</option>
+              <option value="hard">Hard</option>
+            </select>
+          </div>
+
+          <div class="mb-md" id="browserResultsCount">0 recipes found</div>
+
+          <div class="grid" id="browserRecipesGrid">
+            <!-- Recipe cards rendered dynamically -->
+          </div>
+        </div>
+
+        <!-- Recipe Selection Confirmation Panel -->
+        <div class="modal__footer" id="recipeConfirmPanel" style="display: none;">
+          <div style="flex: 1;">
+            <strong id="confirmRecipeName">Recipe Name</strong>
+            <div id="confirmNutrition" style="font-size: var(--font-size-sm); color: var(--text-body);"></div>
+          </div>
+          <select id="confirmMealType" class="filter-select">
+            <option value="breakfast">Breakfast</option>
+            <option value="lunch">Lunch</option>
+            <option value="dinner" selected>Dinner</option>
+            <option value="snack">Snack</option>
+          </select>
+          <input type="number" id="confirmServings" class="form-input" value="4" min="1" max="20" style="width: 80px;">
+          <button type="button" class="btn btn--secondary" id="cancelSelectRecipe">Cancel</button>
+          <button type="button" class="btn btn--primary" id="confirmAddMeal">Add to Plan</button>
+        </div>
+
+        <!-- Hidden elements for compatibility -->
+        <div class="hidden">
+          <div id="confirmPanelBody"></div>
+          <div id="confirmIngredientsList"></div>
+          <div id="confirmInstructionsList"></div>
         </div>
       </div>
     </div>
@@ -383,49 +642,49 @@
       <div class="modal__backdrop"></div>
       <div class="modal__container">
         <button class="modal__close" aria-label="Close modal">&times;</button>
-        <h2 class="modal__title">Add Meal to Plan</h2>
-        <form class="modal__form" id="addMealForm">
-          <div class="form-group">
-            <label for="mealDate">Date</label>
-            <input type="date" id="mealDate" class="form-input" required>
-          </div>
-          <div class="form-group">
-            <label for="mealRecipeSearch">Search Recipe</label>
-            <div class="autocomplete-wrapper">
-              <input type="text" id="mealRecipeSearch" class="form-input" placeholder="Start typing to search..." autocomplete="off">
-              <div class="autocomplete-results recipe-results" id="mealRecipeResults"></div>
-            </div>
-          </div>
-          <div class="form-group" id="selectedRecipeDisplay" style="display: none;">
-            <!-- Selected recipe shown here -->
-          </div>
-          <div class="form-group" id="mealAvailabilityWarning" style="display: none;">
-            <!-- Availability warnings shown here -->
-          </div>
-          <div class="form-row">
+        <div class="modal__header">
+          <h2 class="modal__title">Add Meal to Plan</h2>
+        </div>
+        <div class="modal__body">
+          <form id="addMealForm">
             <div class="form-group">
-              <label for="mealType">Meal Type</label>
-              <select id="mealType" class="form-input">
-                <option value="breakfast">🍳 Breakfast</option>
-                <option value="lunch">🥗 Lunch</option>
-                <option value="dinner" selected>🍽️ Dinner</option>
-                <option value="snack">🍪 Snack</option>
-              </select>
+              <label for="mealDate">Date</label>
+              <input type="date" id="mealDate" class="form-input" required>
             </div>
             <div class="form-group">
-              <label for="mealServings">Servings</label>
-              <input type="number" id="mealServings" class="form-input" value="4" min="1" max="20">
+              <label for="mealRecipeSearch">Search Recipe</label>
+              <div class="autocomplete-wrapper">
+                <input type="text" id="mealRecipeSearch" class="form-input" placeholder="Start typing to search..." autocomplete="off">
+                <div class="autocomplete-results recipe-results" id="mealRecipeResults"></div>
+              </div>
             </div>
-          </div>
-          <div class="form-group">
-            <label for="mealNotes">Notes (optional)</label>
-            <input type="text" id="mealNotes" class="form-input" placeholder="e.g., Double the garlic">
-          </div>
-          <div class="form-actions">
-            <button type="button" class="btn btn--secondary" id="cancelAddMeal">Cancel</button>
-            <button type="submit" class="btn btn--primary" id="submitAddMeal" disabled>Add to Plan</button>
-          </div>
-        </form>
+            <div class="form-group" id="selectedRecipeDisplay" style="display: none;"></div>
+            <div class="form-group" id="mealAvailabilityWarning" style="display: none;"></div>
+            <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
+              <div>
+                <label for="mealType">Meal Type</label>
+                <select id="mealType" class="form-input">
+                  <option value="breakfast">Breakfast</option>
+                  <option value="lunch">Lunch</option>
+                  <option value="dinner" selected>Dinner</option>
+                  <option value="snack">Snack</option>
+                </select>
+              </div>
+              <div>
+                <label for="mealServings">Servings</label>
+                <input type="number" id="mealServings" class="form-input" value="4" min="1" max="20">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="mealNotes">Notes (optional)</label>
+              <input type="text" id="mealNotes" class="form-input" placeholder="e.g., Double the garlic">
+            </div>
+          </form>
+        </div>
+        <div class="modal__footer">
+          <button type="button" class="btn btn--secondary" id="cancelAddMeal">Cancel</button>
+          <button type="submit" class="btn btn--primary" id="submitAddMeal" disabled>Add to Plan</button>
+        </div>
       </div>
     </div>
 
@@ -434,14 +693,18 @@
       <div class="modal__backdrop"></div>
       <div class="modal__container modal__container--large">
         <button class="modal__close" aria-label="Close modal">&times;</button>
-        <h2 class="modal__title">Shopping List</h2>
-        <p class="modal__subtitle" id="shoppingListSubtitle">Items needed for this week</p>
-        <div class="shopping-list" id="shoppingListContent">
-          <!-- Shopping list items rendered here -->
+        <div class="modal__header">
+          <h2 class="modal__title">Shopping List</h2>
+          <p id="shoppingListSubtitle" style="color: var(--text-body); font-size: var(--font-size-sm);">Items needed for this week</p>
         </div>
-        <div class="shopping-list__actions">
+        <div class="modal__body">
+          <div class="shopping-list" id="shoppingListContent">
+            <!-- Shopping list items rendered here -->
+          </div>
+        </div>
+        <div class="modal__footer">
           <button class="btn btn--secondary" id="copyShoppingList">
-            <span class="btn__icon">📋</span> Copy to Clipboard
+            Copy to Clipboard
           </button>
           <button class="btn btn--primary" id="closeShoppingList">Done</button>
         </div>
@@ -462,24 +725,29 @@
     <!-- Quantity Modal -->
     <div class="modal" id="quantityModal">
       <div class="modal__backdrop"></div>
-      <div class="modal__container quantity-modal">
+      <div class="modal__container">
         <button class="modal__close" aria-label="Close modal">&times;</button>
 
-        <div class="quantity-modal__header">
-          <span class="quantity-modal__icon" id="quantityModalIcon"></span>
-          <h2 class="quantity-modal__title" id="quantityModalTitle">Add Ingredient</h2>
+        <div class="modal__header" style="display: flex; align-items: center; gap: var(--spacing-md);">
+          <span id="quantityModalIcon" style="font-size: 32px;"></span>
+          <h2 class="modal__title" id="quantityModalTitle">Add Ingredient</h2>
         </div>
 
-        <div class="quantity-modal__presets" id="quantityPresets">
-          <!-- Preset buttons populated dynamically -->
-        </div>
+        <div class="modal__body">
+          <div id="quantityCurrentStock" style="display: none; margin-bottom: var(--spacing-lg); padding: var(--spacing-md); background: var(--surface-gray); border-radius: var(--radius-sm);">
+            <span>Currently in pantry: </span>
+            <strong id="quantityCurrentAmount">0</strong>
+          </div>
 
-        <div class="quantity-modal__divider">
-          <span>or enter custom amount</span>
-        </div>
+          <div id="quantityPresets" style="display: flex; flex-wrap: wrap; gap: var(--spacing-sm); margin-bottom: var(--spacing-lg);">
+            <!-- Preset buttons populated dynamically -->
+          </div>
 
-        <div class="quantity-modal__custom">
-          <div class="quantity-modal__input-row">
+          <div style="text-align: center; color: var(--text-light); margin-bottom: var(--spacing-lg);">
+            or enter custom amount
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-md);">
             <input type="number" id="quantityInput" class="form-input" min="0" step="0.25" placeholder="Amount">
             <select id="quantityUnit" class="form-input">
               <!-- Units populated dynamically -->
@@ -487,9 +755,100 @@
           </div>
         </div>
 
-        <button class="btn btn--primary btn--full" id="quantitySubmit" disabled>
-          Add to Pantry
-        </button>
+        <div class="modal__footer">
+          <button class="btn btn--primary btn--full" id="quantitySubmit" disabled>
+            Add to Pantry
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal" id="editProfileModal">
+      <div class="modal__backdrop"></div>
+      <div class="modal__container">
+        <button class="modal__close" aria-label="Close modal">&times;</button>
+        <div class="modal__header">
+          <h2 class="modal__title">Edit Profile</h2>
+        </div>
+        <div class="modal__body">
+          <form id="editProfileForm">
+            <div class="form-group">
+              <label for="editDisplayName">Display Name</label>
+              <input type="text" id="editDisplayName" class="form-input" placeholder="Your display name" maxlength="50">
+            </div>
+            <div class="form-group">
+              <label for="editBio">Bio</label>
+              <textarea id="editBio" class="form-input" placeholder="Tell us about your cooking journey..." maxlength="200" rows="3"></textarea>
+              <span style="font-size: var(--font-size-xs); color: var(--text-light);"><span id="bioCharCount">0</span>/200 characters</span>
+            </div>
+            <div class="form-group">
+              <label for="editLocation">Location (optional)</label>
+              <input type="text" id="editLocation" class="form-input" placeholder="e.g., New York, NY" maxlength="100">
+            </div>
+            <div class="form-group">
+              <label style="display: flex; align-items: center; gap: var(--spacing-sm); cursor: pointer;">
+                <input type="checkbox" id="editIsPublic">
+                <span>Make profile public</span>
+              </label>
+              <span style="font-size: var(--font-size-xs); color: var(--text-light);">Others can view your stats and cooking activity</span>
+            </div>
+          </form>
+        </div>
+        <div class="modal__footer">
+          <button type="button" class="btn btn--secondary" id="cancelEditProfile">Cancel</button>
+          <button type="submit" class="btn btn--primary" id="saveProfile">Save Changes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div class="modal" id="authModal">
+      <div class="modal__backdrop"></div>
+      <div class="modal__container auth-modal">
+        <button class="modal__close" aria-label="Close modal">&times;</button>
+
+        <div class="auth-modal__header">
+          <span class="auth-modal__icon">🍳</span>
+          <h2 class="auth-modal__title" id="authModalTitle">Welcome Back</h2>
+        </div>
+
+        <div class="auth-message hidden" id="authError"></div>
+
+        <form class="auth-form" id="authForm">
+          <div class="form-group hidden" id="usernameGroup">
+            <label for="authUsername">Username</label>
+            <input type="text" id="authUsername" class="form-input" placeholder="Choose a username" minlength="3" autocomplete="username">
+          </div>
+
+          <div class="form-group">
+            <label for="authEmail">Email</label>
+            <input type="email" id="authEmail" class="form-input" placeholder="your@email.com" required autocomplete="email">
+          </div>
+
+          <div class="form-group" id="passwordGroup">
+            <label for="authPassword">Password</label>
+            <input type="password" id="authPassword" class="form-input" placeholder="••••••••" minlength="6" autocomplete="current-password">
+          </div>
+
+          <button type="submit" class="btn btn--primary btn--full" id="authSubmitBtn">Sign In</button>
+        </form>
+
+        <!-- Login mode links -->
+        <div class="auth-links" id="loginLinks">
+          <p>Don't have an account? <a href="#" id="showRegister">Create one</a></p>
+          <p><a href="#" id="showReset">Forgot password?</a></p>
+        </div>
+
+        <!-- Register mode links -->
+        <div class="auth-links hidden" id="registerLinks">
+          <p>Already have an account? <a href="#" id="showLogin">Sign in</a></p>
+        </div>
+
+        <!-- Reset mode links -->
+        <div class="auth-links hidden" id="resetLinks">
+          <p><a href="#" id="backToLogin">← Back to sign in</a></p>
+        </div>
       </div>
     </div>
 

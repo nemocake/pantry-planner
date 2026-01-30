@@ -118,47 +118,88 @@ function createMealCard(meal, recipe, onMealClick, onRemoveClick) {
 }
 
 /**
- * Create a day card element
+ * Create a day card element with meal slots
  */
 function createDayCard(dateStr, dayIndex, meals, onAddClick, onMealClick, onRemoveClick) {
   const date = parseDate(dateStr);
   const dayName = DAY_NAMES[dayIndex];
   const dayNum = date.getDate();
+  const month = MONTH_NAMES[date.getMonth()];
   const today = isToday(dateStr);
 
   const card = document.createElement('div');
   card.className = `day-card ${today ? 'day-card--today' : ''}`;
   card.dataset.date = dateStr;
 
-  // Sort meals by meal type order
-  const sortedMeals = [...meals].sort((a, b) => {
-    return MEAL_TYPE_ORDER.indexOf(a.mealType) - MEAL_TYPE_ORDER.indexOf(b.mealType);
-  });
+  // Group meals by type
+  const mealsByType = {
+    breakfast: meals.filter(m => m.mealType === 'breakfast'),
+    lunch: meals.filter(m => m.mealType === 'lunch'),
+    dinner: meals.filter(m => m.mealType === 'dinner'),
+    snack: meals.filter(m => m.mealType === 'snack')
+  };
 
   card.innerHTML = `
     <div class="day-card__header">
       <span class="day-card__name">${dayName}</span>
-      <span class="day-card__date">${dayNum}</span>
+      <span class="day-card__date">${month} ${dayNum}</span>
     </div>
-    <button class="day-card__add" data-action="add" title="Add meal">+</button>
-    <div class="day-card__meals"></div>
+    <div class="day-card__slots">
+      <div class="meal-slot" data-meal-type="breakfast">
+        <span class="meal-slot__label">Breakfast</span>
+        <div class="meal-slot__content"></div>
+      </div>
+      <div class="meal-slot" data-meal-type="lunch">
+        <span class="meal-slot__label">Lunch</span>
+        <div class="meal-slot__content"></div>
+      </div>
+      <div class="meal-slot" data-meal-type="dinner">
+        <span class="meal-slot__label">Dinner</span>
+        <div class="meal-slot__content"></div>
+      </div>
+      <div class="meal-slot" data-meal-type="snack">
+        <span class="meal-slot__label">Snack</span>
+        <div class="meal-slot__content"></div>
+      </div>
+    </div>
   `;
 
-  // Add meals container
-  const mealsContainer = card.querySelector('.day-card__meals');
+  // Add meals to their respective slots
+  MEAL_TYPE_ORDER.forEach(mealType => {
+    const slotContent = card.querySelector(`.meal-slot[data-meal-type="${mealType}"] .meal-slot__content`);
+    const mealsForType = mealsByType[mealType];
 
-  sortedMeals.forEach(meal => {
-    const recipe = getRecipeById(meal.recipeId);
-    if (recipe) {
-      const mealCard = createMealCard(meal, recipe, onMealClick, onRemoveClick);
-      mealsContainer.appendChild(mealCard);
+    if (mealsForType.length === 0) {
+      // Empty slot with add button
+      const emptySlot = document.createElement('div');
+      emptySlot.className = 'empty-slot';
+      emptySlot.innerHTML = '+';
+      emptySlot.addEventListener('click', (e) => {
+        e.stopPropagation();
+        onAddClick(dateStr, mealType);
+      });
+      slotContent.appendChild(emptySlot);
+    } else {
+      // Add meal cards
+      mealsForType.forEach(meal => {
+        const recipe = getRecipeById(meal.recipeId);
+        if (recipe) {
+          const mealCard = createMealCard(meal, recipe, onMealClick, onRemoveClick);
+          slotContent.appendChild(mealCard);
+        }
+      });
+      // Add another slot if they want more of same type
+      if (mealsForType.length < 2) {
+        const addMore = document.createElement('div');
+        addMore.className = 'empty-slot empty-slot--small';
+        addMore.innerHTML = '+';
+        addMore.addEventListener('click', (e) => {
+          e.stopPropagation();
+          onAddClick(dateStr, mealType);
+        });
+        slotContent.appendChild(addMore);
+      }
     }
-  });
-
-  // Add button click
-  card.querySelector('[data-action="add"]').addEventListener('click', (e) => {
-    e.stopPropagation();
-    onAddClick(dateStr);
   });
 
   return card;
@@ -198,36 +239,60 @@ export function updateDayMeals(container, dateStr, onAddClick, onMealClick, onRe
   const dayCard = container.querySelector(`[data-date="${dateStr}"]`);
   if (!dayCard) return;
 
-  const mealsContainer = dayCard.querySelector('.day-card__meals');
-  mealsContainer.innerHTML = '';
-
   const meals = getMealsForDate(dateStr);
-  const sortedMeals = [...meals].sort((a, b) => {
-    return MEAL_TYPE_ORDER.indexOf(a.mealType) - MEAL_TYPE_ORDER.indexOf(b.mealType);
-  });
 
-  sortedMeals.forEach(meal => {
-    const recipe = getRecipeById(meal.recipeId);
-    if (recipe) {
-      const mealCard = createMealCard(meal, recipe, onMealClick, onRemoveClick);
-      mealsContainer.appendChild(mealCard);
+  // Group meals by type
+  const mealsByType = {
+    breakfast: meals.filter(m => m.mealType === 'breakfast'),
+    lunch: meals.filter(m => m.mealType === 'lunch'),
+    dinner: meals.filter(m => m.mealType === 'dinner'),
+    snack: meals.filter(m => m.mealType === 'snack')
+  };
 
-      // Animate in
-      gsap.fromTo(mealCard,
-        { opacity: 0, scale: 0.8 },
-        { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(1.5)' }
-      );
+  // Update each slot
+  MEAL_TYPE_ORDER.forEach(mealType => {
+    const slotContent = dayCard.querySelector(`.meal-slot[data-meal-type="${mealType}"] .meal-slot__content`);
+    if (!slotContent) return;
+
+    slotContent.innerHTML = '';
+    const mealsForType = mealsByType[mealType];
+
+    if (mealsForType.length === 0) {
+      // Empty slot with add button
+      const emptySlot = document.createElement('div');
+      emptySlot.className = 'empty-slot';
+      emptySlot.innerHTML = '+';
+      emptySlot.addEventListener('click', (e) => {
+        e.stopPropagation();
+        onAddClick(dateStr, mealType);
+      });
+      slotContent.appendChild(emptySlot);
+    } else {
+      // Render meals for this slot
+      mealsForType.forEach(meal => {
+        const recipe = getRecipeById(meal.recipeId);
+        if (recipe) {
+          const mealCard = createMealCard(meal, recipe, onMealClick, onRemoveClick);
+          slotContent.appendChild(mealCard);
+
+          // Animate in
+          gsap.fromTo(mealCard,
+            { opacity: 0, scale: 0.8 },
+            { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(1.5)' }
+          );
+        }
+      });
     }
   });
 }
 
 /**
- * Navigate week (returns new start date)
+ * Navigate week (returns new start date as YYYY-MM-DD string)
  */
 export function navigateWeek(currentStart, direction) {
   const current = new Date(currentStart);
   current.setDate(current.getDate() + (direction * 7));
-  return current;
+  return formatDate(current);
 }
 
 /**

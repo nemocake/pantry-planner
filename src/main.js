@@ -1,15 +1,19 @@
 import './styles/main.css';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
 
 // Import core modules
-import { initAllParallax, refreshParallax } from './modules/parallax.js';
-import { initNavigation, initHeaderScroll } from './modules/navigation.js';
-import { initLottieScroll, createScrollIndicatorFallback } from './modules/lottieScroll.js';
+import { initNavigation, switchView, onViewChange } from './modules/navigation.js';
+
+// Import auth modules
+import { initAuthModal, openAuthModal, closeAuthModal } from './components/authModal.js';
+import { getCurrentUser, getCurrentProfile, signOut, onAuthStateChange } from './services/authService.js';
+import { isSupabaseConfigured } from './lib/supabase.js';
+
+// Import profile modules
+import { initProfileSection, navigateToProfile } from './components/profileSection.js';
 
 // Import pantry modules
-import { loadIngredients, getCategories, getCategoryIcon, getIngredientById } from './modules/ingredientManager.js';
+import { loadIngredients, getCategories, getCategoryIcon, getIngredientById, getIngredientsByCategory, searchIngredients } from './modules/ingredientManager.js';
 import {
   initPantry,
   onPantryChange,
@@ -45,10 +49,8 @@ import {
 } from './modules/mealPlanManager.js';
 import { renderWeekView, navigateWeek, goToCurrentWeek, formatWeekTitle } from './components/calendarView.js';
 import { initAddMealModal, openAddMealModal } from './components/addMealModal.js';
+import { initRecipeBrowserModal, openRecipeBrowserModal } from './components/recipeBrowserModal.js';
 import { initQuantityModal } from './components/quantityModal.js';
-
-// Register GSAP plugins
-gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 // State
 let allRecipes = [];
@@ -65,242 +67,37 @@ const RECIPE_PREVIEW_COUNT = 6;
 // Meal planner state
 let currentWeekStart = goToCurrentWeek();
 
-/**
- * Initialize section entry animations
- */
-function initSectionAnimations() {
-  const sections = document.querySelectorAll('.section');
-
-  sections.forEach(section => {
-    const content = section.querySelector('.section__content');
-    const title = section.querySelector('.section__title');
-    const text = section.querySelectorAll('.section__subtitle, .section__text');
-
-    // Create timeline for each section
-    const tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: section,
-        start: 'top 80%',
-        end: 'top 20%',
-        toggleActions: 'play none none reverse'
-      }
-    });
-
-    // Animate title
-    if (title) {
-      tl.from(title, {
-        y: 100,
-        opacity: 0,
-        duration: 1,
-        ease: 'power3.out'
-      });
-    }
-
-    // Animate text elements
-    if (text.length > 0) {
-      tl.from(text, {
-        y: 50,
-        opacity: 0,
-        duration: 0.8,
-        stagger: 0.2,
-        ease: 'power2.out'
-      }, '-=0.5');
-    }
-  });
-}
-
-/**
- * Initialize card animations for a container
- */
-function initCardAnimations(containerSelector, cardSelector) {
-  const container = document.querySelector(containerSelector);
-  if (!container) return;
-
-  const cards = container.querySelectorAll(cardSelector);
-
-  cards.forEach((card, index) => {
-    gsap.from(card, {
-      y: 60,
-      opacity: 0,
-      duration: 0.5,
-      delay: index * 0.05,
-      ease: 'power2.out',
-      scrollTrigger: {
-        trigger: card,
-        start: 'top 90%',
-        toggleActions: 'play none none reverse'
-      }
-    });
-  });
-}
-
-/**
- * Initialize stats counter animation
- */
-function initStatsAnimation() {
-  const stats = document.querySelectorAll('.stat');
-
-  stats.forEach((stat, index) => {
-    gsap.from(stat, {
-      y: 50,
-      opacity: 0,
-      duration: 0.6,
-      delay: index * 0.15,
-      ease: 'power2.out',
-      scrollTrigger: {
-        trigger: stat,
-        start: 'top 85%',
-        toggleActions: 'play none none reverse'
-      }
-    });
-  });
-}
-
-/**
- * Initialize intro animation on page load
- */
-function initIntroAnimation() {
-  const tl = gsap.timeline();
-
-  // Hide everything initially
-  gsap.set('.header', { y: -100, opacity: 0 });
-  gsap.set('.section--home .section__content', { y: 100, opacity: 0 });
-  gsap.set('.section--home .layer', { scale: 1.1, opacity: 0 });
-
-  // Animate in
-  tl.to('.section--home .layer--back', {
-    scale: 1,
-    opacity: 1,
-    duration: 1.5,
-    ease: 'power2.out'
-  })
-  .to('.section--home .layer--mid', {
-    scale: 1,
-    opacity: 0.7,
-    duration: 1.2,
-    ease: 'power2.out'
-  }, '-=1')
-  .to('.section--home .layer--front', {
-    scale: 1,
-    opacity: 0.9,
-    duration: 1,
-    ease: 'power2.out'
-  }, '-=0.8')
-  .to('.header', {
-    y: 0,
-    opacity: 1,
-    duration: 0.8,
-    ease: 'power2.out'
-  }, '-=0.5')
-  .to('.section--home .section__content', {
-    y: 0,
-    opacity: 1,
-    duration: 1,
-    ease: 'power3.out'
-  }, '-=0.5');
-
-  return tl;
-}
-
-/**
- * Add scroll indicator fallback styles
- */
-function addFallbackStyles() {
-  const style = document.createElement('style');
-  style.textContent = `
-    .scroll-indicator--fallback {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-    }
-    .scroll-indicator__mouse {
-      width: 25px;
-      height: 40px;
-      border: 2px solid rgba(255, 255, 255, 0.7);
-      border-radius: 15px;
-      position: relative;
-    }
-    .scroll-indicator__wheel {
-      width: 4px;
-      height: 8px;
-      background: rgba(255, 255, 255, 0.7);
-      border-radius: 2px;
-      position: absolute;
-      top: 8px;
-      left: 50%;
-      transform: translateX(-50%);
-      animation: scrollWheel 1.5s ease-in-out infinite;
-    }
-    @keyframes scrollWheel {
-      0%, 100% { opacity: 1; transform: translateX(-50%) translateY(0); }
-      50% { opacity: 0.3; transform: translateX(-50%) translateY(10px); }
-    }
-    .scroll-indicator__arrow {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .scroll-indicator__arrow span {
-      display: block;
-      width: 10px;
-      height: 10px;
-      border-right: 2px solid rgba(255, 255, 255, 0.5);
-      border-bottom: 2px solid rgba(255, 255, 255, 0.5);
-      transform: rotate(45deg);
-      margin: -5px;
-      animation: scrollArrow 1.5s ease-in-out infinite;
-    }
-    .scroll-indicator__arrow span:nth-child(2) {
-      animation-delay: 0.15s;
-    }
-    @keyframes scrollArrow {
-      0%, 100% { opacity: 0.3; }
-      50% { opacity: 1; }
-    }
-  `;
-  document.head.appendChild(style);
-}
+// Auth state
+let currentUser = null;
+let currentProfile = null;
 
 // ============================================
 // Pantry Functions
 // ============================================
 
 /**
- * Initialize pantry UI
+ * Initialize pantry UI for new dashboard view
  */
 function initPantryUI() {
   const categoryFilter = document.getElementById('categoryFilter');
-  const ingredientBrowser = document.getElementById('ingredientBrowser');
   const browserGrid = document.getElementById('browserGrid');
-  const browserTitle = document.getElementById('browserTitle');
-  const closeBrowserBtn = document.getElementById('closeBrowser');
+  const pantryGrid = document.getElementById('pantryGrid');
+  const pantryCategories = document.getElementById('pantryCategories');
 
-  // Dropdown elements (center top)
-  const pantryDropdown = document.getElementById('pantryDropdown');
-  const dropdownToggle = document.getElementById('togglePantryDropdown');
-  const dropdownCount = document.getElementById('sidepanelCount');
-  const pantryList = document.getElementById('pantryList');
-  const dropdownEmpty = document.getElementById('sidepanelEmpty');
-
-  let currentBrowserCategory = null;
-
-  // Render dropdown pantry list
-  function renderDropdownList() {
+  // Render pantry items as cards in the grid
+  function renderPantryCards() {
     const items = getPantryItems();
 
-    // Update count
-    dropdownCount.textContent = items.length;
-
-    // Show/hide empty state
     if (items.length === 0) {
-      pantryList.style.display = 'none';
-      dropdownEmpty.style.display = 'block';
+      browserGrid.innerHTML = `
+        <div class="empty-state" style="grid-column: 1 / -1;">
+          <div class="empty-state__icon">📦</div>
+          <h3 class="empty-state__title">Your pantry is empty</h3>
+          <p class="empty-state__text">Add ingredients to start tracking your inventory</p>
+        </div>
+      `;
       return;
     }
-
-    pantryList.style.display = 'block';
-    dropdownEmpty.style.display = 'none';
 
     // Sort by name
     const sorted = [...items].sort((a, b) => {
@@ -309,142 +106,282 @@ function initPantryUI() {
       return (ingA?.name || '').localeCompare(ingB?.name || '');
     });
 
-    pantryList.innerHTML = sorted.map(item => {
+    const itemCards = sorted.map(item => {
       const ingredient = getIngredientById(item.ingredientId);
       if (!ingredient) return '';
 
       const icon = getCategoryIcon(ingredient.category);
-      // Use ingredient's default unit if stored unit is generic "unit"
       const displayUnit = (item.unit === 'unit' || !item.unit) ? ingredient.defaultUnit : item.unit;
-      const qtyDisplay = `${item.quantity} ${displayUnit}`;
+      const isLowStock = item.quantity <= 1;
+
+      // Normalize category for CSS class
+      const categoryClass = ingredient.category?.toLowerCase().replace(/[^a-z]/g, '') || 'other';
 
       return `
-        <div class="dropdown-item" data-ingredient-id="${item.ingredientId}">
-          <span class="dropdown-item__icon">${icon}</span>
-          <div class="dropdown-item__info">
-            <div class="dropdown-item__name">${ingredient.name}</div>
-            <div class="dropdown-item__qty">${qtyDisplay}</div>
+        <div class="item-card" data-ingredient-id="${item.ingredientId}">
+          <div class="item-image item-image--${categoryClass}">
+            <span style="font-size: 48px;">${icon}</span>
+            ${isLowStock ? '<span class="item-badge low">Low</span>' : ''}
           </div>
-          <button class="dropdown-item__remove" data-action="remove" title="Remove">×</button>
+          <div class="item-info">
+            <h3>${ingredient.name}</h3>
+            <div class="item-meta">
+              <span>${ingredient.category}</span>
+              <span>${item.quantity} ${displayUnit}</span>
+            </div>
+          </div>
+          <div class="quantity-control">
+            <button class="qty-btn" data-action="decrease">-</button>
+            <span class="qty-val">${item.quantity}</span>
+            <button class="qty-btn" data-action="increase">+</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Add "Add New Item" card at the end
+    const addNewCard = `
+      <div class="item-card item-card--add" id="addItemCard">
+        <div class="item-image item-image--add">
+          <span style="font-size: 48px;">+</span>
+        </div>
+        <div class="item-info">
+          <h3>Add Item</h3>
+          <div class="item-meta">
+            <span>Click to add new ingredient</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    browserGrid.innerHTML = itemCards + addNewCard;
+  }
+
+  // Handle grid clicks (quantity changes and add new item)
+  browserGrid.addEventListener('click', (e) => {
+    const card = e.target.closest('.item-card');
+    if (!card) return;
+
+    // Handle "Add Item" card click
+    if (card.classList.contains('item-card--add')) {
+      openModal('addIngredientModal');
+      return;
+    }
+
+    const ingredientId = card.dataset.ingredientId;
+    const item = getPantryItems().find(i => i.ingredientId === ingredientId);
+    if (!item) return;
+
+    if (e.target.closest('[data-action="increase"]')) {
+      addPantryItem(ingredientId, item.quantity + 1, item.unit, item.location, item.notes);
+    } else if (e.target.closest('[data-action="decrease"]')) {
+      if (item.quantity <= 1) {
+        removePantryItem(ingredientId);
+      } else {
+        addPantryItem(ingredientId, item.quantity - 1, item.unit, item.location, item.notes);
+      }
+    }
+  });
+
+  // Handle category filter clicks
+  categoryFilter?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.filter-tab');
+    if (!btn) return;
+
+    const category = btn.dataset.category;
+
+    categoryFilter.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    filterPantryByCategory(category);
+  });
+
+  // Filter pantry items by category
+  function filterPantryByCategory(category) {
+    const cards = browserGrid.querySelectorAll('.item-card');
+    cards.forEach(card => {
+      const ingredientId = card.dataset.ingredientId;
+      const ingredient = getIngredientById(ingredientId);
+
+      if (category === 'all' || ingredient?.category === category) {
+        card.style.display = '';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  }
+
+  // Listen for global category filter events
+  window.addEventListener('categoryfilter', (e) => {
+    const category = e.detail.category;
+    filterPantryByCategory(category);
+
+    // Update filter tab UI
+    categoryFilter?.querySelectorAll('.filter-tab').forEach(b => {
+      b.classList.toggle('active', b.dataset.category === category);
+    });
+  });
+
+  // Render to Pantry view grid as well
+  function renderPantryViewGrid() {
+    if (!pantryGrid) return;
+
+    const items = getPantryItems();
+    if (items.length === 0) {
+      pantryGrid.innerHTML = `
+        <div class="empty-state" style="grid-column: 1 / -1;">
+          <div class="empty-state__icon">📦</div>
+          <h3 class="empty-state__title">Your pantry is empty</h3>
+          <p class="empty-state__text">Add ingredients to start tracking your inventory</p>
+          <button class="btn btn--primary" data-action="add-ingredient">Add First Item</button>
+        </div>
+      `;
+      return;
+    }
+
+    const sorted = [...items].sort((a, b) => {
+      const ingA = getIngredientById(a.ingredientId);
+      const ingB = getIngredientById(b.ingredientId);
+      return (ingA?.name || '').localeCompare(ingB?.name || '');
+    });
+
+    pantryGrid.innerHTML = sorted.map(item => {
+      const ingredient = getIngredientById(item.ingredientId);
+      if (!ingredient) return '';
+
+      const icon = getCategoryIcon(ingredient.category);
+      const displayUnit = (item.unit === 'unit' || !item.unit) ? ingredient.defaultUnit : item.unit;
+      const isLowStock = item.quantity <= 1;
+      const categoryClass = ingredient.category?.toLowerCase().replace(/[^a-z]/g, '') || 'other';
+
+      return `
+        <div class="item-card" data-ingredient-id="${item.ingredientId}">
+          <div class="item-image item-image--${categoryClass}">
+            <span style="font-size: 48px;">${icon}</span>
+            ${isLowStock ? '<span class="item-badge low">Low</span>' : ''}
+          </div>
+          <div class="item-info">
+            <h3>${ingredient.name}</h3>
+            <div class="item-meta">
+              <span>${ingredient.category}</span>
+              <span>${item.quantity} ${displayUnit}</span>
+            </div>
+          </div>
+          <div class="quantity-control">
+            <button class="qty-btn" data-action="decrease">-</button>
+            <span class="qty-val">${item.quantity}</span>
+            <button class="qty-btn" data-action="increase">+</button>
+          </div>
         </div>
       `;
     }).join('');
   }
 
-  // Handle dropdown item removal
-  pantryList.addEventListener('click', (e) => {
-    const removeBtn = e.target.closest('[data-action="remove"]');
-    if (!removeBtn) return;
+  // Handle pantry view grid clicks
+  pantryGrid?.addEventListener('click', (e) => {
+    const card = e.target.closest('.item-card');
+    if (!card) return;
 
-    const item = removeBtn.closest('.dropdown-item');
-    const ingredientId = item.dataset.ingredientId;
-
-    // Animate out
-    gsap.to(item, {
-      opacity: 0,
-      x: 20,
-      duration: 0.2,
-      ease: 'power2.in',
-      onComplete: () => {
-        removePantryItem(ingredientId);
-      }
-    });
-  });
-
-  // Toggle dropdown
-  dropdownToggle.addEventListener('click', () => {
-    pantryDropdown.classList.toggle('pantry-dropdown--open');
-  });
-
-  // Render pantry items
-  function updatePantryUI() {
-    renderDropdownList();
-    updatePantryStats();
-    updateRecipeGrid(); // Update recipes when pantry changes
-
-    // Refresh browser if open
-    if (currentBrowserCategory && ingredientBrowser.style.display !== 'none') {
-      renderIngredientBrowser(currentBrowserCategory, browserGrid, updatePantryUI);
+    // Handle add ingredient button in empty state
+    if (e.target.closest('[data-action="add-ingredient"]')) {
+      openModal('addIngredientModal');
+      return;
     }
-  }
 
-  // Show ingredient browser for a category
-  function showIngredientBrowser(categoryId) {
-    currentBrowserCategory = categoryId;
-    const categoryName = getCategoryDisplayName(categoryId);
-    browserTitle.textContent = `Browse ${categoryName}`;
-    ingredientBrowser.style.display = 'block';
+    const ingredientId = card.dataset.ingredientId;
+    const item = getPantryItems().find(i => i.ingredientId === ingredientId);
+    if (!item) return;
 
-    renderIngredientBrowser(categoryId, browserGrid, updatePantryUI);
-
-    // Animate in
-    gsap.fromTo(ingredientBrowser,
-      { opacity: 0, y: -20 },
-      { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }
-    );
-  }
-
-  // Hide ingredient browser
-  function hideIngredientBrowser() {
-    gsap.to(ingredientBrowser, {
-      opacity: 0,
-      y: -20,
-      duration: 0.2,
-      ease: 'power2.in',
-      onComplete: () => {
-        ingredientBrowser.style.display = 'none';
-        currentBrowserCategory = null;
-      }
-    });
-  }
-
-  // Build category filter buttons
-  function buildCategoryFilter() {
-    const categories = getCategories();
-    categoryFilter.innerHTML = '<button class="category-btn category-btn--active" data-category="all">All</button>';
-
-    categories.forEach(cat => {
-      const btn = document.createElement('button');
-      btn.className = 'category-btn';
-      btn.dataset.category = cat.id;
-      btn.innerHTML = `${getCategoryIcon(cat.id)} ${cat.name}`;
-      categoryFilter.appendChild(btn);
-    });
-
-    // Category filter click handler
-    categoryFilter.addEventListener('click', (e) => {
-      const btn = e.target.closest('.category-btn');
-      if (!btn) return;
-
-      const category = btn.dataset.category;
-
-      categoryFilter.querySelectorAll('.category-btn').forEach(b => b.classList.remove('category-btn--active'));
-      btn.classList.add('category-btn--active');
-
-      // Show/hide ingredient browser
-      if (category === 'all') {
-        hideIngredientBrowser();
+    if (e.target.closest('[data-action="increase"]')) {
+      addPantryItem(ingredientId, item.quantity + 1, item.unit, item.location, item.notes);
+    } else if (e.target.closest('[data-action="decrease"]')) {
+      if (item.quantity <= 1) {
+        removePantryItem(ingredientId);
       } else {
-        showIngredientBrowser(category);
+        addPantryItem(ingredientId, item.quantity - 1, item.unit, item.location, item.notes);
       }
-    });
-  }
-
-  // Close browser button
-  closeBrowserBtn.addEventListener('click', () => {
-    hideIngredientBrowser();
-    // Reset to "All" category
-    categoryFilter.querySelectorAll('.category-btn').forEach(b => b.classList.remove('category-btn--active'));
-    categoryFilter.querySelector('[data-category="all"]').classList.add('category-btn--active');
+    }
   });
 
-  buildCategoryFilter();
+  // Populate pantry categories
+  function populatePantryCategories() {
+    if (!pantryCategories) return;
+
+    const categories = getCategories();
+    const categoryBtns = categories.map(cat =>
+      `<button class="category-btn" data-category="${cat.id}">${cat.icon || ''} ${cat.name}</button>`
+    ).join('');
+
+    pantryCategories.innerHTML = `
+      <button class="category-btn category-btn--active" data-category="all">📦 All</button>
+      ${categoryBtns}
+    `;
+  }
+
+  // Handle pantry category filter
+  pantryCategories?.addEventListener('click', (e) => {
+    const btn = e.target.closest('.category-btn');
+    if (!btn) return;
+
+    const category = btn.dataset.category;
+    pantryCategories.querySelectorAll('.category-btn').forEach(b => {
+      b.classList.remove('category-btn--active');
+    });
+    btn.classList.add('category-btn--active');
+
+    // Filter pantry grid
+    const cards = pantryGrid?.querySelectorAll('.item-card') || [];
+    cards.forEach(card => {
+      const ingredientId = card.dataset.ingredientId;
+      const ingredient = getIngredientById(ingredientId);
+      if (category === 'all' || ingredient?.category === category) {
+        card.style.display = '';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  });
+
+  // Initialize categories
+  populatePantryCategories();
+
+  // Handle Pantry view action buttons
+  const pantryView = document.getElementById('view-pantry');
+  pantryView?.addEventListener('click', (e) => {
+    const action = e.target.closest('[data-action]')?.dataset.action;
+    if (!action) return;
+
+    switch (action) {
+      case 'add-ingredient':
+        openModal('addIngredientModal');
+        break;
+      case 'export':
+        downloadPantryJson();
+        break;
+      case 'import':
+        document.getElementById('importFileInput')?.click();
+        break;
+    }
+  });
+
+  // Update UI
+  function updatePantryUI() {
+    renderPantryCards();
+    renderPantryViewGrid();
+    updatePantryStats();
+    updateRecipeGrid();
+  }
+
+  // Initial render
   updatePantryUI();
 
   // Listen for pantry changes
   onPantryChange(() => {
     updatePantryUI();
   });
+
+  // Return update function for other modules to use
+  return updatePantryUI;
 }
 
 /**
@@ -454,80 +391,216 @@ function updatePantryStats() {
   const stats = getPantryStats();
   const makeableCount = countMakeableRecipes(allRecipes);
 
-  document.getElementById('statTotal').textContent = stats.totalItems;
-  document.getElementById('statRecipes').textContent = makeableCount;
-}
+  const statTotal = document.getElementById('statTotal');
+  const statRecipes = document.getElementById('statRecipes');
+  const statExpiring = document.getElementById('statExpiring');
+  const statLowStock = document.getElementById('statLowStock');
 
-/**
- * Handle edit pantry item (for now, just re-add modal)
- */
-function handleEditPantryItem(item) {
-  // For simplicity, remove and re-add via modal
-  openModal('addIngredientModal');
-}
-
-/**
- * Handle remove pantry item
- */
-function handleRemovePantryItem(ingredientId) {
-  removePantryItem(ingredientId);
+  if (statTotal) statTotal.textContent = stats.totalItems;
+  if (statRecipes) statRecipes.textContent = makeableCount;
+  if (statExpiring) statExpiring.textContent = '0'; // Placeholder
+  if (statLowStock) {
+    const lowStockCount = getPantryItems().filter(item => item.quantity <= 1).length;
+    statLowStock.textContent = lowStockCount;
+  }
 }
 
 /**
  * Initialize add ingredient modal
  */
 function initAddIngredientModal() {
-  const modal = document.getElementById('addIngredientModal');
-  const form = document.getElementById('addIngredientForm');
   const searchInput = document.getElementById('ingredientSearchInput');
-  const resultsContainer = document.getElementById('autocompleteResults');
   const selectedIdInput = document.getElementById('selectedIngredientId');
   const submitBtn = document.getElementById('submitAddIngredient');
-  const cancelBtn = document.getElementById('cancelAddIngredient');
   const addBtn = document.getElementById('addIngredientBtn');
+  const categoryTabsContainer = document.getElementById('ingredientCategoryTabs');
+  const ingredientGrid = document.getElementById('ingredientBrowserGrid');
+  const selectionPanel = document.getElementById('ingredientSelectionPanel');
+  const selectionIcon = document.getElementById('selectionIcon');
+  const selectionName = document.getElementById('selectionName');
 
-  // Open modal button
-  addBtn.addEventListener('click', () => {
-    selectedIngredient = null;
-    selectedIdInput.value = '';
-    submitBtn.disabled = true;
-    clearAutocomplete(searchInput, resultsContainer);
-    form.reset();
-    openModal('addIngredientModal');
+  let currentCategory = null;
+  let searchDebounce = null;
+
+  // Populate category tabs
+  function populateCategoryTabs() {
+    const categories = getCategories();
+    categoryTabsContainer.innerHTML = `
+      <button class="category-tab active" data-category="all">
+        <span class="category-tab__icon">📦</span>
+        <span class="category-tab__name">All</span>
+      </button>
+      ${categories.map(cat => `
+        <button class="category-tab" data-category="${cat.id}">
+          <span class="category-tab__icon">${cat.icon || '📁'}</span>
+          <span class="category-tab__name">${cat.name}</span>
+        </button>
+      `).join('')}
+    `;
+  }
+
+  // Render ingredients grid
+  function renderIngredientsGrid(ingredients) {
+    const pantryIds = getPantryIngredientIds();
+
+    if (ingredients.length === 0) {
+      ingredientGrid.innerHTML = `
+        <div class="ingredient-browser__empty" style="width: 100%;">
+          <p>No ingredients found</p>
+        </div>
+      `;
+      return;
+    }
+
+    ingredientGrid.innerHTML = ingredients.map(ing => {
+      const inPantry = pantryIds.has(ing.id);
+      const pantryItem = inPantry ? getPantryItems().find(p => p.ingredientId === ing.id) : null;
+
+      return `
+        <div class="ingredient-tile ${inPantry ? 'in-pantry' : ''} ${selectedIngredient?.id === ing.id ? 'selected' : ''}"
+             data-ingredient-id="${ing.id}">
+          <span class="ingredient-tile__name">${escapeHtml(ing.name)}</span>
+          ${pantryItem ? `<span class="ingredient-tile__qty">${pantryItem.quantity} ${pantryItem.unit || ''}</span>` : ''}
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Load ingredients for a category
+  function loadCategoryIngredients(categoryId) {
+    currentCategory = categoryId;
+    let ingredients;
+
+    if (categoryId === 'all') {
+      // Get some popular/common ingredients from each category
+      const categories = getCategories();
+      ingredients = [];
+      categories.forEach(cat => {
+        const catIngredients = getIngredientsByCategory(cat.id).slice(0, 8);
+        ingredients.push(...catIngredients);
+      });
+    } else {
+      ingredients = getIngredientsByCategory(categoryId);
+    }
+
+    renderIngredientsGrid(ingredients);
+  }
+
+  // Handle category tab click
+  categoryTabsContainer?.addEventListener('click', (e) => {
+    const tab = e.target.closest('.category-tab');
+    if (!tab) return;
+
+    categoryTabsContainer.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+
+    const categoryId = tab.dataset.category;
+    searchInput.value = '';
+    loadCategoryIngredients(categoryId);
   });
 
-  // Initialize autocomplete
-  initAutocomplete(searchInput, resultsContainer, (ingredient) => {
+  // Handle ingredient tile click
+  ingredientGrid?.addEventListener('click', (e) => {
+    const tile = e.target.closest('.ingredient-tile');
+    if (!tile) return;
+
+    const ingredientId = tile.dataset.ingredientId;
+    const ingredient = getIngredientById(ingredientId);
+    if (!ingredient) return;
+
+    // Update selection
     selectedIngredient = ingredient;
-    selectedIdInput.value = ingredient.id;
-    submitBtn.disabled = false;
+    if (selectedIdInput) selectedIdInput.value = ingredient.id;
+
+    // Update tile visual
+    ingredientGrid.querySelectorAll('.ingredient-tile').forEach(t => t.classList.remove('selected'));
+    tile.classList.add('selected');
+
+    // Show selection panel
+    selectionPanel.style.display = 'flex';
+    selectionName.textContent = ingredient.name;
 
     // Set default unit
     const unitSelect = document.getElementById('ingredientUnit');
-    if (ingredient.defaultUnit) {
+    if (ingredient.defaultUnit && unitSelect) {
       unitSelect.value = ingredient.defaultUnit;
     }
+
+    // Reset quantity
+    document.getElementById('ingredientQuantity').value = 1;
   });
 
-  // Cancel button
-  cancelBtn.addEventListener('click', () => {
-    closeModal('addIngredientModal');
+  // Search functionality
+  searchInput?.addEventListener('input', (e) => {
+    const query = e.target.value.trim();
+
+    clearTimeout(searchDebounce);
+
+    if (query.length < 2) {
+      // Return to category view
+      loadCategoryIngredients(currentCategory || 'all');
+      return;
+    }
+
+    searchDebounce = setTimeout(() => {
+      const results = searchIngredients(query, 50);
+      renderIngredientsGrid(results);
+
+      // Deselect category tabs when searching
+      categoryTabsContainer.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+    }, 200);
   });
 
-  // Form submit
-  form.addEventListener('submit', (e) => {
-    e.preventDefault();
+  // Open modal function
+  function openAddIngredientModal() {
+    selectedIngredient = null;
+    if (selectedIdInput) selectedIdInput.value = '';
+    selectionPanel.style.display = 'none';
+    searchInput.value = '';
 
+    populateCategoryTabs();
+    loadCategoryIngredients('all');
+
+    openModal('addIngredientModal');
+  }
+
+  // Open modal button
+  addBtn?.addEventListener('click', openAddIngredientModal);
+
+  // Handle add buttons in other views
+  document.querySelectorAll('[data-action="add-ingredient"]').forEach(btn => {
+    btn.addEventListener('click', openAddIngredientModal);
+  });
+
+  // Submit button click
+  submitBtn?.addEventListener('click', () => {
     if (!selectedIngredient) return;
 
-    const quantity = parseFloat(document.getElementById('ingredientQuantity').value) || 1;
-    const unit = document.getElementById('ingredientUnit').value;
-    const notes = document.getElementById('ingredientNotes').value;
+    const quantity = parseFloat(document.getElementById('ingredientQuantity')?.value) || 1;
+    const unit = document.getElementById('ingredientUnit')?.value || 'pieces';
 
-    addPantryItem(selectedIngredient.id, quantity, unit, 'pantry', notes);
+    addPantryItem(selectedIngredient.id, quantity, unit, 'pantry', '');
 
-    closeModal('addIngredientModal');
+    // Visual feedback - update the tile
+    const tile = ingredientGrid.querySelector(`[data-ingredient-id="${selectedIngredient.id}"]`);
+    if (tile) {
+      tile.classList.add('in-pantry');
+      tile.classList.remove('selected');
+
+      // Add/update quantity display
+      let qtyEl = tile.querySelector('.ingredient-tile__qty');
+      if (!qtyEl) {
+        qtyEl = document.createElement('span');
+        qtyEl.className = 'ingredient-tile__qty';
+        tile.appendChild(qtyEl);
+      }
+      qtyEl.textContent = `${quantity} ${unit}`;
+    }
+
+    // Reset selection but keep modal open for adding more
     selectedIngredient = null;
+    selectionPanel.style.display = 'none';
+    if (selectedIdInput) selectedIdInput.value = '';
   });
 }
 
@@ -544,25 +617,25 @@ function initExportImport() {
 
   let pendingFile = null;
 
-  exportBtn.addEventListener('click', () => {
+  exportBtn?.addEventListener('click', () => {
     const filename = downloadPantryJson();
     console.log('Exported pantry to:', filename);
   });
 
-  importBtn.addEventListener('click', () => {
-    importInput.click();
+  importBtn?.addEventListener('click', () => {
+    importInput?.click();
   });
 
-  importInput.addEventListener('change', (e) => {
+  importInput?.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     pendingFile = file;
     openModal('importModal');
-    importInput.value = ''; // Reset for next use
+    importInput.value = '';
   });
 
-  mergeBtn.addEventListener('click', async () => {
+  mergeBtn?.addEventListener('click', async () => {
     if (pendingFile) {
       const result = await importPantryFromFile(pendingFile, 'merge');
       console.log('Import result:', result);
@@ -571,13 +644,27 @@ function initExportImport() {
     closeModal('importModal');
   });
 
-  replaceBtn.addEventListener('click', async () => {
+  replaceBtn?.addEventListener('click', async () => {
     if (pendingFile) {
       const result = await importPantryFromFile(pendingFile, 'replace');
       console.log('Import result:', result);
       pendingFile = null;
     }
     closeModal('importModal');
+  });
+
+  // Handle export/import buttons in other views
+  document.querySelectorAll('[data-action="export"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const filename = downloadPantryJson();
+      console.log('Exported pantry to:', filename);
+    });
+  });
+
+  document.querySelectorAll('[data-action="import"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      importInput?.click();
+    });
   });
 }
 
@@ -594,20 +681,40 @@ function initRecipeUI() {
   const matchFilter = document.getElementById('matchFilter');
   const difficultyFilter = document.getElementById('difficultyFilter');
   const cuisineFilter = document.getElementById('cuisineFilter');
+  const quickFilter = document.getElementById('recipeQuickFilter');
 
   // Populate cuisine filter
   const cuisines = getUniqueCuisines(allRecipes);
-  cuisineFilter.innerHTML = '<option value="all">All Cuisines</option>';
-  cuisines.forEach(cuisine => {
-    const option = document.createElement('option');
-    option.value = cuisine;
-    option.textContent = cuisine.charAt(0).toUpperCase() + cuisine.slice(1);
-    cuisineFilter.appendChild(option);
+  if (cuisineFilter) {
+    cuisineFilter.innerHTML = '<option value="all">All Cuisines</option>';
+    cuisines.forEach(cuisine => {
+      const option = document.createElement('option');
+      option.value = cuisine;
+      option.textContent = cuisine.charAt(0).toUpperCase() + cuisine.slice(1);
+      cuisineFilter.appendChild(option);
+    });
+  }
+
+  // Quick filter tabs
+  quickFilter?.addEventListener('click', (e) => {
+    const tab = e.target.closest('.filter-tab');
+    if (!tab) return;
+
+    const matchType = tab.dataset.match;
+
+    // Update active state
+    quickFilter.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+
+    // Update filter and grid
+    currentFilters.matchType = matchType;
+    if (matchFilter) matchFilter.value = matchType;
+    updateRecipeGrid();
   });
 
   // Search input
   let searchTimeout;
-  searchInput.addEventListener('input', (e) => {
+  searchInput?.addEventListener('input', (e) => {
     clearTimeout(searchTimeout);
     searchTimeout = setTimeout(() => {
       currentFilters.search = e.target.value;
@@ -616,23 +723,53 @@ function initRecipeUI() {
   });
 
   // Filter changes
-  matchFilter.addEventListener('change', (e) => {
+  matchFilter?.addEventListener('change', (e) => {
     currentFilters.matchType = e.target.value;
+    // Sync quick filter tabs
+    quickFilter?.querySelectorAll('.filter-tab').forEach(t => {
+      t.classList.toggle('active', t.dataset.match === e.target.value);
+    });
     updateRecipeGrid();
   });
 
-  difficultyFilter.addEventListener('change', (e) => {
+  difficultyFilter?.addEventListener('change', (e) => {
     currentFilters.difficulty = e.target.value;
     updateRecipeGrid();
   });
 
-  cuisineFilter.addEventListener('change', (e) => {
+  cuisineFilter?.addEventListener('change', (e) => {
     currentFilters.cuisine = e.target.value;
     updateRecipeGrid();
   });
 
   // Initial render
   updateRecipeGrid();
+  updateRecipeStats();
+
+  // Update recipe stats when pantry changes
+  onPantryChange(() => {
+    updateRecipeGrid();
+    updateRecipeStats();
+  });
+}
+
+/**
+ * Update recipe statistics display
+ */
+function updateRecipeStats() {
+  const matched = getMatchedRecipes(allRecipes);
+
+  const canMakeCount = matched.filter(r => r.matchResult?.matchType === 'full').length;
+  const almostCount = matched.filter(r => r.matchResult?.matchType === 'partial').length;
+  const totalCount = allRecipes.length;
+
+  const statCanMake = document.getElementById('recipeStatCanMake');
+  const statAlmost = document.getElementById('recipeStatAlmost');
+  const statTotal = document.getElementById('recipeStatTotal');
+
+  if (statCanMake) statCanMake.textContent = canMakeCount;
+  if (statAlmost) statAlmost.textContent = almostCount;
+  if (statTotal) statTotal.textContent = totalCount;
 }
 
 /**
@@ -674,13 +811,18 @@ function updateRecipeGrid() {
   let showViewAllButton = false;
 
   if (!hasActiveFilters && !showAllRecipes && final.length > RECIPE_PREVIEW_COUNT) {
-    // Shuffle and take first N for preview
     recipesToShow = shuffleArray(final).slice(0, RECIPE_PREVIEW_COUNT);
     showViewAllButton = true;
   }
 
   // Render recipes
   renderRecipeGrid(recipesToShow, recipeGrid, handleRecipeClick);
+
+  // Update result count
+  const resultCount = document.getElementById('recipeResultCount');
+  if (resultCount) {
+    resultCount.textContent = final.length;
+  }
 
   // Add or remove "View All" button
   updateViewAllButton(showViewAllButton, final.length);
@@ -696,21 +838,22 @@ function updateViewAllButton(show, totalCount) {
     if (!viewAllContainer) {
       viewAllContainer = document.createElement('div');
       viewAllContainer.id = 'viewAllContainer';
-      viewAllContainer.className = 'view-all-container';
+      viewAllContainer.className = 'text-center mt-xl';
       viewAllContainer.innerHTML = `
-        <button class="btn btn--secondary view-all-btn" id="viewAllRecipesBtn">
+        <button class="btn btn--secondary" id="viewAllRecipesBtn">
           View All ${totalCount} Recipes
         </button>
       `;
       const recipeGrid = document.getElementById('recipeGrid');
-      recipeGrid.parentNode.insertBefore(viewAllContainer, recipeGrid.nextSibling);
+      recipeGrid?.parentNode?.insertBefore(viewAllContainer, recipeGrid.nextSibling);
 
-      document.getElementById('viewAllRecipesBtn').addEventListener('click', () => {
+      document.getElementById('viewAllRecipesBtn')?.addEventListener('click', () => {
         showAllRecipes = true;
         updateRecipeGrid();
       });
     } else {
-      viewAllContainer.querySelector('.view-all-btn').textContent = `View All ${totalCount} Recipes`;
+      const btn = viewAllContainer.querySelector('.btn');
+      if (btn) btn.textContent = `View All ${totalCount} Recipes`;
       viewAllContainer.style.display = 'block';
     }
   } else if (viewAllContainer) {
@@ -757,36 +900,56 @@ function initMealPlannerUI() {
   const todayBtn = document.getElementById('todayBtn');
   const generateShoppingListBtn = document.getElementById('generateShoppingListBtn');
   const clearWeekBtn = document.getElementById('clearWeekBtn');
+  const bannerShoppingBtn = document.getElementById('bannerShoppingBtn');
+  const shoppingBannerText = document.getElementById('shoppingBannerText');
 
   // Render initial calendar
   function renderCalendar() {
-    weekTitle.textContent = formatWeekTitle(currentWeekStart);
-    renderWeekView(calendarContainer, currentWeekStart, {
-      onAddClick: (dateStr) => openAddMealModal(dateStr),
-      onMealClick: (meal, recipe) => openMealDetailModal(meal, recipe),
-      onRemoveClick: (mealId) => removeMeal(mealId)
-    });
+    if (weekTitle) weekTitle.textContent = formatWeekTitle(currentWeekStart);
+    if (calendarContainer) {
+      renderWeekView(calendarContainer, currentWeekStart, {
+        onAddClick: (dateStr, mealType) => openRecipeBrowserModal(dateStr, mealType),
+        onMealClick: (meal, recipe) => openMealDetailModal(meal, recipe),
+        onRemoveClick: (mealId) => removeMeal(mealId)
+      });
+    }
     updateMealPlanStats();
+    updateShoppingBanner();
+  }
+
+  // Update shopping banner text
+  function updateShoppingBanner() {
+    const stats = getMealPlanStats(currentWeekStart);
+    const mealsPlanned = stats.totalMeals || 0;
+    const needShopping = stats.needShopping || 0;
+
+    if (mealsPlanned === 0) {
+      if (shoppingBannerText) shoppingBannerText.textContent = 'Add meals to your plan to see missing ingredients.';
+    } else if (needShopping > 0) {
+      if (shoppingBannerText) shoppingBannerText.textContent = `You have ${needShopping} meal${needShopping > 1 ? 's' : ''} that need${needShopping === 1 ? 's' : ''} ingredients from the store.`;
+    } else {
+      if (shoppingBannerText) shoppingBannerText.textContent = 'Great! You have all ingredients for your planned meals.';
+    }
   }
 
   // Week navigation
-  prevWeekBtn.addEventListener('click', () => {
+  prevWeekBtn?.addEventListener('click', () => {
     currentWeekStart = navigateWeek(currentWeekStart, -1);
     renderCalendar();
   });
 
-  nextWeekBtn.addEventListener('click', () => {
+  nextWeekBtn?.addEventListener('click', () => {
     currentWeekStart = navigateWeek(currentWeekStart, 1);
     renderCalendar();
   });
 
-  todayBtn.addEventListener('click', () => {
+  todayBtn?.addEventListener('click', () => {
     currentWeekStart = goToCurrentWeek();
     renderCalendar();
   });
 
   // Clear week button
-  clearWeekBtn.addEventListener('click', () => {
+  clearWeekBtn?.addEventListener('click', () => {
     if (confirm('Are you sure you want to clear all meals for this week?')) {
       const removed = clearWeek(currentWeekStart);
       console.log(`Cleared ${removed} meals`);
@@ -794,8 +957,12 @@ function initMealPlannerUI() {
     }
   });
 
-  // Shopping list button
-  generateShoppingListBtn.addEventListener('click', () => {
+  // Shopping list buttons
+  generateShoppingListBtn?.addEventListener('click', () => {
+    openShoppingListModal();
+  });
+
+  bannerShoppingBtn?.addEventListener('click', () => {
     openShoppingListModal();
   });
 
@@ -804,12 +971,16 @@ function initMealPlannerUI() {
     renderCalendar();
   });
 
-  // Initialize quantity modal for ingredient browser
+  // Initialize recipe browser modal
+  initRecipeBrowserModal((date, meal) => {
+    renderCalendar();
+  });
+
+  // Initialize quantity modal
   initQuantityModal();
 
-  // Listen for pantry updates from quantity modal
+  // Listen for pantry updates
   document.addEventListener('pantryUpdated', () => {
-    updatePantryUI();
     updateRecipeGrid();
     renderCalendar();
   });
@@ -817,23 +988,108 @@ function initMealPlannerUI() {
   // Listen for meal plan changes
   onMealPlanChange(() => {
     renderCalendar();
+    // Refresh shopping list if view is active
+    const shoppingView = document.getElementById('view-shoppinglist');
+    if (shoppingView?.classList.contains('active')) {
+      renderShoppingListView();
+    }
   });
 
-  // Listen for pantry changes to update availability
+  // Listen for pantry changes
   onPantryChange(() => {
     renderCalendar();
+    // Refresh shopping list if view is active
+    const shoppingView = document.getElementById('view-shoppinglist');
+    if (shoppingView?.classList.contains('active')) {
+      renderShoppingListView();
+      renderLowStockSuggestions();
+    }
   });
 
-  // Set up callback for "Add to Meal Plan" button in recipe detail
-  setAddToMealPlanCallback((recipe) => {
-    // Close recipe modal and open add meal modal with today's date and recipe pre-selected
+  // Set up callback for "Add to Meal Plan" button
+  setAddToMealPlanCallback((recipe, servings) => {
     closeModal('recipeModal');
     const today = formatDate(new Date());
-    openAddMealModal(today, recipe);
+    openAddMealModal(today, recipe, servings);
   });
 
   // Initial render
   renderCalendar();
+
+  // Initialize sidebar recipe list
+  initSidebarRecipeList();
+}
+
+/**
+ * Initialize sidebar recipe list for quick adding
+ */
+function initSidebarRecipeList() {
+  const searchInput = document.getElementById('sidebarRecipeSearch');
+  const recipeList = document.getElementById('sidebarRecipeList');
+
+  if (!recipeList) return;
+
+  function renderSidebarRecipes(searchTerm = '') {
+    const matched = getMatchedRecipes(allRecipes);
+    let recipes = matched.filter(r => r.matchScore > 0);
+
+    // Filter by search term
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      recipes = recipes.filter(r =>
+        r.title.toLowerCase().includes(term) ||
+        r.cuisine?.toLowerCase().includes(term)
+      );
+    }
+
+    // Take top 10
+    recipes = recipes.slice(0, 10);
+
+    if (recipes.length === 0) {
+      recipeList.innerHTML = `
+        <div class="text-center text-light" style="padding: var(--spacing-xl);">
+          No matching recipes found
+        </div>
+      `;
+      return;
+    }
+
+    recipeList.innerHTML = recipes.map(recipe => `
+      <div class="recipe-sidebar__item" data-recipe-id="${recipe.id}" draggable="true">
+        <h4>${escapeHtml(recipe.title)}</h4>
+        <span>${recipe.cookTime || '30 min'} | ${Math.round(recipe.matchScore * 100)}% match</span>
+      </div>
+    `).join('');
+
+    // Add click handlers
+    recipeList.querySelectorAll('.recipe-sidebar__item').forEach(item => {
+      item.addEventListener('click', () => {
+        const recipeId = item.dataset.recipeId;
+        const recipe = allRecipes.find(r => r.id === recipeId);
+        if (recipe) {
+          const today = formatDate(new Date());
+          openRecipeBrowserModal(today);
+        }
+      });
+    });
+  }
+
+  // Search handler
+  let searchTimeout;
+  searchInput?.addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      renderSidebarRecipes(e.target.value);
+    }, 200);
+  });
+
+  // Initial render
+  renderSidebarRecipes();
+
+  // Update when pantry changes
+  onPantryChange(() => {
+    renderSidebarRecipes(searchInput?.value || '');
+  });
 }
 
 /**
@@ -841,9 +1097,11 @@ function initMealPlannerUI() {
  */
 function updateMealPlanStats() {
   const stats = getMealPlanStats(currentWeekStart);
-  document.getElementById('statPlannedMeals').textContent = stats.totalMeals;
-  document.getElementById('statCanMake').textContent = stats.canMake;
-  document.getElementById('statNeedShopping').textContent = stats.needShopping;
+  const canMake = document.getElementById('statCanMake');
+  const needShopping = document.getElementById('statNeedShopping');
+
+  if (canMake) canMake.textContent = stats.canMake;
+  if (needShopping) needShopping.textContent = stats.needShopping;
 }
 
 /**
@@ -851,6 +1109,8 @@ function updateMealPlanStats() {
  */
 function openMealDetailModal(meal, recipe) {
   const container = document.getElementById('mealDetailContent');
+  if (!container) return;
+
   const pantryIds = getPantryIngredientIds();
 
   const mealTypeIcons = {
@@ -867,7 +1127,6 @@ function openMealDetailModal(meal, recipe) {
     snack: 'Snack'
   };
 
-  // Scale ingredients for meal servings
   const scaledIngredients = recipe.ingredients.map(ing => {
     const scaled = (ing.quantity * meal.servings) / recipe.servings;
     const hasIngredient = pantryIds.has(ing.ingredientId);
@@ -881,40 +1140,38 @@ function openMealDetailModal(meal, recipe) {
   });
 
   container.innerHTML = `
-    <div class="meal-detail__header">
-      <span class="meal-detail__icon">${mealTypeIcons[meal.mealType] || '🍽️'}</span>
+    <div class="modal__header" style="display: flex; align-items: center; gap: var(--spacing-md); padding: 0; margin-bottom: var(--spacing-lg);">
+      <span style="font-size: 32px;">${mealTypeIcons[meal.mealType] || '🍽️'}</span>
       <div>
-        <h3 class="meal-detail__title">${escapeHtml(recipe.title)}</h3>
-        <p class="meal-detail__meta">${mealTypeNames[meal.mealType]} | ${meal.servings} servings</p>
+        <h3 class="modal__title" style="margin-bottom: var(--spacing-xs);">${escapeHtml(recipe.title)}</h3>
+        <p style="color: var(--text-body); font-size: var(--font-size-sm);">${mealTypeNames[meal.mealType]} | ${meal.servings} servings</p>
       </div>
     </div>
-    ${meal.notes ? `<p class="meal-detail__notes"><em>${escapeHtml(meal.notes)}</em></p>` : ''}
-    <div class="meal-detail__section">
-      <h4 class="meal-detail__section-title">Ingredients</h4>
-      <div class="meal-detail__ingredients">
+    ${meal.notes ? `<p style="color: var(--text-body); font-style: italic; margin-bottom: var(--spacing-lg);">${escapeHtml(meal.notes)}</p>` : ''}
+    <div style="margin-bottom: var(--spacing-xl);">
+      <h4 style="font-weight: 700; margin-bottom: var(--spacing-md);">Ingredients</h4>
+      <div style="display: flex; flex-direction: column; gap: var(--spacing-sm);">
         ${scaledIngredients.map(ing => `
-          <div class="meal-detail__ingredient ${ing.hasIngredient ? 'meal-detail__ingredient--have' : 'meal-detail__ingredient--missing'}">
+          <div style="display: flex; align-items: center; gap: var(--spacing-md); padding: var(--spacing-sm); background: ${ing.hasIngredient ? 'var(--accent-green-light)' : 'var(--accent-red-light)'}; border-radius: var(--radius-sm);">
             <span>${ing.hasIngredient ? '✓' : '✗'}</span>
-            <span>${escapeHtml(ing.name)}</span>
-            <span class="meal-detail__ingredient-qty">${ing.scaledQty.toFixed(1)} ${escapeHtml(ing.unit)}</span>
+            <span style="flex: 1;">${escapeHtml(ing.name)}</span>
+            <span style="color: var(--text-body);">${ing.scaledQty.toFixed(1)} ${escapeHtml(ing.unit)}</span>
           </div>
         `).join('')}
       </div>
     </div>
-    <div class="meal-detail__actions">
+    <div style="display: flex; gap: var(--spacing-md);">
       <button class="btn btn--secondary" id="viewFullRecipeBtn">View Full Recipe</button>
-      <button class="btn btn--danger" id="removeMealBtn">Remove from Plan</button>
+      <button class="btn btn--secondary" style="color: var(--accent-red);" id="removeMealBtn">Remove from Plan</button>
     </div>
   `;
 
-  // View full recipe button
-  container.querySelector('#viewFullRecipeBtn').addEventListener('click', () => {
+  container.querySelector('#viewFullRecipeBtn')?.addEventListener('click', () => {
     closeModal('mealDetailModal');
     handleRecipeClick(recipe);
   });
 
-  // Remove meal button
-  container.querySelector('#removeMealBtn').addEventListener('click', () => {
+  container.querySelector('#removeMealBtn')?.addEventListener('click', () => {
     removeMeal(meal.id);
     closeModal('mealDetailModal');
   });
@@ -931,23 +1188,21 @@ function openShoppingListModal() {
   const copyBtn = document.getElementById('copyShoppingList');
   const closeBtn = document.getElementById('closeShoppingList');
 
-  // Get shopping list for the current week
   const endDate = new Date(currentWeekStart);
   endDate.setDate(endDate.getDate() + 6);
   const shoppingList = getShoppingList(currentWeekStart, endDate);
 
-  subtitle.textContent = `Items needed for ${formatWeekTitle(currentWeekStart)}`;
+  if (subtitle) subtitle.textContent = `Items needed for ${formatWeekTitle(currentWeekStart)}`;
 
   if (shoppingList.length === 0) {
     container.innerHTML = `
-      <div class="shopping-list__empty">
-        <span class="shopping-list__empty-icon">🎉</span>
-        <p>You have everything you need!</p>
-        <p>All planned meals can be made with your pantry.</p>
+      <div class="empty-state">
+        <div class="empty-state__icon">🎉</div>
+        <h3 class="empty-state__title">You have everything you need!</h3>
+        <p class="empty-state__text">All planned meals can be made with your pantry.</p>
       </div>
     `;
   } else {
-    // Group by category
     const byCategory = {};
     shoppingList.forEach(item => {
       if (!byCategory[item.category]) {
@@ -968,39 +1223,406 @@ function openShoppingListModal() {
     };
 
     container.innerHTML = Object.entries(byCategory).map(([category, items]) => `
-      <div class="shopping-list__category">
-        <div class="shopping-list__category-header">
-          <span class="shopping-list__category-icon">${categoryIcons[category] || '📦'}</span>
-          <span class="shopping-list__category-name">${escapeHtml(category.replace('_', ' '))}</span>
+      <div class="shopping-category">
+        <div class="category-header">
+          <span>${categoryIcons[category] || '📦'}</span>
+          <span class="category-name">${escapeHtml(category.replace('_', ' '))}</span>
+          <span class="category-count">${items.length}</span>
         </div>
-        ${items.map(item => `
-          <div class="shopping-list__item">
-            <span class="shopping-list__item-name">${escapeHtml(item.name)}</span>
-            <span class="shopping-list__item-qty">${item.shortage.toFixed(1)} ${escapeHtml(item.unit)}</span>
-          </div>
-        `).join('')}
+        <div class="shopping-list-items">
+          ${items.map(item => `
+            <div class="list-item">
+              <div class="checkbox-wrapper">
+                <div class="custom-checkbox"></div>
+              </div>
+              <div class="item-details">
+                <span class="item-name">${escapeHtml(item.name)}</span>
+                <span class="item-qty">${item.shortage.toFixed(1)} ${escapeHtml(item.unit)}</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
       </div>
     `).join('');
+
+    // Add checkbox toggle
+    container.querySelectorAll('.list-item').forEach(item => {
+      item.addEventListener('click', () => {
+        item.classList.toggle('checked');
+      });
+    });
   }
 
   // Copy to clipboard
-  copyBtn.onclick = () => {
-    const text = shoppingList.map(item =>
+  if (copyBtn) {
+    copyBtn.onclick = () => {
+      const text = shoppingList.map(item =>
+        `- ${item.name}: ${item.shortage.toFixed(1)} ${item.unit}`
+      ).join('\n');
+
+      navigator.clipboard.writeText(`Shopping List\n${formatWeekTitle(currentWeekStart)}\n\n${text || 'Nothing needed!'}`).then(() => {
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => {
+          copyBtn.textContent = 'Copy to Clipboard';
+        }, 2000);
+      });
+    };
+  }
+
+  if (closeBtn) {
+    closeBtn.onclick = () => closeModal('shoppingListModal');
+  }
+
+  openModal('shoppingListModal');
+}
+
+// ============================================
+// Shopping List View Functions
+// ============================================
+
+// Track checked items in the view (persists during session)
+let checkedShoppingItems = new Set();
+
+/**
+ * Render the full-page shopping list view
+ */
+function renderShoppingListView() {
+  const container = document.getElementById('shoppingListView');
+  const emptyState = document.getElementById('shoppingEmptyState');
+
+  if (!container) return;
+
+  const endDate = new Date(currentWeekStart);
+  endDate.setDate(endDate.getDate() + 6);
+  const shoppingList = getShoppingList(currentWeekStart, endDate);
+
+  // Update stats
+  updateShoppingStats(shoppingList);
+
+  if (shoppingList.length === 0) {
+    container.innerHTML = '';
+    if (emptyState) emptyState.style.display = 'flex';
+    return;
+  }
+
+  if (emptyState) emptyState.style.display = 'none';
+
+  // Group by category
+  const byCategory = {};
+  shoppingList.forEach(item => {
+    if (!byCategory[item.category]) {
+      byCategory[item.category] = [];
+    }
+    byCategory[item.category].push(item);
+  });
+
+  const categoryIcons = {
+    proteins: '🥩',
+    dairy: '🧀',
+    grains: '🌾',
+    vegetables: '🥬',
+    fruits: '🍎',
+    pantry_staples: '🫙',
+    herbs_spices: '🌿',
+    other: '📦'
+  };
+
+  container.innerHTML = Object.entries(byCategory).map(([category, items]) => `
+    <div class="shopping-category">
+      <div class="category-header">
+        <span>${categoryIcons[category] || '📦'}</span>
+        <span class="category-name">${escapeHtml(category.replace('_', ' '))}</span>
+        <span class="category-count">${items.length}</span>
+      </div>
+      <div class="shopping-list-items">
+        ${items.map(item => {
+          const itemKey = `${item.ingredientId}-${item.shortage.toFixed(1)}`;
+          const isChecked = checkedShoppingItems.has(itemKey);
+          return `
+            <div class="list-item${isChecked ? ' checked' : ''}" data-item-key="${itemKey}">
+              <div class="checkbox-wrapper">
+                <div class="custom-checkbox${isChecked ? ' checked' : ''}"></div>
+              </div>
+              <div class="item-details">
+                <span class="item-name">${escapeHtml(item.name)}</span>
+                <span class="item-qty">${item.shortage.toFixed(1)} ${escapeHtml(item.unit)}</span>
+              </div>
+              <div class="item-recipes" title="For: ${item.recipes.join(', ')}">
+                ${item.recipes.slice(0, 2).map(r => `<span class="recipe-tag">${escapeHtml(r)}</span>`).join('')}
+                ${item.recipes.length > 2 ? `<span class="recipe-tag">+${item.recipes.length - 2}</span>` : ''}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  // Add click handlers for checkboxes
+  container.querySelectorAll('.list-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const key = item.dataset.itemKey;
+      const checkbox = item.querySelector('.custom-checkbox');
+
+      if (checkedShoppingItems.has(key)) {
+        checkedShoppingItems.delete(key);
+        item.classList.remove('checked');
+        checkbox?.classList.remove('checked');
+      } else {
+        checkedShoppingItems.add(key);
+        item.classList.add('checked');
+        checkbox?.classList.add('checked');
+      }
+
+      updateShoppingStats(shoppingList);
+    });
+  });
+}
+
+/**
+ * Render low stock suggestions panel
+ */
+function renderLowStockSuggestions() {
+  const container = document.getElementById('lowStockSuggestions');
+  if (!container) return;
+
+  // Get pantry items with low quantities (less than 2 units)
+  const pantryItems = getPantryItems();
+  const lowStockItems = pantryItems.filter(item => {
+    return item.quantity < 2;
+  }).map(item => {
+    const ingredient = getIngredientById(item.ingredientId);
+    return {
+      ...item,
+      name: ingredient?.name || item.ingredientId,
+      category: ingredient?.category || 'other'
+    };
+  }).slice(0, 10); // Limit to 10 items
+
+  if (lowStockItems.length === 0) {
+    container.innerHTML = `
+      <div class="empty-suggestions">
+        <p>All pantry items are well stocked!</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = lowStockItems.map(item => `
+    <div class="suggested-item" data-ingredient-id="${item.ingredientId}">
+      <div class="suggested-item__info">
+        <span class="suggested-item__name">${escapeHtml(item.name)}</span>
+        <span class="suggested-item__qty">${item.quantity} ${item.unit || 'units'} left</span>
+      </div>
+      <button class="suggested-item__add" title="Add to shopping consideration">+</button>
+    </div>
+  `).join('');
+
+  // Add click handlers for add buttons (future: could add to a separate list)
+  container.querySelectorAll('.suggested-item__add').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const item = btn.closest('.suggested-item');
+      item?.classList.add('added');
+      btn.textContent = '✓';
+      btn.disabled = true;
+    });
+  });
+}
+
+/**
+ * Update shopping list stats
+ */
+function updateShoppingStats(shoppingList = null) {
+  if (!shoppingList) {
+    const endDate = new Date(currentWeekStart);
+    endDate.setDate(endDate.getDate() + 6);
+    shoppingList = getShoppingList(currentWeekStart, endDate);
+  }
+
+  const totalEl = document.getElementById('shoppingTotalItems');
+  const checkedEl = document.getElementById('shoppingCheckedItems');
+  const remainingEl = document.getElementById('shoppingRemainingItems');
+
+  const total = shoppingList.length;
+  const checked = checkedShoppingItems.size;
+  const remaining = Math.max(0, total - checked);
+
+  if (totalEl) totalEl.textContent = total;
+  if (checkedEl) checkedEl.textContent = checked;
+  if (remainingEl) remainingEl.textContent = remaining;
+}
+
+/**
+ * Initialize shopping list view event handlers
+ */
+function initShoppingListView() {
+  const copyBtn = document.getElementById('copyShoppingListView');
+  const clearCheckedBtn = document.getElementById('clearCheckedBtn');
+  const refreshBtn = document.getElementById('refreshShoppingList');
+  const addAllBtn = document.getElementById('addAllLowStock');
+
+  // Copy shopping list to clipboard
+  copyBtn?.addEventListener('click', () => {
+    const endDate = new Date(currentWeekStart);
+    endDate.setDate(endDate.getDate() + 6);
+    const shoppingList = getShoppingList(currentWeekStart, endDate);
+
+    // Filter out checked items
+    const uncheckedItems = shoppingList.filter(item => {
+      const key = `${item.ingredientId}-${item.shortage.toFixed(1)}`;
+      return !checkedShoppingItems.has(key);
+    });
+
+    const text = uncheckedItems.map(item =>
       `- ${item.name}: ${item.shortage.toFixed(1)} ${item.unit}`
     ).join('\n');
 
     navigator.clipboard.writeText(`Shopping List\n${formatWeekTitle(currentWeekStart)}\n\n${text || 'Nothing needed!'}`).then(() => {
-      copyBtn.innerHTML = '<span class="btn__icon">✓</span> Copied!';
+      const originalText = copyBtn.textContent;
+      copyBtn.textContent = 'Copied!';
       setTimeout(() => {
-        copyBtn.innerHTML = '<span class="btn__icon">📋</span> Copy to Clipboard';
+        copyBtn.textContent = originalText;
       }, 2000);
     });
-  };
+  });
 
-  // Close button
-  closeBtn.onclick = () => closeModal('shoppingListModal');
+  // Clear checked items
+  clearCheckedBtn?.addEventListener('click', () => {
+    checkedShoppingItems.clear();
+    renderShoppingListView();
+  });
 
-  openModal('shoppingListModal');
+  // Refresh shopping list
+  refreshBtn?.addEventListener('click', () => {
+    renderShoppingListView();
+    renderLowStockSuggestions();
+  });
+
+  // Add all low stock items (mark as consideration)
+  addAllBtn?.addEventListener('click', () => {
+    const suggestedItems = document.querySelectorAll('#lowStockSuggestions .suggested-item:not(.added)');
+    suggestedItems.forEach(item => {
+      item.classList.add('added');
+      const btn = item.querySelector('.suggested-item__add');
+      if (btn) {
+        btn.textContent = '✓';
+        btn.disabled = true;
+      }
+    });
+  });
+}
+
+// ============================================
+// Auth Functions
+// ============================================
+
+/**
+ * Initialize auth UI and state management
+ */
+function initAuthUI() {
+  const loginBtn = document.getElementById('loginBtn');
+  const profileDropdown = document.getElementById('profileDropdown');
+  const logoutBtn = document.getElementById('logoutBtn');
+
+  // Initialize auth modal
+  initAuthModal(handleAuthSuccess);
+
+  // Login button opens auth modal
+  loginBtn?.addEventListener('click', () => {
+    openAuthModal('login');
+  });
+
+  // Logout button
+  logoutBtn?.addEventListener('click', async () => {
+    profileDropdown?.classList.remove('profile-dropdown--open');
+    const result = await signOut();
+    if (!result.error) {
+      handleAuthLogout();
+    }
+  });
+
+  // Listen for auth state changes
+  if (isSupabaseConfigured()) {
+    onAuthStateChange(async (event, session) => {
+      console.log('Auth state changed:', event);
+      if (event === 'SIGNED_IN' && session?.user) {
+        await handleAuthSuccess(session.user, session);
+      } else if (event === 'SIGNED_OUT') {
+        handleAuthLogout();
+      }
+    });
+
+    checkInitialAuthState();
+  }
+}
+
+/**
+ * Check initial auth state on page load
+ */
+async function checkInitialAuthState() {
+  try {
+    const user = await getCurrentUser();
+    if (user) {
+      const profile = await getCurrentProfile();
+      updateAuthUI(user, profile);
+    }
+  } catch (error) {
+    console.error('Error checking auth state:', error);
+  }
+}
+
+/**
+ * Handle successful authentication
+ */
+async function handleAuthSuccess(user, session) {
+  currentUser = user;
+
+  try {
+    currentProfile = await getCurrentProfile();
+  } catch (error) {
+    console.error('Error fetching profile:', error);
+    currentProfile = null;
+  }
+
+  updateAuthUI(user, currentProfile);
+  console.log('User signed in:', user.email);
+}
+
+/**
+ * Handle user logout
+ */
+function handleAuthLogout() {
+  currentUser = null;
+  currentProfile = null;
+  updateAuthUI(null, null);
+  switchView('dashboard');
+  console.log('User signed out');
+}
+
+/**
+ * Update UI based on auth state
+ */
+function updateAuthUI(user, profile) {
+  const loginBtn = document.getElementById('loginBtn');
+  const profileDropdown = document.getElementById('profileDropdown');
+  const profileAvatar = document.getElementById('profileAvatar');
+  const profileName = document.getElementById('profileName');
+
+  if (user) {
+    loginBtn?.classList.add('hidden');
+    profileDropdown?.classList.remove('hidden');
+
+    const displayName = profile?.display_name || profile?.username || user.email?.split('@')[0] || 'User';
+    const avatarLetter = displayName.charAt(0).toUpperCase();
+
+    if (profileAvatar) profileAvatar.textContent = avatarLetter;
+    if (profileName) profileName.textContent = displayName;
+  } else {
+    loginBtn?.classList.remove('hidden');
+    profileDropdown?.classList.add('hidden');
+    profileDropdown?.classList.remove('profile-dropdown--open');
+  }
 }
 
 // ============================================
@@ -1012,16 +1634,10 @@ function openShoppingListModal() {
  */
 async function loadData() {
   try {
-    // Load ingredients first (needed for pantry)
     await loadIngredients();
-
-    // Initialize pantry from localStorage
     initPantry();
-
-    // Initialize meal plan from localStorage
     initMealPlan();
 
-    // Load recipes
     const recipesData = await loadRecipes();
     allRecipes = recipesData.recipes || [];
 
@@ -1035,48 +1651,48 @@ async function loadData() {
  * Main initialization
  */
 async function init() {
-  // Add fallback styles for scroll indicator
-  addFallbackStyles();
-
-  // Create scroll indicator fallback
-  createScrollIndicatorFallback();
-
   // Load data
   await loadData();
 
-  // Initialize intro animation first
-  const introTl = initIntroAnimation();
+  // Initialize navigation
+  initNavigation();
 
-  // After intro, initialize other animations
-  introTl.eventCallback('onComplete', () => {
-    // Initialize parallax system
-    initAllParallax();
+  // Initialize pantry UI
+  initPantryUI();
+  initAddIngredientModal();
+  initExportImport();
 
-    // Initialize navigation
-    initNavigation();
-    initHeaderScroll();
+  // Initialize recipes
+  initRecipeUI();
 
-    // Initialize section animations
-    initSectionAnimations();
-    initStatsAnimation();
+  // Initialize meal planner
+  initMealPlannerUI();
 
-    // Initialize pantry
-    initPantryUI();
-    initAddIngredientModal();
-    initExportImport();
+  // Initialize shopping list view
+  initShoppingListView();
 
-    // Initialize recipes
-    initRecipeUI();
+  // Initialize auth UI
+  initAuthUI();
 
-    // Initialize meal planner
-    initMealPlannerUI();
+  // Initialize profile section
+  initProfileSection();
 
-    // Initialize Lottie
-    initLottieScroll();
+  // Listen for view changes
+  onViewChange((viewId, previousView) => {
+    console.log(`View changed: ${previousView} -> ${viewId}`);
 
-    // Refresh ScrollTrigger after all content is ready
-    refreshParallax();
+    // Refresh content when switching views
+    if (viewId === 'recipes') {
+      updateRecipeGrid();
+    } else if (viewId === 'dashboard' || viewId === 'pantry') {
+      updatePantryStats();
+    } else if (viewId === 'shoppinglist') {
+      renderShoppingListView();
+      renderLowStockSuggestions();
+    }
   });
+
+  console.log('Pantry Planner initialized with new design');
 }
 
 // Initialize when DOM is ready
@@ -1086,15 +1702,4 @@ if (document.readyState === 'loading') {
   init();
 }
 
-// Handle resize events
-let resizeTimeout;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => {
-    ScrollTrigger.refresh();
-  }, 250);
-});
-
-// Log info
 console.log('GSAP version:', gsap.version);
-console.log('Pantry Planner initialized');

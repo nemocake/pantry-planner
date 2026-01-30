@@ -1,155 +1,232 @@
-import gsap from 'gsap';
-import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
+/**
+ * Navigation Module - View-based switching for sidebar layout
+ */
 
-gsap.registerPlugin(ScrollToPlugin);
+// Current active view
+let currentView = 'dashboard';
+
+// Callbacks for view changes
+const viewChangeCallbacks = [];
 
 /**
  * Initialize navigation functionality
  */
 export function initNavigation() {
-  const menuToggle = document.getElementById('menuToggle');
-  const menuClose = document.getElementById('menuClose');
-  const menuOverlay = document.getElementById('menuOverlay');
-  const navMenu = document.getElementById('navMenu');
-  const menuItems = document.querySelectorAll('[data-nav-target]');
-
-  // Toggle menu on hamburger click
-  menuToggle?.addEventListener('click', () => {
-    toggleMenu(true);
-  });
-
-  // Close menu on close button click
-  menuClose?.addEventListener('click', () => {
-    toggleMenu(false);
-  });
-
-  // Close menu on overlay click
-  menuOverlay?.addEventListener('click', () => {
-    toggleMenu(false);
-  });
-
-  // Handle menu item clicks
-  menuItems.forEach(item => {
+  // Handle main navigation clicks
+  const navItems = document.querySelectorAll('[data-nav-target]');
+  navItems.forEach(item => {
     item.addEventListener('click', (e) => {
       e.preventDefault();
-      const targetSection = item.dataset.navTarget;
-      transitionToSection(targetSection);
-      toggleMenu(false);
+      const targetView = item.dataset.navTarget;
+      switchView(targetView);
     });
   });
 
-  // Close menu on escape key
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && navMenu?.classList.contains('active')) {
-      toggleMenu(false);
-    }
+  // Handle category filter clicks in sidebar
+  const categoryFilters = document.querySelectorAll('[data-category-filter]');
+  categoryFilters.forEach(filter => {
+    filter.addEventListener('click', (e) => {
+      e.preventDefault();
+      const category = filter.dataset.categoryFilter;
+      // Switch to dashboard view and filter by category
+      switchView('dashboard');
+      filterByCategory(category);
+    });
   });
-}
 
-/**
- * Toggle the navigation menu open/closed
- * @param {boolean} isOpen - Whether to open or close the menu
- */
-function toggleMenu(isOpen) {
-  const menuToggle = document.getElementById('menuToggle');
-  const menuOverlay = document.getElementById('menuOverlay');
-  const navMenu = document.getElementById('navMenu');
+  // Handle profile dropdown toggle
+  initProfileDropdown();
 
-  if (isOpen) {
-    menuToggle?.classList.add('active');
-    menuOverlay?.classList.add('active');
-    navMenu?.classList.add('active');
-    document.body.style.overflow = 'hidden';
-
-    // Animate menu items in
-    gsap.fromTo('.nav-menu__list li',
-      { opacity: 0, x: 50 },
-      {
-        opacity: 1,
-        x: 0,
-        duration: 0.4,
-        stagger: 0.1,
-        delay: 0.2,
-        ease: 'power2.out'
-      }
-    );
-  } else {
-    menuToggle?.classList.remove('active');
-    menuOverlay?.classList.remove('active');
-    navMenu?.classList.remove('active');
-    document.body.style.overflow = '';
+  // Set initial view from URL hash if present
+  const hash = window.location.hash.slice(1);
+  if (hash && document.getElementById(`view-${hash}`)) {
+    switchView(hash);
   }
 }
 
 /**
- * Transition to a specific section with animated scroll
- * @param {string} sectionId - The data-section value to scroll to
+ * Switch to a specific view
+ * @param {string} viewId - The view identifier (dashboard, pantry, recipes, mealplanner, shoppinglist, profile)
  */
-function transitionToSection(sectionId) {
-  const targetSection = document.querySelector(`[data-section="${sectionId}"]`);
+export function switchView(viewId) {
+  // Don't switch if already on this view
+  if (viewId === currentView) return;
 
-  if (!targetSection) return;
+  // Get all views and nav items
+  const views = document.querySelectorAll('.view');
+  const navItems = document.querySelectorAll('[data-nav-target]');
 
-  // Get all back layers for the transition effect
-  const backLayers = document.querySelectorAll('.layer--back');
-
-  // Create a timeline for the transition
-  const tl = gsap.timeline();
-
-  // Animate background layers during transition (scale up slightly)
-  tl.to(backLayers, {
-    scale: 1.1,
-    opacity: 0.7,
-    duration: 0.4,
-    ease: 'power2.in'
+  // Hide all views
+  views.forEach(view => {
+    view.classList.remove('active');
   });
 
-  // Scroll to section
-  tl.to(window, {
-    scrollTo: {
-      y: targetSection,
-      offsetY: 0
-    },
-    duration: 1,
-    ease: 'power2.inOut'
-  }, '-=0.2');
+  // Remove active state from all nav items
+  navItems.forEach(item => {
+    item.classList.remove('active');
+  });
 
-  // Reset background layers
-  tl.to(backLayers, {
-    scale: 1,
-    opacity: 1,
-    duration: 0.4,
-    ease: 'power2.out'
-  }, '-=0.3');
-}
+  // Show target view
+  const targetView = document.getElementById(`view-${viewId}`);
+  if (targetView) {
+    targetView.classList.add('active');
+  }
 
-/**
- * Initialize header scroll behavior (add background on scroll)
- */
-export function initHeaderScroll() {
-  const header = document.querySelector('.header');
-
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 100) {
-      header?.classList.add('scrolled');
-    } else {
-      header?.classList.remove('scrolled');
+  // Set active state on corresponding nav item(s)
+  navItems.forEach(item => {
+    if (item.dataset.navTarget === viewId) {
+      item.classList.add('active');
     }
   });
+
+  // Update current view
+  const previousView = currentView;
+  currentView = viewId;
+
+  // Update URL hash
+  history.replaceState(null, '', `#${viewId}`);
+
+  // Scroll main content to top
+  const mainContent = document.querySelector('.main-content');
+  if (mainContent) {
+    mainContent.scrollTop = 0;
+  }
+
+  // Trigger view change callbacks
+  viewChangeCallbacks.forEach(callback => {
+    callback(viewId, previousView);
+  });
+
+  // Dispatch custom event for other modules to listen to
+  window.dispatchEvent(new CustomEvent('viewchange', {
+    detail: { view: viewId, previousView }
+  }));
 }
 
 /**
- * Smooth scroll to element (utility function)
- * @param {string|Element} target - CSS selector or element to scroll to
- * @param {number} duration - Animation duration in seconds
+ * Get the current active view
+ * @returns {string} The current view ID
  */
-export function scrollToElement(target, duration = 1) {
-  gsap.to(window, {
-    scrollTo: {
-      y: target,
-      offsetY: 0
-    },
-    duration,
-    ease: 'power2.inOut'
+export function getCurrentView() {
+  return currentView;
+}
+
+/**
+ * Register a callback for view changes
+ * @param {Function} callback - Function to call on view change (receives viewId, previousView)
+ */
+export function onViewChange(callback) {
+  viewChangeCallbacks.push(callback);
+}
+
+/**
+ * Filter dashboard by category
+ * @param {string} category - Category to filter by
+ */
+function filterByCategory(category) {
+  // Update filter tabs
+  const filterTabs = document.querySelectorAll('.filter-tab, .category-btn');
+  filterTabs.forEach(tab => {
+    tab.classList.remove('active', 'category-btn--active', 'filter-tab--active');
+    if (tab.dataset.category === category) {
+      tab.classList.add('active', 'category-btn--active');
+    }
   });
+
+  // Dispatch filter event
+  window.dispatchEvent(new CustomEvent('categoryfilter', {
+    detail: { category }
+  }));
+}
+
+/**
+ * Initialize profile dropdown functionality
+ */
+function initProfileDropdown() {
+  const dropdown = document.getElementById('profileDropdown');
+  const toggle = document.getElementById('profileToggle');
+  const menu = document.getElementById('profileMenu');
+
+  if (!toggle || !dropdown) return;
+
+  toggle.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('profile-dropdown--open');
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!dropdown.contains(e.target)) {
+      dropdown.classList.remove('profile-dropdown--open');
+    }
+  });
+
+  // Handle profile link clicks
+  const myProfileLink = document.getElementById('myProfileLink');
+  if (myProfileLink) {
+    myProfileLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      dropdown.classList.remove('profile-dropdown--open');
+      switchView('profile');
+    });
+  }
+
+  const myRecipesLink = document.getElementById('myRecipesLink');
+  if (myRecipesLink) {
+    myRecipesLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      dropdown.classList.remove('profile-dropdown--open');
+      switchView('recipes');
+      // Could filter to user's recipes here
+    });
+  }
+}
+
+/**
+ * Navigate to profile view
+ */
+export function navigateToProfile() {
+  switchView('profile');
+}
+
+/**
+ * Navigate to a section (legacy support - redirects to view switching)
+ * @param {string} sectionId - The section/view to navigate to
+ */
+export function transitionToSection(sectionId) {
+  // Map old section names to new view names
+  const viewMap = {
+    'home': 'dashboard',
+    'pantry': 'pantry',
+    'recipes': 'recipes',
+    'mealplanner': 'mealplanner',
+    'about': 'dashboard',
+    'profile': 'profile'
+  };
+
+  const viewId = viewMap[sectionId] || sectionId;
+  switchView(viewId);
+}
+
+/**
+ * Initialize header scroll behavior (no-op in new design, kept for compatibility)
+ */
+export function initHeaderScroll() {
+  // No-op - sidebar-based layout doesn't need header scroll behavior
+}
+
+/**
+ * Smooth scroll to element (utility function - simplified for views)
+ * @param {string|Element} target - CSS selector or element to scroll to
+ */
+export function scrollToElement(target) {
+  const mainContent = document.querySelector('.main-content');
+  const element = typeof target === 'string' ? document.querySelector(target) : target;
+
+  if (mainContent && element) {
+    mainContent.scrollTo({
+      top: element.offsetTop,
+      behavior: 'smooth'
+    });
+  }
 }

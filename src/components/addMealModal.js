@@ -334,7 +334,7 @@ function updateAvailabilityWarning(container, recipe, servings) {
 /**
  * Open the add meal modal
  */
-export function openAddMealModal(date, recipe = null) {
+export function openAddMealModal(date, recipe = null, servings = null) {
   selectedDate = date;
   selectedRecipe = null;
 
@@ -367,6 +367,10 @@ export function openAddMealModal(date, recipe = null) {
   // If recipe pre-selected, set it
   if (recipe) {
     selectRecipe(recipe, recipeSearchInput, recipeResultsContainer, selectedRecipeDisplay, availabilityWarning, servingsInput, submitBtn);
+    // Override servings if provided
+    if (servings && servingsInput) {
+      servingsInput.value = servings;
+    }
   }
 
   openModal(MODAL_ID);

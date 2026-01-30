@@ -6,6 +6,7 @@
 import gsap from 'gsap';
 
 const openModals = new Set();
+const escHandlers = new Map(); // Track ESC handlers for cleanup
 
 /**
  * Open a modal with animation
@@ -40,16 +41,16 @@ export function openModal(modalId) {
 
   const closeHandler = () => closeModal(modalId);
 
-  backdrop.addEventListener('click', closeHandler, { once: true });
-  closeBtn.addEventListener('click', closeHandler, { once: true });
+  backdrop?.addEventListener('click', closeHandler, { once: true });
+  closeBtn?.addEventListener('click', closeHandler, { once: true });
 
-  // ESC key to close
+  // ESC key to close - store reference for cleanup
   const escHandler = (e) => {
     if (e.key === 'Escape' && openModals.has(modalId)) {
       closeModal(modalId);
-      document.removeEventListener('keydown', escHandler);
     }
   };
+  escHandlers.set(modalId, escHandler);
   document.addEventListener('keydown', escHandler);
 }
 
@@ -59,6 +60,13 @@ export function openModal(modalId) {
 export function closeModal(modalId) {
   const modal = document.getElementById(modalId);
   if (!modal || !openModals.has(modalId)) return;
+
+  // Remove ESC handler
+  const escHandler = escHandlers.get(modalId);
+  if (escHandler) {
+    document.removeEventListener('keydown', escHandler);
+    escHandlers.delete(modalId);
+  }
 
   const container = modal.querySelector('.modal__container');
 

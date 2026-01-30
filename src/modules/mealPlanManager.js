@@ -366,7 +366,7 @@ export function checkRecipeAvailability(recipe, servings = null) {
  */
 export function getShoppingList(startDate, endDate = null) {
   const endDateStr = endDate ? formatDate(endDate) : null;
-  const shoppingItems = new Map(); // ingredientId -> { name, unit, needed, available, shortage, category }
+  const shoppingItems = new Map(); // ingredientId -> { name, unit, needed, available, shortage, category, recipes }
 
   // Iterate through meals in date range
   Object.entries(mealPlanData.meals).forEach(([dateStr, dayMeals]) => {
@@ -385,7 +385,12 @@ export function getShoppingList(startDate, endDate = null) {
         const ingredient = getIngredientById(recipeIng.ingredientId);
 
         if (shoppingItems.has(recipeIng.ingredientId)) {
-          shoppingItems.get(recipeIng.ingredientId).needed += scaledQty;
+          const item = shoppingItems.get(recipeIng.ingredientId);
+          item.needed += scaledQty;
+          // Add recipe name if not already in list
+          if (!item.recipes.includes(recipe.title)) {
+            item.recipes.push(recipe.title);
+          }
         } else {
           const pantryItem = getPantryItem(recipeIng.ingredientId);
           shoppingItems.set(recipeIng.ingredientId, {
@@ -394,7 +399,8 @@ export function getShoppingList(startDate, endDate = null) {
             unit: recipeIng.unit,
             needed: scaledQty,
             available: pantryItem?.quantity || 0,
-            category: ingredient?.category || 'other'
+            category: ingredient?.category || 'other',
+            recipes: [recipe.title]
           });
         }
       });
