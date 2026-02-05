@@ -8,17 +8,20 @@ import { initNavigation, switchView, onViewChange } from './modules/navigation.j
 import { initAuthModal, openAuthModal, closeAuthModal } from './components/authModal.js';
 import { getCurrentUser, getCurrentProfile, signOut, onAuthStateChange } from './services/authService.js';
 import { isSupabaseConfigured } from './lib/supabase.js';
+import { initSyncOrchestrator } from './services/syncOrchestrator.js';
 
 // Import profile modules
 import { initProfileSection, navigateToProfile } from './components/profileSection.js';
 
 // Import pantry modules
 import { loadIngredients, getCategories, getCategoryIcon, getIngredientById, getIngredientsByCategory, searchIngredients } from './modules/ingredientManager.js';
+import { CATEGORY_ICONS } from './data/icons.js';
 import {
   initPantry,
   onPantryChange,
   getPantryItems,
   addPantryItem,
+  updatePantryQuantity,
   removePantryItem,
   downloadPantryJson,
   importPantryFromFile,
@@ -29,6 +32,8 @@ import { openModal, closeModal } from './modules/modalManager.js';
 import { initAutocomplete, clearAutocomplete } from './components/autocomplete.js';
 import { renderPantryGrid, filterPantryCards } from './components/pantryCard.js';
 import { renderIngredientBrowser, getCategoryDisplayName } from './components/ingredientBrowser.js';
+import { renderPantryList, handlePantryListClick, filterPantryList } from './components/pantryListRenderer.js';
+import { renderShoppingListHtml, renderEmptyState, setupCheckboxHandlers, generatePlainTextList } from './components/shoppingListRenderer.js';
 
 // Import recipe modules
 import { loadRecipes, getRecipes, getRecipeById, applyFilters, getUniqueCuisines } from './modules/recipeManager.js';
@@ -40,17 +45,32 @@ import {
   initMealPlan,
   onMealPlanChange,
   getMealsForWeek,
+  getMealsForDate,
   getMealPlanStats,
   removeMeal,
   clearWeek,
   getShoppingList,
   getWeekStart,
-  formatDate
+  formatDate,
+  getMealDate,
+  createLeftover,
+  parseDate,
+  MEAL_STATUS,
+  markMealAsEaten,
+  dismissMeal,
+  moveMeal,
+  undoMealStatus
 } from './modules/mealPlanManager.js';
 import { renderWeekView, navigateWeek, goToCurrentWeek, formatWeekTitle } from './components/calendarView.js';
 import { initAddMealModal, openAddMealModal } from './components/addMealModal.js';
 import { initRecipeBrowserModal, openRecipeBrowserModal } from './components/recipeBrowserModal.js';
 import { initQuantityModal } from './components/quantityModal.js';
+
+// Import nutrition modules
+import { initNutritionPrefs, isTrackingEnabled, getAllDailyGoals } from './modules/nutritionPrefsManager.js';
+import { calculateWeekNutrition, calculateWeekActualNutrition, calculateActualDayNutrition } from './modules/nutritionAggregator.js';
+import { initNutritionPrefsModal } from './components/nutritionPrefsModal.js';
+import { initNutritionWidget, renderWidget as renderNutritionWidget } from './components/nutritionWidget.js';
 
 // State
 let allRecipes = [];
@@ -82,106 +102,15 @@ function initPantryUI() {
   const categoryFilter = document.getElementById('categoryFilter');
   const browserGrid = document.getElementById('browserGrid');
   const pantryGrid = document.getElementById('pantryGrid');
-  const pantryCategories = document.getElementById('pantryCategories');
+  const pantryTabs = document.getElementById('pantryTabs');
 
-  // Render pantry items as cards in the grid
+  // Render pantry items as clean list
   function renderPantryCards() {
-    const items = getPantryItems();
-
-    if (items.length === 0) {
-      browserGrid.innerHTML = `
-        <div class="empty-state" style="grid-column: 1 / -1;">
-          <div class="empty-state__icon">📦</div>
-          <h3 class="empty-state__title">Your pantry is empty</h3>
-          <p class="empty-state__text">Add ingredients to start tracking your inventory</p>
-        </div>
-      `;
-      return;
-    }
-
-    // Sort by name
-    const sorted = [...items].sort((a, b) => {
-      const ingA = getIngredientById(a.ingredientId);
-      const ingB = getIngredientById(b.ingredientId);
-      return (ingA?.name || '').localeCompare(ingB?.name || '');
-    });
-
-    const itemCards = sorted.map(item => {
-      const ingredient = getIngredientById(item.ingredientId);
-      if (!ingredient) return '';
-
-      const icon = getCategoryIcon(ingredient.category);
-      const displayUnit = (item.unit === 'unit' || !item.unit) ? ingredient.defaultUnit : item.unit;
-      const isLowStock = item.quantity <= 1;
-
-      // Normalize category for CSS class
-      const categoryClass = ingredient.category?.toLowerCase().replace(/[^a-z]/g, '') || 'other';
-
-      return `
-        <div class="item-card" data-ingredient-id="${item.ingredientId}">
-          <div class="item-image item-image--${categoryClass}">
-            <span style="font-size: 48px;">${icon}</span>
-            ${isLowStock ? '<span class="item-badge low">Low</span>' : ''}
-          </div>
-          <div class="item-info">
-            <h3>${ingredient.name}</h3>
-            <div class="item-meta">
-              <span>${ingredient.category}</span>
-              <span>${item.quantity} ${displayUnit}</span>
-            </div>
-          </div>
-          <div class="quantity-control">
-            <button class="qty-btn" data-action="decrease">-</button>
-            <span class="qty-val">${item.quantity}</span>
-            <button class="qty-btn" data-action="increase">+</button>
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    // Add "Add New Item" card at the end
-    const addNewCard = `
-      <div class="item-card item-card--add" id="addItemCard">
-        <div class="item-image item-image--add">
-          <span style="font-size: 48px;">+</span>
-        </div>
-        <div class="item-info">
-          <h3>Add Item</h3>
-          <div class="item-meta">
-            <span>Click to add new ingredient</span>
-          </div>
-        </div>
-      </div>
-    `;
-
-    browserGrid.innerHTML = itemCards + addNewCard;
+    renderPantryList(browserGrid, { showAddRow: true, emptyStateAction: 'modal' });
   }
 
   // Handle grid clicks (quantity changes and add new item)
-  browserGrid.addEventListener('click', (e) => {
-    const card = e.target.closest('.item-card');
-    if (!card) return;
-
-    // Handle "Add Item" card click
-    if (card.classList.contains('item-card--add')) {
-      openModal('addIngredientModal');
-      return;
-    }
-
-    const ingredientId = card.dataset.ingredientId;
-    const item = getPantryItems().find(i => i.ingredientId === ingredientId);
-    if (!item) return;
-
-    if (e.target.closest('[data-action="increase"]')) {
-      addPantryItem(ingredientId, item.quantity + 1, item.unit, item.location, item.notes);
-    } else if (e.target.closest('[data-action="decrease"]')) {
-      if (item.quantity <= 1) {
-        removePantryItem(ingredientId);
-      } else {
-        addPantryItem(ingredientId, item.quantity - 1, item.unit, item.location, item.notes);
-      }
-    }
-  });
+  browserGrid.addEventListener('click', (e) => handlePantryListClick(e, browserGrid));
 
   // Handle category filter clicks
   categoryFilter?.addEventListener('click', (e) => {
@@ -193,28 +122,13 @@ function initPantryUI() {
     categoryFilter.querySelectorAll('.filter-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
 
-    filterPantryByCategory(category);
+    filterPantryList(browserGrid, category);
   });
-
-  // Filter pantry items by category
-  function filterPantryByCategory(category) {
-    const cards = browserGrid.querySelectorAll('.item-card');
-    cards.forEach(card => {
-      const ingredientId = card.dataset.ingredientId;
-      const ingredient = getIngredientById(ingredientId);
-
-      if (category === 'all' || ingredient?.category === category) {
-        card.style.display = '';
-      } else {
-        card.style.display = 'none';
-      }
-    });
-  }
 
   // Listen for global category filter events
   window.addEventListener('categoryfilter', (e) => {
     const category = e.detail.category;
-    filterPantryByCategory(category);
+    filterPantryList(browserGrid, category);
 
     // Update filter tab UI
     categoryFilter?.querySelectorAll('.filter-tab').forEach(b => {
@@ -224,126 +138,37 @@ function initPantryUI() {
 
   // Render to Pantry view grid as well
   function renderPantryViewGrid() {
-    if (!pantryGrid) return;
-
-    const items = getPantryItems();
-    if (items.length === 0) {
-      pantryGrid.innerHTML = `
-        <div class="empty-state" style="grid-column: 1 / -1;">
-          <div class="empty-state__icon">📦</div>
-          <h3 class="empty-state__title">Your pantry is empty</h3>
-          <p class="empty-state__text">Add ingredients to start tracking your inventory</p>
-          <button class="btn btn--primary" data-action="add-ingredient">Add First Item</button>
-        </div>
-      `;
-      return;
-    }
-
-    const sorted = [...items].sort((a, b) => {
-      const ingA = getIngredientById(a.ingredientId);
-      const ingB = getIngredientById(b.ingredientId);
-      return (ingA?.name || '').localeCompare(ingB?.name || '');
-    });
-
-    pantryGrid.innerHTML = sorted.map(item => {
-      const ingredient = getIngredientById(item.ingredientId);
-      if (!ingredient) return '';
-
-      const icon = getCategoryIcon(ingredient.category);
-      const displayUnit = (item.unit === 'unit' || !item.unit) ? ingredient.defaultUnit : item.unit;
-      const isLowStock = item.quantity <= 1;
-      const categoryClass = ingredient.category?.toLowerCase().replace(/[^a-z]/g, '') || 'other';
-
-      return `
-        <div class="item-card" data-ingredient-id="${item.ingredientId}">
-          <div class="item-image item-image--${categoryClass}">
-            <span style="font-size: 48px;">${icon}</span>
-            ${isLowStock ? '<span class="item-badge low">Low</span>' : ''}
-          </div>
-          <div class="item-info">
-            <h3>${ingredient.name}</h3>
-            <div class="item-meta">
-              <span>${ingredient.category}</span>
-              <span>${item.quantity} ${displayUnit}</span>
-            </div>
-          </div>
-          <div class="quantity-control">
-            <button class="qty-btn" data-action="decrease">-</button>
-            <span class="qty-val">${item.quantity}</span>
-            <button class="qty-btn" data-action="increase">+</button>
-          </div>
-        </div>
-      `;
-    }).join('');
+    renderPantryList(pantryGrid, { showAddRow: false, emptyStateAction: 'data-action' });
   }
 
   // Handle pantry view grid clicks
-  pantryGrid?.addEventListener('click', (e) => {
-    const card = e.target.closest('.item-card');
-    if (!card) return;
+  pantryGrid?.addEventListener('click', (e) => handlePantryListClick(e, pantryGrid));
 
-    // Handle add ingredient button in empty state
-    if (e.target.closest('[data-action="add-ingredient"]')) {
-      openModal('addIngredientModal');
-      return;
-    }
+  // Handle pantry tab clicks - squared tabs above list
+  pantryTabs?.addEventListener('click', (e) => {
+    const tab = e.target.closest('.pantry-tab');
+    if (!tab) return;
 
-    const ingredientId = card.dataset.ingredientId;
-    const item = getPantryItems().find(i => i.ingredientId === ingredientId);
-    if (!item) return;
+    const category = tab.dataset.category;
 
-    if (e.target.closest('[data-action="increase"]')) {
-      addPantryItem(ingredientId, item.quantity + 1, item.unit, item.location, item.notes);
-    } else if (e.target.closest('[data-action="decrease"]')) {
-      if (item.quantity <= 1) {
-        removePantryItem(ingredientId);
-      } else {
-        addPantryItem(ingredientId, item.quantity - 1, item.unit, item.location, item.notes);
-      }
-    }
-  });
+    // Update active tab
+    pantryTabs.querySelectorAll('.pantry-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
 
-  // Populate pantry categories
-  function populatePantryCategories() {
-    if (!pantryCategories) return;
+    // Filter pantry grid by category
+    filterPantryList(pantryGrid, category);
 
-    const categories = getCategories();
-    const categoryBtns = categories.map(cat =>
-      `<button class="category-btn" data-category="${cat.id}">${cat.icon || ''} ${cat.name}</button>`
-    ).join('');
-
-    pantryCategories.innerHTML = `
-      <button class="category-btn category-btn--active" data-category="all">📦 All</button>
-      ${categoryBtns}
-    `;
-  }
-
-  // Handle pantry category filter
-  pantryCategories?.addEventListener('click', (e) => {
-    const btn = e.target.closest('.category-btn');
-    if (!btn) return;
-
-    const category = btn.dataset.category;
-    pantryCategories.querySelectorAll('.category-btn').forEach(b => {
-      b.classList.remove('category-btn--active');
-    });
-    btn.classList.add('category-btn--active');
-
-    // Filter pantry grid
+    // Also filter individual cards
     const cards = pantryGrid?.querySelectorAll('.item-card') || [];
     cards.forEach(card => {
-      const ingredientId = card.dataset.ingredientId;
-      const ingredient = getIngredientById(ingredientId);
-      if (category === 'all' || ingredient?.category === category) {
+      const cardCategory = card.dataset.category;
+      if (category === 'all' || cardCategory === category) {
         card.style.display = '';
       } else {
         card.style.display = 'none';
       }
     });
   });
-
-  // Initialize categories
-  populatePantryCategories();
 
   // Handle Pantry view action buttons
   const pantryView = document.getElementById('view-pantry');
@@ -403,6 +228,237 @@ function updatePantryStats() {
     const lowStockCount = getPantryItems().filter(item => item.quantity <= 1).length;
     statLowStock.textContent = lowStockCount;
   }
+
+  // Also update dashboard preview cards
+  updateDashboardPreviews();
+}
+
+/**
+ * Initialize dashboard with 4 preview cards
+ */
+function initDashboard() {
+  const dashboardGrid = document.querySelector('.dashboard-grid');
+  if (!dashboardGrid) return;
+
+  // Handle preview card clicks - navigate to subpages
+  dashboardGrid.addEventListener('click', (e) => {
+    const card = e.target.closest('.preview-card');
+    if (!card) return;
+
+    const target = card.dataset.navigate;
+    if (target) {
+      // Map card targets to view IDs
+      const viewMap = {
+        'pantry': 'pantry',
+        'recipes': 'recipes',
+        'planner': 'mealplanner',
+        'shopping': 'shoppinglist'
+      };
+      const viewId = viewMap[target] || target;
+      switchView(viewId);
+    }
+  });
+
+  // Initial render
+  updateDashboardPreviews();
+
+  // Listen for pantry changes
+  onPantryChange(() => {
+    updateDashboardPreviews();
+  });
+
+  // Listen for meal plan changes
+  onMealPlanChange(() => {
+    updateDashboardPreviews();
+  });
+}
+
+/**
+ * Update dashboard preview cards with current data
+ */
+function updateDashboardPreviews() {
+  updatePantryPreview();
+  updateRecipePreview();
+  updateMealPreview();
+  updateShoppingPreview();
+}
+
+/**
+ * Update pantry preview card
+ */
+function updatePantryPreview() {
+  const countEl = document.getElementById('dashPantryCount');
+  const previewEl = document.getElementById('dashPantryPreview');
+  if (!previewEl) return;
+
+  const items = getPantryItems();
+  const count = items.length;
+
+  if (countEl) countEl.textContent = `${count} item${count !== 1 ? 's' : ''}`;
+
+  if (count === 0) {
+    previewEl.innerHTML = '<div class="preview-card__empty">No items in pantry</div>';
+    return;
+  }
+
+  // Show first 5 items
+  const displayItems = items.slice(0, 5);
+  let html = '<div class="preview-list">';
+
+  displayItems.forEach(item => {
+    const ingredient = getIngredientById(item.ingredientId);
+    if (ingredient) {
+      html += `
+        <div class="preview-list__item">
+          <span class="preview-list__name">${escapeHtml(ingredient.name)}</span>
+          <span class="preview-list__meta">${item.quantity} ${item.unit || ''}</span>
+        </div>
+      `;
+    }
+  });
+
+  if (count > 5) {
+    html += `<div class="preview-list__more">+${count - 5} more items</div>`;
+  }
+
+  html += '</div>';
+  previewEl.innerHTML = html;
+}
+
+/**
+ * Update recipe preview card
+ */
+function updateRecipePreview() {
+  const countEl = document.getElementById('dashRecipeCount');
+  const previewEl = document.getElementById('dashRecipePreview');
+  if (!previewEl) return;
+
+  const makeableCount = countMakeableRecipes(allRecipes);
+
+  if (countEl) countEl.textContent = `${makeableCount} can make`;
+
+  if (allRecipes.length === 0) {
+    previewEl.innerHTML = '<div class="preview-card__empty">No recipes loaded</div>';
+    return;
+  }
+
+  // Get makeable recipes
+  const pantryIds = getPantryIngredientIds();
+  const makeableRecipes = allRecipes.filter(recipe => {
+    if (!recipe.ingredients) return false;
+    return recipe.ingredients.every(ing => pantryIds.has(ing.ingredientId));
+  }).slice(0, 3);
+
+  if (makeableRecipes.length === 0) {
+    previewEl.innerHTML = '<div class="preview-card__empty">Add more ingredients to unlock recipes</div>';
+    return;
+  }
+
+  let html = '<div class="preview-list">';
+  makeableRecipes.forEach(recipe => {
+    html += `
+      <div class="preview-list__item">
+        <span class="preview-list__name">${escapeHtml(recipe.title)}</span>
+        <span class="preview-recipe__badge">Ready</span>
+      </div>
+    `;
+  });
+  html += '</div>';
+  previewEl.innerHTML = html;
+}
+
+/**
+ * Update meal plan preview card
+ */
+function updateMealPreview() {
+  const countEl = document.getElementById('dashMealCount');
+  const previewEl = document.getElementById('dashMealPreview');
+  if (!previewEl) return;
+
+  // Get this week's meals
+  const today = new Date();
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  let mealsThisWeek = 0;
+  let html = '<div class="preview-list">';
+  let hasAnyMeals = false;
+
+  // Check next 5 days
+  for (let i = 0; i < 5; i++) {
+    const date = new Date(today);
+    date.setDate(date.getDate() + i);
+    const dateStr = formatDate(date);
+    const meals = getMealsForDate(dateStr);
+
+    if (meals.length > 0) {
+      hasAnyMeals = true;
+      mealsThisWeek += meals.length;
+      const dayName = i === 0 ? 'Today' : dayNames[date.getDay()];
+
+      meals.slice(0, 1).forEach(meal => {
+        const recipe = getRecipeById(meal.recipeId);
+        if (recipe) {
+          html += `
+            <div class="preview-meal">
+              <span class="preview-meal__day">${dayName}</span>
+              <span class="preview-meal__name">${escapeHtml(recipe.title)}</span>
+            </div>
+          `;
+        }
+      });
+    }
+  }
+
+  html += '</div>';
+
+  if (countEl) countEl.textContent = mealsThisWeek > 0 ? `${mealsThisWeek} planned` : 'This Week';
+
+  if (!hasAnyMeals) {
+    previewEl.innerHTML = '<div class="preview-card__empty">No meals planned this week</div>';
+  } else {
+    previewEl.innerHTML = html;
+  }
+}
+
+/**
+ * Update shopping list preview card
+ */
+function updateShoppingPreview() {
+  const countEl = document.getElementById('dashShoppingCount');
+  const previewEl = document.getElementById('dashShoppingPreview');
+  if (!previewEl) return;
+
+  // Get shopping list from meal plan (ingredients needed but not in pantry)
+  const shoppingList = getShoppingList();
+  const count = shoppingList.length;
+
+  if (countEl) countEl.textContent = `${count} item${count !== 1 ? 's' : ''}`;
+
+  if (count === 0) {
+    previewEl.innerHTML = '<div class="preview-card__empty">Shopping list is empty</div>';
+    return;
+  }
+
+  // Show first 5 items
+  const displayItems = shoppingList.slice(0, 5);
+  let html = '<div class="preview-list">';
+
+  displayItems.forEach(item => {
+    const ingredient = getIngredientById(item.ingredientId);
+    const name = ingredient ? ingredient.name : 'Unknown';
+    html += `
+      <div class="preview-list__item">
+        <span class="preview-list__name">${escapeHtml(name)}</span>
+        <span class="preview-list__meta">${item.needed.toFixed(1)} ${item.unit || ''}</span>
+      </div>
+    `;
+  });
+
+  if (count > 5) {
+    html += `<div class="preview-list__more">+${count - 5} more items</div>`;
+  }
+
+  html += '</div>';
+  previewEl.innerHTML = html;
 }
 
 /**
@@ -422,30 +478,28 @@ function initAddIngredientModal() {
   let currentCategory = null;
   let searchDebounce = null;
 
-  // Populate category tabs
+  // Populate category tabs - Clean text-only tabs
   function populateCategoryTabs() {
     const categories = getCategories();
     categoryTabsContainer.innerHTML = `
       <button class="category-tab active" data-category="all">
-        <span class="category-tab__icon">📦</span>
         <span class="category-tab__name">All</span>
       </button>
       ${categories.map(cat => `
         <button class="category-tab" data-category="${cat.id}">
-          <span class="category-tab__icon">${cat.icon || '📁'}</span>
           <span class="category-tab__name">${cat.name}</span>
         </button>
       `).join('')}
     `;
   }
 
-  // Render ingredients grid
+  // Render ingredients list - Clean rows with +/- controls
   function renderIngredientsGrid(ingredients) {
-    const pantryIds = getPantryIngredientIds();
+    const pantryItems = getPantryItems();
 
     if (ingredients.length === 0) {
       ingredientGrid.innerHTML = `
-        <div class="ingredient-browser__empty" style="width: 100%;">
+        <div class="ingredient-browser__empty" style="width: 100%; padding: 48px; text-align: center;">
           <p>No ingredients found</p>
         </div>
       `;
@@ -453,14 +507,40 @@ function initAddIngredientModal() {
     }
 
     ingredientGrid.innerHTML = ingredients.map(ing => {
-      const inPantry = pantryIds.has(ing.id);
-      const pantryItem = inPantry ? getPantryItems().find(p => p.ingredientId === ing.id) : null;
+      const pantryItem = pantryItems.find(p => p.ingredientId === ing.id);
+      const inPantry = !!pantryItem;
+      const currentQty = pantryItem ? pantryItem.quantity : 0;
+      const currentUnit = pantryItem ? pantryItem.unit : (ing.defaultUnit || 'pieces');
 
       return `
-        <div class="ingredient-tile ${inPantry ? 'in-pantry' : ''} ${selectedIngredient?.id === ing.id ? 'selected' : ''}"
-             data-ingredient-id="${ing.id}">
-          <span class="ingredient-tile__name">${escapeHtml(ing.name)}</span>
-          ${pantryItem ? `<span class="ingredient-tile__qty">${pantryItem.quantity} ${pantryItem.unit || ''}</span>` : ''}
+        <div class="browser-item ${inPantry ? 'browser-item--in-pantry' : ''}"
+             data-ingredient-id="${ing.id}" data-default-unit="${ing.defaultUnit || 'pieces'}">
+          <div class="browser-item__content">
+            <span class="browser-item__name">${escapeHtml(ing.name)}</span>
+            <span class="browser-item__quantity ${inPantry ? 'browser-item__quantity--visible' : ''}">${inPantry ? 'In pantry: ' + currentQty + ' ' + currentUnit : ''}</span>
+          </div>
+          <div class="browser-item__controls">
+            <select class="browser-item__unit" data-action="unit">
+              <option value="pieces" ${currentUnit === 'pieces' ? 'selected' : ''}>pieces</option>
+              <option value="cup" ${currentUnit === 'cup' ? 'selected' : ''}>cups</option>
+              <option value="tbsp" ${currentUnit === 'tbsp' ? 'selected' : ''}>tbsp</option>
+              <option value="tsp" ${currentUnit === 'tsp' ? 'selected' : ''}>tsp</option>
+              <option value="oz" ${currentUnit === 'oz' ? 'selected' : ''}>oz</option>
+              <option value="lb" ${currentUnit === 'lb' ? 'selected' : ''}>lb</option>
+              <option value="g" ${currentUnit === 'g' ? 'selected' : ''}>grams</option>
+              <option value="kg" ${currentUnit === 'kg' ? 'selected' : ''}>kg</option>
+              <option value="ml" ${currentUnit === 'ml' ? 'selected' : ''}>ml</option>
+              <option value="l" ${currentUnit === 'l' ? 'selected' : ''}>liters</option>
+              <option value="cloves" ${currentUnit === 'cloves' ? 'selected' : ''}>cloves</option>
+              <option value="stalks" ${currentUnit === 'stalks' ? 'selected' : ''}>stalks</option>
+              <option value="can" ${currentUnit === 'can' ? 'selected' : ''}>can</option>
+            </select>
+            <div class="browser-item__qty-group">
+              <button class="browser-item__btn browser-item__btn--decrease" data-action="decrease" title="Decrease">−</button>
+              <span class="browser-item__qty-display">${currentQty}</span>
+              <button class="browser-item__btn browser-item__btn--increase" data-action="increase" title="Increase">+</button>
+            </div>
+          </div>
         </div>
       `;
     }).join('');
@@ -499,35 +579,82 @@ function initAddIngredientModal() {
     loadCategoryIngredients(categoryId);
   });
 
-  // Handle ingredient tile click
+  // Handle ingredient row click - +/- buttons and unit changes
   ingredientGrid?.addEventListener('click', (e) => {
-    const tile = e.target.closest('.ingredient-tile');
-    if (!tile) return;
+    const btn = e.target.closest('.browser-item__btn');
+    const row = e.target.closest('.browser-item');
+    if (!row) return;
 
-    const ingredientId = tile.dataset.ingredientId;
+    const ingredientId = row.dataset.ingredientId;
     const ingredient = getIngredientById(ingredientId);
     if (!ingredient) return;
 
-    // Update selection
-    selectedIngredient = ingredient;
-    if (selectedIdInput) selectedIdInput.value = ingredient.id;
+    // Handle +/- button clicks
+    if (btn) {
+      e.stopPropagation();
+      const action = btn.dataset.action;
+      const unitSelect = row.querySelector('.browser-item__unit');
+      const qtyDisplay = row.querySelector('.browser-item__qty-display');
+      const quantityLabel = row.querySelector('.browser-item__quantity');
+      const unit = unitSelect?.value || 'pieces';
 
-    // Update tile visual
-    ingredientGrid.querySelectorAll('.ingredient-tile').forEach(t => t.classList.remove('selected'));
-    tile.classList.add('selected');
+      let currentQty = parseInt(qtyDisplay.textContent) || 0;
 
-    // Show selection panel
-    selectionPanel.style.display = 'flex';
-    selectionName.textContent = ingredient.name;
+      if (action === 'increase') {
+        currentQty += 1;
+      } else if (action === 'decrease' && currentQty > 0) {
+        currentQty -= 1;
+      }
 
-    // Set default unit
-    const unitSelect = document.getElementById('ingredientUnit');
-    if (ingredient.defaultUnit && unitSelect) {
-      unitSelect.value = ingredient.defaultUnit;
+      // Update display
+      qtyDisplay.textContent = currentQty;
+
+      // Update pantry
+      if (currentQty > 0) {
+        // Add or update pantry item
+        const existingItem = getPantryItems().find(p => p.ingredientId === ingredientId);
+        if (existingItem) {
+          updatePantryQuantity(ingredientId, currentQty);
+        } else {
+          addPantryItem(ingredientId, currentQty, unit, 'pantry', '');
+        }
+        row.classList.add('browser-item--in-pantry');
+        quantityLabel.classList.add('browser-item__quantity--visible');
+        quantityLabel.textContent = `In pantry: ${currentQty} ${unit}`;
+      } else {
+        // Remove from pantry
+        removePantryItem(ingredientId);
+        row.classList.remove('browser-item--in-pantry');
+        quantityLabel.classList.remove('browser-item__quantity--visible');
+        quantityLabel.textContent = '';
+      }
+      return;
     }
+  });
 
-    // Reset quantity
-    document.getElementById('ingredientQuantity').value = 1;
+  // Handle unit dropdown changes
+  ingredientGrid?.addEventListener('change', (e) => {
+    if (!e.target.matches('.browser-item__unit')) return;
+
+    const row = e.target.closest('.browser-item');
+    if (!row) return;
+
+    const ingredientId = row.dataset.ingredientId;
+    const newUnit = e.target.value;
+    const qtyDisplay = row.querySelector('.browser-item__qty-display');
+    const quantityLabel = row.querySelector('.browser-item__quantity');
+    const currentQty = parseInt(qtyDisplay.textContent) || 0;
+
+    // Update pantry item unit if it exists
+    if (currentQty > 0) {
+      const pantryItem = getPantryItems().find(p => p.ingredientId === ingredientId);
+      if (pantryItem) {
+        // Update the unit by removing and re-adding
+        removePantryItem(ingredientId);
+        addPantryItem(ingredientId, currentQty, newUnit, 'pantry', '');
+        quantityLabel.textContent = `In pantry: ${currentQty} ${newUnit}`;
+      }
+    }
   });
 
   // Search functionality
@@ -572,36 +699,9 @@ function initAddIngredientModal() {
     btn.addEventListener('click', openAddIngredientModal);
   });
 
-  // Submit button click
-  submitBtn?.addEventListener('click', () => {
-    if (!selectedIngredient) return;
-
-    const quantity = parseFloat(document.getElementById('ingredientQuantity')?.value) || 1;
-    const unit = document.getElementById('ingredientUnit')?.value || 'pieces';
-
-    addPantryItem(selectedIngredient.id, quantity, unit, 'pantry', '');
-
-    // Visual feedback - update the tile
-    const tile = ingredientGrid.querySelector(`[data-ingredient-id="${selectedIngredient.id}"]`);
-    if (tile) {
-      tile.classList.add('in-pantry');
-      tile.classList.remove('selected');
-
-      // Add/update quantity display
-      let qtyEl = tile.querySelector('.ingredient-tile__qty');
-      if (!qtyEl) {
-        qtyEl = document.createElement('span');
-        qtyEl.className = 'ingredient-tile__qty';
-        tile.appendChild(qtyEl);
-      }
-      qtyEl.textContent = `${quantity} ${unit}`;
-    }
-
-    // Reset selection but keep modal open for adding more
-    selectedIngredient = null;
-    selectionPanel.style.display = 'none';
-    if (selectedIdInput) selectedIdInput.value = '';
-  });
+  // Selection panel is no longer needed - inline +/- controls handle everything
+  // Keep it hidden
+  if (selectionPanel) selectionPanel.style.display = 'none';
 }
 
 /**
@@ -903,6 +1003,170 @@ function initMealPlannerUI() {
   const bannerShoppingBtn = document.getElementById('bannerShoppingBtn');
   const shoppingBannerText = document.getElementById('shoppingBannerText');
 
+  // Track selected day for daily macro display
+  let selectedDay = formatDate(new Date());
+
+  // Update macro value with color coding
+  function updateMacroValue(valueEl, goalEl, value, goal, goalType, unit) {
+    if (valueEl) {
+      const displayValue = unit === '' ? Math.round(value).toLocaleString() : `${Math.round(value)}${unit}`;
+      valueEl.textContent = displayValue;
+
+      // Calculate percentage and apply color
+      const percent = goal > 0 ? (value / goal) * 100 : 0;
+      valueEl.classList.remove('macro-overview__value--over', 'macro-overview__value--near', 'macro-overview__value--good');
+
+      if (goalType === 'limit') {
+        if (percent > 100) valueEl.classList.add('macro-overview__value--over');
+        else if (percent >= 80) valueEl.classList.add('macro-overview__value--near');
+        else valueEl.classList.add('macro-overview__value--good');
+      } else {
+        if (percent >= 100) valueEl.classList.add('macro-overview__value--good');
+        else if (percent >= 80) valueEl.classList.add('macro-overview__value--near');
+        else valueEl.classList.add('macro-overview__value--over');
+      }
+    }
+
+    if (goalEl) {
+      const displayGoal = unit === '' ? goal.toLocaleString() : `${goal}${unit}`;
+      goalEl.textContent = `/ ${displayGoal}`;
+    }
+  }
+
+  // Update both weekly and daily macro overviews (planned + actual)
+  function updateMacroOverview() {
+    const trackingSection = document.getElementById('macroTrackingSection');
+    const actualSection = document.getElementById('actualMacroSection');
+    if (!trackingSection) return;
+
+    // Hide if tracking is disabled
+    if (!isTrackingEnabled()) {
+      trackingSection.style.display = 'none';
+      return;
+    }
+    trackingSection.style.display = 'flex';
+
+    const weekData = calculateWeekNutrition(currentWeekStart);
+    const actualWeekData = calculateWeekActualNutrition(currentWeekStart);
+    const goals = getAllDailyGoals();
+
+    const macros = [
+      { key: 'calories', unit: '' },
+      { key: 'protein', unit: 'g' },
+      { key: 'carbs', unit: 'g' },
+      { key: 'fat', unit: 'g' },
+      { key: 'fiber', unit: 'g' }
+    ];
+
+    // Update WEEKLY PLANNED totals
+    macros.forEach(({ key, unit }) => {
+      const id = key.charAt(0).toUpperCase() + key.slice(1);
+      const valueEl = document.getElementById(`weekly${id}`);
+      const goalEl = document.getElementById(`weekly${id}Goal`);
+      const weeklyGoal = (goals[key]?.target || 0) * 7;
+      const goalType = goals[key]?.type || 'limit';
+
+      updateMacroValue(valueEl, goalEl, weekData.total[key], weeklyGoal, goalType, unit);
+    });
+
+    // Update WEEKLY ACTUAL totals
+    macros.forEach(({ key, unit }) => {
+      const id = key.charAt(0).toUpperCase() + key.slice(1);
+      const valueEl = document.getElementById(`weeklyActual${id}`);
+      const goalEl = document.getElementById(`weeklyActual${id}Goal`);
+      const weeklyGoal = (goals[key]?.target || 0) * 7;
+      const goalType = goals[key]?.type || 'limit';
+
+      updateMacroValue(valueEl, goalEl, actualWeekData.total[key], weeklyGoal, goalType, unit);
+    });
+
+    // Show/hide actual section based on whether there's eaten data
+    if (actualSection) {
+      const hasActualData = actualWeekData.daysWithMeals > 0;
+      actualSection.style.display = hasActualData ? 'block' : 'none';
+    }
+
+    // Update DAILY views for selected day
+    updateDailyMacroDisplay();
+  }
+
+  // Update daily macro display for selected day (planned + actual)
+  function updateDailyMacroDisplay() {
+    const goals = getAllDailyGoals();
+    const weekData = calculateWeekNutrition(currentWeekStart);
+    const dayData = weekData.days[selectedDay];
+    const actualDayData = calculateActualDayNutrition(selectedDay);
+
+    const macros = [
+      { key: 'calories', unit: '' },
+      { key: 'protein', unit: 'g' },
+      { key: 'carbs', unit: 'g' },
+      { key: 'fat', unit: 'g' },
+      { key: 'fiber', unit: 'g' }
+    ];
+
+    // Update titles with selected day name
+    const date = new Date(selectedDay + 'T00:00:00');
+    const isToday = selectedDay === formatDate(new Date());
+    const dayName = isToday ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'long' });
+
+    const titleEl = document.getElementById('dailyMacroTitle');
+    if (titleEl) {
+      titleEl.textContent = dayName;
+    }
+
+    const actualTitleEl = document.getElementById('dailyActualTitle');
+    if (actualTitleEl) {
+      actualTitleEl.textContent = dayName;
+    }
+
+    // Update DAILY PLANNED
+    macros.forEach(({ key, unit }) => {
+      const id = key.charAt(0).toUpperCase() + key.slice(1);
+      const valueEl = document.getElementById(`daily${id}`);
+      const goalEl = document.getElementById(`daily${id}Goal`);
+      const dailyGoal = goals[key]?.target || 0;
+      const goalType = goals[key]?.type || 'limit';
+      const consumed = dayData?.total?.[key] || 0;
+
+      updateMacroValue(valueEl, goalEl, consumed, dailyGoal, goalType, unit);
+    });
+
+    // Update DAILY ACTUAL
+    macros.forEach(({ key, unit }) => {
+      const id = key.charAt(0).toUpperCase() + key.slice(1);
+      const valueEl = document.getElementById(`dailyActual${id}`);
+      const goalEl = document.getElementById(`dailyActual${id}Goal`);
+      const dailyGoal = goals[key]?.target || 0;
+      const goalType = goals[key]?.type || 'limit';
+      const consumed = actualDayData?.total?.[key] || 0;
+
+      updateMacroValue(valueEl, goalEl, consumed, dailyGoal, goalType, unit);
+    });
+
+    // Update selected state on day cards
+    document.querySelectorAll('.day-card').forEach(card => {
+      card.classList.toggle('day-card--selected', card.dataset.date === selectedDay);
+    });
+  }
+
+  // Handle day card click for selecting a day
+  function setupDayCardSelection() {
+    const calendarContainer = document.getElementById('calendarWeek');
+    if (!calendarContainer) return;
+
+    calendarContainer.addEventListener('click', (e) => {
+      const dayCard = e.target.closest('.day-card');
+      if (dayCard && dayCard.dataset.date) {
+        // Don't interfere with add button or meal card clicks
+        if (e.target.closest('.day-card__add-btn') || e.target.closest('.meal-card')) return;
+
+        selectedDay = dayCard.dataset.date;
+        updateDailyMacroDisplay();
+      }
+    });
+  }
+
   // Render initial calendar
   function renderCalendar() {
     if (weekTitle) weekTitle.textContent = formatWeekTitle(currentWeekStart);
@@ -915,6 +1179,7 @@ function initMealPlannerUI() {
     }
     updateMealPlanStats();
     updateShoppingBanner();
+    updateMacroOverview();
   }
 
   // Update shopping banner text
@@ -935,16 +1200,19 @@ function initMealPlannerUI() {
   // Week navigation
   prevWeekBtn?.addEventListener('click', () => {
     currentWeekStart = navigateWeek(currentWeekStart, -1);
+    selectedDay = formatDate(currentWeekStart); // Select Monday of new week
     renderCalendar();
   });
 
   nextWeekBtn?.addEventListener('click', () => {
     currentWeekStart = navigateWeek(currentWeekStart, 1);
+    selectedDay = formatDate(currentWeekStart); // Select Monday of new week
     renderCalendar();
   });
 
   todayBtn?.addEventListener('click', () => {
     currentWeekStart = goToCurrentWeek();
+    selectedDay = formatDate(new Date()); // Select today
     renderCalendar();
   });
 
@@ -1016,6 +1284,9 @@ function initMealPlannerUI() {
   // Initial render
   renderCalendar();
 
+  // Setup day card click selection for daily macro view
+  setupDayCardSelection();
+
   // Initialize sidebar recipe list
   initSidebarRecipeList();
 }
@@ -1031,7 +1302,7 @@ function initSidebarRecipeList() {
 
   function renderSidebarRecipes(searchTerm = '') {
     const matched = getMatchedRecipes(allRecipes);
-    let recipes = matched.filter(r => r.matchScore > 0);
+    let recipes = matched.filter(r => r.matchResult && r.matchResult.requiredPercent > 0);
 
     // Filter by search term
     if (searchTerm) {
@@ -1054,12 +1325,24 @@ function initSidebarRecipeList() {
       return;
     }
 
-    recipeList.innerHTML = recipes.map(recipe => `
-      <div class="recipe-sidebar__item" data-recipe-id="${recipe.id}" draggable="true">
-        <h4>${escapeHtml(recipe.title)}</h4>
-        <span>${recipe.cookTime || '30 min'} | ${Math.round(recipe.matchScore * 100)}% match</span>
-      </div>
-    `).join('');
+    recipeList.innerHTML = recipes.map(recipe => {
+      const percent = recipe.matchResult?.requiredPercent || 0;
+      const matchType = recipe.matchResult?.matchType || 'none';
+      let matchClass = 'recipe-sidebar__match--none';
+      if (matchType === 'full') matchClass = 'recipe-sidebar__match--full';
+      else if (matchType === 'partial') matchClass = 'recipe-sidebar__match--partial';
+      else if (matchType === 'minimal') matchClass = 'recipe-sidebar__match--minimal';
+
+      return `
+        <div class="recipe-sidebar__item" data-recipe-id="${recipe.id}" draggable="true">
+          <h4>${escapeHtml(recipe.title)}</h4>
+          <div class="recipe-sidebar__meta">
+            <span>${recipe.cookTime || '30'} min</span>
+            <span class="recipe-sidebar__match ${matchClass}">${percent}% ingredients</span>
+          </div>
+        </div>
+      `;
+    }).join('');
 
     // Add click handlers
     recipeList.querySelectorAll('.recipe-sidebar__item').forEach(item => {
@@ -1105,6 +1388,17 @@ function updateMealPlanStats() {
 }
 
 /**
+ * Format leftover source date for display
+ */
+function formatLeftoverSourceDate(dateStr) {
+  const date = parseDate(dateStr);
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const dayName = dayNames[date.getDay()];
+  const dayNum = date.getDate();
+  return `${dayName} ${dayNum}`;
+}
+
+/**
  * Open meal detail modal
  */
 function openMealDetailModal(meal, recipe) {
@@ -1112,6 +1406,11 @@ function openMealDetailModal(meal, recipe) {
   if (!container) return;
 
   const pantryIds = getPantryIngredientIds();
+  const mealDate = getMealDate(meal.id);
+  const mealStatus = meal.status || MEAL_STATUS.PLANNED;
+  const isEaten = mealStatus === MEAL_STATUS.EATEN;
+  const isDismissed = mealStatus === MEAL_STATUS.DISMISSED;
+  const isPlanned = mealStatus === MEAL_STATUS.PLANNED;
 
   const mealTypeIcons = {
     breakfast: '🍳',
@@ -1139,14 +1438,106 @@ function openMealDetailModal(meal, recipe) {
     };
   });
 
+  // Build status badge HTML
+  let statusBadgeHtml = '';
+  if (isEaten) {
+    const consumedAt = meal.consumedAt ? new Date(meal.consumedAt).toLocaleDateString() : '';
+    statusBadgeHtml = `
+      <div class="meal-status-badge meal-status-badge--eaten">
+        ✓ Eaten${meal.consumedServings ? ` (${meal.consumedServings} serving${meal.consumedServings !== 1 ? 's' : ''})` : ''}
+        ${consumedAt ? `<span class="meal-status-badge__date">on ${consumedAt}</span>` : ''}
+      </div>
+    `;
+  } else if (isDismissed) {
+    statusBadgeHtml = `
+      <div class="meal-status-badge meal-status-badge--dismissed">
+        ✗ Dismissed${meal.movedTo ? ` → Moved to ${new Date(meal.movedTo).toLocaleDateString()}` : ''}
+      </div>
+    `;
+  }
+
+  // Build consumption tracking section (only for planned meals)
+  let consumptionTrackingHtml = '';
+  if (isPlanned) {
+    consumptionTrackingHtml = `
+      <div class="consumption-tracking">
+        <h4 style="font-weight: 700; margin-bottom: var(--spacing-md);">Track This Meal</h4>
+        <p style="color: var(--text-body); font-size: var(--font-size-sm); margin-bottom: var(--spacing-md);">How many servings did you eat?</p>
+        <div class="servings-stepper">
+          <button class="servings-stepper__btn" id="decreaseServings">−</button>
+          <span class="servings-stepper__value" id="servingsValue">${meal.servings}</span>
+          <button class="servings-stepper__btn" id="increaseServings">+</button>
+        </div>
+        <button class="btn btn--primary" id="markEatenBtn" style="width: 100%; margin-top: var(--spacing-md);">
+          ✓ Mark as Eaten
+        </button>
+        <div style="display: flex; gap: var(--spacing-sm); margin-top: var(--spacing-md);">
+          <button class="btn btn--secondary" id="moveMealBtn" style="flex: 1;">
+            📅 Move to Another Day
+          </button>
+          <button class="btn btn--secondary" id="dismissMealBtn" style="flex: 1; color: var(--text-light);">
+            ✗ Dismiss
+          </button>
+        </div>
+        <div class="move-meal-picker" id="moveMealPicker">
+          <label class="move-meal-picker__label">Select new date:</label>
+          <input type="date" class="move-meal-picker__input" id="moveDateInput" min="${formatDate(new Date())}">
+          <div class="move-meal-picker__actions">
+            <button class="btn btn--primary btn--small" id="confirmMoveBtn">Move Meal</button>
+            <button class="btn btn--secondary btn--small" id="cancelMoveBtn">Cancel</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  // Build undo section (for eaten/dismissed meals)
+  let undoSectionHtml = '';
+  if (isEaten || isDismissed) {
+    undoSectionHtml = `
+      <div class="undo-section" style="margin-top: var(--spacing-lg);">
+        <button class="btn btn--secondary" id="undoStatusBtn" style="width: 100%;">
+          ↩ Undo - Return to Planned
+        </button>
+      </div>
+    `;
+  }
+
+  // Build leftover section HTML (only for planned, non-leftover meals)
+  let leftoverSectionHtml = '';
+  if (meal.isLeftover && meal.sourceDate) {
+    leftoverSectionHtml = `
+      <div class="leftover-badge" style="margin-bottom: var(--spacing-lg);">
+        🍲 Leftovers from ${formatLeftoverSourceDate(meal.sourceDate)}
+      </div>
+    `;
+  } else if (isPlanned) {
+    leftoverSectionHtml = `
+      <div class="leftover-section">
+        <button class="btn btn--secondary" id="saveAsLeftoversBtn" style="width: 100%;">
+          🍲 Save as Leftovers
+        </button>
+        <div class="leftover-picker" id="leftoverPicker">
+          <label class="leftover-picker__label">Select date for leftovers:</label>
+          <input type="date" class="leftover-picker__input" id="leftoverDateInput" min="${formatDate(new Date())}">
+          <div class="leftover-picker__actions">
+            <button class="btn btn--primary btn--small" id="confirmLeftoverBtn">Confirm</button>
+            <button class="btn btn--secondary btn--small" id="cancelLeftoverBtn">Cancel</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
   container.innerHTML = `
     <div class="modal__header" style="display: flex; align-items: center; gap: var(--spacing-md); padding: 0; margin-bottom: var(--spacing-lg);">
       <span style="font-size: 32px;">${mealTypeIcons[meal.mealType] || '🍽️'}</span>
       <div>
         <h3 class="modal__title" style="margin-bottom: var(--spacing-xs);">${escapeHtml(recipe.title)}</h3>
-        <p style="color: var(--text-body); font-size: var(--font-size-sm);">${mealTypeNames[meal.mealType]} | ${meal.servings} servings</p>
+        <p style="color: var(--text-body); font-size: var(--font-size-sm);">${mealTypeNames[meal.mealType]} | ${meal.servings} serving${meal.servings !== 1 ? 's' : ''}</p>
       </div>
     </div>
+    ${statusBadgeHtml}
     ${meal.notes ? `<p style="color: var(--text-body); font-style: italic; margin-bottom: var(--spacing-lg);">${escapeHtml(meal.notes)}</p>` : ''}
     <div style="margin-bottom: var(--spacing-xl);">
       <h4 style="font-weight: 700; margin-bottom: var(--spacing-md);">Ingredients</h4>
@@ -1160,12 +1551,110 @@ function openMealDetailModal(meal, recipe) {
         `).join('')}
       </div>
     </div>
-    <div style="display: flex; gap: var(--spacing-md);">
+    ${consumptionTrackingHtml}
+    ${undoSectionHtml}
+    ${leftoverSectionHtml}
+    <div style="display: flex; gap: var(--spacing-md); margin-top: var(--spacing-lg);">
       <button class="btn btn--secondary" id="viewFullRecipeBtn">View Full Recipe</button>
-      <button class="btn btn--secondary" style="color: var(--accent-red);" id="removeMealBtn">Remove from Plan</button>
+      ${isPlanned ? `<button class="btn btn--secondary" style="color: var(--accent-red);" id="removeMealBtn">Remove from Plan</button>` : ''}
     </div>
   `;
 
+  // Store servings value for stepper
+  let currentServings = meal.servings;
+
+  // Event listeners for consumption tracking
+  const decreaseBtn = container.querySelector('#decreaseServings');
+  const increaseBtn = container.querySelector('#increaseServings');
+  const servingsDisplay = container.querySelector('#servingsValue');
+  const markEatenBtn = container.querySelector('#markEatenBtn');
+  const dismissBtn = container.querySelector('#dismissMealBtn');
+  const moveMealBtn = container.querySelector('#moveMealBtn');
+  const movePicker = container.querySelector('#moveMealPicker');
+  const moveDateInput = container.querySelector('#moveDateInput');
+  const confirmMoveBtn = container.querySelector('#confirmMoveBtn');
+  const cancelMoveBtn = container.querySelector('#cancelMoveBtn');
+  const undoBtn = container.querySelector('#undoStatusBtn');
+
+  // Servings stepper
+  decreaseBtn?.addEventListener('click', () => {
+    if (currentServings > 0.5) {
+      currentServings = Math.max(0.5, currentServings - 0.5);
+      if (servingsDisplay) servingsDisplay.textContent = currentServings;
+    }
+  });
+
+  increaseBtn?.addEventListener('click', () => {
+    currentServings = currentServings + 0.5;
+    if (servingsDisplay) servingsDisplay.textContent = currentServings;
+  });
+
+  // Mark as eaten
+  markEatenBtn?.addEventListener('click', () => {
+    const result = markMealAsEaten(meal.id, currentServings);
+    if (result) {
+      closeModal('mealDetailModal');
+      console.log(`Meal marked as eaten: ${currentServings} servings`);
+    } else {
+      alert('Failed to mark meal as eaten.');
+    }
+  });
+
+  // Dismiss meal
+  dismissBtn?.addEventListener('click', () => {
+    if (confirm('Dismiss this meal? It will be removed from your nutrition tracking.')) {
+      const result = dismissMeal(meal.id);
+      if (result) {
+        closeModal('mealDetailModal');
+        console.log('Meal dismissed');
+      } else {
+        alert('Failed to dismiss meal.');
+      }
+    }
+  });
+
+  // Move meal flow
+  moveMealBtn?.addEventListener('click', () => {
+    movePicker?.classList.add('active');
+    moveMealBtn.style.display = 'none';
+    // Set default to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    if (moveDateInput) moveDateInput.value = formatDate(tomorrow);
+  });
+
+  cancelMoveBtn?.addEventListener('click', () => {
+    movePicker?.classList.remove('active');
+    if (moveMealBtn) moveMealBtn.style.display = '';
+  });
+
+  confirmMoveBtn?.addEventListener('click', () => {
+    const targetDate = moveDateInput?.value;
+    if (!targetDate) {
+      alert('Please select a date.');
+      return;
+    }
+    const result = moveMeal(meal.id, targetDate);
+    if (result) {
+      closeModal('mealDetailModal');
+      console.log(`Meal moved to ${targetDate}`);
+    } else {
+      alert('Failed to move meal.');
+    }
+  });
+
+  // Undo status
+  undoBtn?.addEventListener('click', () => {
+    const result = undoMealStatus(meal.id);
+    if (result) {
+      closeModal('mealDetailModal');
+      console.log('Meal status reset to planned');
+    } else {
+      alert('Failed to undo meal status.');
+    }
+  });
+
+  // Core event listeners
   container.querySelector('#viewFullRecipeBtn')?.addEventListener('click', () => {
     closeModal('mealDetailModal');
     handleRecipeClick(recipe);
@@ -1175,6 +1664,46 @@ function openMealDetailModal(meal, recipe) {
     removeMeal(meal.id);
     closeModal('mealDetailModal');
   });
+
+  // Leftover flow event listeners (only for planned, non-leftover meals)
+  if (isPlanned && !meal.isLeftover) {
+    const saveBtn = container.querySelector('#saveAsLeftoversBtn');
+    const picker = container.querySelector('#leftoverPicker');
+    const dateInput = container.querySelector('#leftoverDateInput');
+    const confirmBtn = container.querySelector('#confirmLeftoverBtn');
+    const cancelBtn = container.querySelector('#cancelLeftoverBtn');
+
+    saveBtn?.addEventListener('click', () => {
+      picker?.classList.add('active');
+      saveBtn.style.display = 'none';
+      // Set default to tomorrow
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      if (dateInput) dateInput.value = formatDate(tomorrow);
+    });
+
+    cancelBtn?.addEventListener('click', () => {
+      picker?.classList.remove('active');
+      if (saveBtn) saveBtn.style.display = '';
+    });
+
+    confirmBtn?.addEventListener('click', () => {
+      const targetDate = dateInput?.value;
+      if (!targetDate) {
+        alert('Please select a date for the leftovers.');
+        return;
+      }
+
+      // Create the leftover
+      const leftover = createLeftover(meal, mealDate, targetDate);
+      if (leftover) {
+        closeModal('mealDetailModal');
+        console.log(`Leftover created for ${targetDate}`);
+      } else {
+        alert('Failed to create leftover. Please try again.');
+      }
+    });
+  }
 
   openModal('mealDetailModal');
 }
@@ -1195,71 +1724,16 @@ function openShoppingListModal() {
   if (subtitle) subtitle.textContent = `Items needed for ${formatWeekTitle(currentWeekStart)}`;
 
   if (shoppingList.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state__icon">🎉</div>
-        <h3 class="empty-state__title">You have everything you need!</h3>
-        <p class="empty-state__text">All planned meals can be made with your pantry.</p>
-      </div>
-    `;
+    container.innerHTML = renderEmptyState(true);
   } else {
-    const byCategory = {};
-    shoppingList.forEach(item => {
-      if (!byCategory[item.category]) {
-        byCategory[item.category] = [];
-      }
-      byCategory[item.category].push(item);
-    });
-
-    const categoryIcons = {
-      proteins: '🥩',
-      dairy: '🧀',
-      grains: '🌾',
-      vegetables: '🥬',
-      fruits: '🍎',
-      pantry_staples: '🫙',
-      herbs_spices: '🌿',
-      other: '📦'
-    };
-
-    container.innerHTML = Object.entries(byCategory).map(([category, items]) => `
-      <div class="shopping-category">
-        <div class="category-header">
-          <span>${categoryIcons[category] || '📦'}</span>
-          <span class="category-name">${escapeHtml(category.replace('_', ' '))}</span>
-          <span class="category-count">${items.length}</span>
-        </div>
-        <div class="shopping-list-items">
-          ${items.map(item => `
-            <div class="list-item">
-              <div class="checkbox-wrapper">
-                <div class="custom-checkbox"></div>
-              </div>
-              <div class="item-details">
-                <span class="item-name">${escapeHtml(item.name)}</span>
-                <span class="item-qty">${item.shortage.toFixed(1)} ${escapeHtml(item.unit)}</span>
-              </div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `).join('');
-
-    // Add checkbox toggle
-    container.querySelectorAll('.list-item').forEach(item => {
-      item.addEventListener('click', () => {
-        item.classList.toggle('checked');
-      });
-    });
+    container.innerHTML = renderShoppingListHtml(shoppingList, { showRecipes: false });
+    setupCheckboxHandlers(container);
   }
 
   // Copy to clipboard
   if (copyBtn) {
     copyBtn.onclick = () => {
-      const text = shoppingList.map(item =>
-        `- ${item.name}: ${item.shortage.toFixed(1)} ${item.unit}`
-      ).join('\n');
-
+      const text = generatePlainTextList(shoppingList);
       navigator.clipboard.writeText(`Shopping List\n${formatWeekTitle(currentWeekStart)}\n\n${text || 'Nothing needed!'}`).then(() => {
         copyBtn.textContent = 'Copied!';
         setTimeout(() => {
@@ -1307,75 +1781,13 @@ function renderShoppingListView() {
 
   if (emptyState) emptyState.style.display = 'none';
 
-  // Group by category
-  const byCategory = {};
-  shoppingList.forEach(item => {
-    if (!byCategory[item.category]) {
-      byCategory[item.category] = [];
-    }
-    byCategory[item.category].push(item);
+  container.innerHTML = renderShoppingListHtml(shoppingList, {
+    showRecipes: true,
+    checkedItems: checkedShoppingItems
   });
 
-  const categoryIcons = {
-    proteins: '🥩',
-    dairy: '🧀',
-    grains: '🌾',
-    vegetables: '🥬',
-    fruits: '🍎',
-    pantry_staples: '🫙',
-    herbs_spices: '🌿',
-    other: '📦'
-  };
-
-  container.innerHTML = Object.entries(byCategory).map(([category, items]) => `
-    <div class="shopping-category">
-      <div class="category-header">
-        <span>${categoryIcons[category] || '📦'}</span>
-        <span class="category-name">${escapeHtml(category.replace('_', ' '))}</span>
-        <span class="category-count">${items.length}</span>
-      </div>
-      <div class="shopping-list-items">
-        ${items.map(item => {
-          const itemKey = `${item.ingredientId}-${item.shortage.toFixed(1)}`;
-          const isChecked = checkedShoppingItems.has(itemKey);
-          return `
-            <div class="list-item${isChecked ? ' checked' : ''}" data-item-key="${itemKey}">
-              <div class="checkbox-wrapper">
-                <div class="custom-checkbox${isChecked ? ' checked' : ''}"></div>
-              </div>
-              <div class="item-details">
-                <span class="item-name">${escapeHtml(item.name)}</span>
-                <span class="item-qty">${item.shortage.toFixed(1)} ${escapeHtml(item.unit)}</span>
-              </div>
-              <div class="item-recipes" title="For: ${item.recipes.join(', ')}">
-                ${item.recipes.slice(0, 2).map(r => `<span class="recipe-tag">${escapeHtml(r)}</span>`).join('')}
-                ${item.recipes.length > 2 ? `<span class="recipe-tag">+${item.recipes.length - 2}</span>` : ''}
-              </div>
-            </div>
-          `;
-        }).join('')}
-      </div>
-    </div>
-  `).join('');
-
-  // Add click handlers for checkboxes
-  container.querySelectorAll('.list-item').forEach(item => {
-    item.addEventListener('click', () => {
-      const key = item.dataset.itemKey;
-      const checkbox = item.querySelector('.custom-checkbox');
-
-      if (checkedShoppingItems.has(key)) {
-        checkedShoppingItems.delete(key);
-        item.classList.remove('checked');
-        checkbox?.classList.remove('checked');
-      } else {
-        checkedShoppingItems.add(key);
-        item.classList.add('checked');
-        checkbox?.classList.add('checked');
-      }
-
-      updateShoppingStats(shoppingList);
-    });
+  setupCheckboxHandlers(container, checkedShoppingItems, () => {
+    updateShoppingStats(shoppingList);
   });
 }
 
@@ -1657,6 +2069,9 @@ async function init() {
   // Initialize navigation
   initNavigation();
 
+  // Initialize dashboard
+  initDashboard();
+
   // Initialize pantry UI
   initPantryUI();
   initAddIngredientModal();
@@ -1674,17 +2089,40 @@ async function init() {
   // Initialize auth UI
   initAuthUI();
 
+  // Initialize cloud sync
+  initSyncOrchestrator();
+
   // Initialize profile section
   initProfileSection();
+
+  // Initialize nutrition tracking
+  initNutritionPrefs();
+  initNutritionPrefsModal(() => {
+    // Refresh displays when nutrition prefs change
+    renderNutritionWidget();
+    // Re-render calendar to update nutrition bars
+    const calendarContainer = document.getElementById('calendarWeek');
+    if (calendarContainer) {
+      renderWeekView(calendarContainer, currentWeekStart, {
+        onAddClick: (dateStr, mealType) => openRecipeBrowserModal(dateStr, mealType),
+        onMealClick: (meal, recipe) => openMealDetailModal(meal, recipe),
+        onRemoveClick: (mealId) => removeMeal(mealId)
+      });
+    }
+  });
+  initNutritionWidget();
 
   // Listen for view changes
   onViewChange((viewId, previousView) => {
     console.log(`View changed: ${previousView} -> ${viewId}`);
 
     // Refresh content when switching views
-    if (viewId === 'recipes') {
+    if (viewId === 'dashboard') {
+      updateDashboardPreviews();
+      renderNutritionWidget();
+    } else if (viewId === 'recipes') {
       updateRecipeGrid();
-    } else if (viewId === 'dashboard' || viewId === 'pantry') {
+    } else if (viewId === 'pantry') {
       updatePantryStats();
     } else if (viewId === 'shoppinglist') {
       renderShoppingListView();

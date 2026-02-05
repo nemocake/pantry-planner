@@ -3,6 +3,13 @@
  * Handles loading, searching, and normalizing ingredients
  */
 
+import {
+  getCategoryIcon as getIcon,
+  getIngredientIcon as getIngIcon,
+  CATEGORY_ICONS,
+  INGREDIENT_ICONS
+} from '../data/icons.js';
+
 let ingredientsData = null;
 let ingredientIndex = new Map(); // Fast lookup by ID
 let searchIndex = []; // Flattened search terms
@@ -169,68 +176,18 @@ export function findIngredientByName(name) {
 
 /**
  * Get emoji icon for a category
+ * Re-exports from centralized icons.js
  */
 export function getCategoryIcon(categoryId) {
-  const icons = {
-    proteins: '🥩',
-    vegetables: '🥬',
-    fruits: '🍎',
-    dairy: '🧀',
-    grains: '🌾',
-    canned: '🥫',
-    baking: '🧁',
-    spices: '🌶️',
-    condiments: '🍯',
-    frozen: '🧊',
-    international: '🌍',
-    beverages: '🥤'
-  };
-  return icons[categoryId] || '📦';
+  return getIcon(categoryId);
 }
 
 /**
  * Get emoji icon for an ingredient based on its category/subcategory
+ * Re-exports from centralized icons.js
  */
 export function getIngredientIcon(ingredient) {
-  // Specific icons for common items
-  const specificIcons = {
-    'ing_protein_chicken_breast': '🍗',
-    'ing_protein_ground_beef': '🥩',
-    'ing_protein_bacon': '🥓',
-    'ing_protein_salmon': '🐟',
-    'ing_protein_shrimp': '🦐',
-    'ing_protein_eggs': '🥚',
-    'ing_protein_tofu': '🧈',
-    'ing_veg_tomato': '🍅',
-    'ing_veg_onion': '🧅',
-    'ing_veg_garlic': '🧄',
-    'ing_veg_carrot': '🥕',
-    'ing_veg_potato': '🥔',
-    'ing_veg_bell_pepper': '🫑',
-    'ing_veg_mushroom': '🍄',
-    'ing_veg_corn': '🌽',
-    'ing_veg_broccoli': '🥦',
-    'ing_veg_avocado': '🥑',
-    'ing_fruit_lemon': '🍋',
-    'ing_fruit_apple': '🍎',
-    'ing_fruit_banana': '🍌',
-    'ing_fruit_orange': '🍊',
-    'ing_fruit_strawberry': '🍓',
-    'ing_dairy_milk': '🥛',
-    'ing_dairy_butter': '🧈',
-    'ing_dairy_cheese_cheddar': '🧀',
-    'ing_grain_rice': '🍚',
-    'ing_grain_bread': '🍞',
-    'ing_grain_pasta_spaghetti': '🍝',
-    'ing_intl_soy_sauce': '🥢'
-  };
-
-  if (specificIcons[ingredient.id]) {
-    return specificIcons[ingredient.id];
-  }
-
-  // Fallback to category icon
-  return getCategoryIcon(ingredient.category);
+  return getIngIcon(ingredient.id, ingredient.category);
 }
 
 export default {

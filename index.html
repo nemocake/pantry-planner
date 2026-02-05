@@ -43,16 +43,6 @@
           </button>
         </div>
 
-        <div class="nav-section">
-          <div class="nav-label">Categories</div>
-          <button class="nav-item" data-category-filter="proteins">Proteins</button>
-          <button class="nav-item" data-category-filter="dairy">Dairy & Eggs</button>
-          <button class="nav-item" data-category-filter="vegetables">Vegetables</button>
-          <button class="nav-item" data-category-filter="fruits">Fruits</button>
-          <button class="nav-item" data-category-filter="grains">Grains</button>
-          <button class="nav-item" data-category-filter="spices">Spices</button>
-        </div>
-
         <!-- Nav Footer - Login/Profile -->
         <div class="nav-footer" id="navAuth">
           <!-- Login button (shown when logged out) -->
@@ -87,59 +77,106 @@
       <main class="main-content" id="app">
         <div class="canvas-sheet">
 
-          <!-- Dashboard View -->
+          <!-- Dashboard View - Overview with 4 Preview Cards -->
           <div class="view active" id="view-dashboard" data-view="dashboard">
             <header class="page-header">
               <div class="page-title">
-                <h1>Kitchen Inventory</h1>
-                <p>Track your ingredients and discover recipes</p>
-              </div>
-              <div class="page-actions">
-                <button class="btn btn--secondary" id="exportPantryBtn">Export</button>
-                <button class="btn btn--primary" id="addIngredientBtn">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                  Add Item
-                </button>
-                <input type="file" id="importFileInput" accept=".json" hidden>
-                <button class="btn btn--secondary hidden" id="importPantryBtn">Import</button>
+                <h1>Dashboard</h1>
+                <p>Your kitchen at a glance</p>
               </div>
             </header>
 
-            <!-- Stats Grid -->
-            <div class="stats-grid">
-              <div class="stat-card">
-                <span class="stat-value" id="statTotal">0</span>
-                <span class="stat-label">Total Items</span>
+            <!-- Dashboard Grid - 4 Preview Cards -->
+            <div class="dashboard-grid">
+
+              <!-- Pantry Preview -->
+              <div class="preview-card" data-navigate="pantry">
+                <div class="preview-card__header">
+                  <span class="preview-card__label">Pantry</span>
+                  <span class="preview-card__count" id="dashPantryCount">0 items</span>
+                </div>
+                <div class="preview-card__content" id="dashPantryPreview">
+                  <div class="preview-card__empty">No items in pantry</div>
+                </div>
+                <div class="preview-card__footer">
+                  <span class="preview-card__link">View All</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </div>
               </div>
-              <div class="stat-card">
-                <span class="stat-value stat-value--accent" id="statExpiring">0</span>
-                <span class="stat-label">Expiring Soon</span>
+
+              <!-- Recipes Preview -->
+              <div class="preview-card" data-navigate="recipes">
+                <div class="preview-card__header">
+                  <span class="preview-card__label">Recipes</span>
+                  <span class="preview-card__count" id="dashRecipeCount">0 available</span>
+                </div>
+                <div class="preview-card__content" id="dashRecipePreview">
+                  <div class="preview-card__empty">No recipes yet</div>
+                </div>
+                <div class="preview-card__footer">
+                  <span class="preview-card__link">Browse Recipes</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </div>
               </div>
-              <div class="stat-card">
-                <span class="stat-value" id="statLowStock">0</span>
-                <span class="stat-label">Low Stock</span>
+
+              <!-- Meal Plan Preview -->
+              <div class="preview-card" data-navigate="planner">
+                <div class="preview-card__header">
+                  <span class="preview-card__label">Meal Plan</span>
+                  <span class="preview-card__count" id="dashMealCount">This Week</span>
+                </div>
+                <div class="preview-card__content" id="dashMealPreview">
+                  <div class="preview-card__empty">No meals planned</div>
+                </div>
+                <div class="preview-card__footer">
+                  <span class="preview-card__link">Plan Meals</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </div>
               </div>
-              <div class="stat-card">
-                <span class="stat-value" id="statRecipes">0</span>
-                <span class="stat-label">Recipes Available</span>
+
+              <!-- Shopping List Preview -->
+              <div class="preview-card" data-navigate="shopping">
+                <div class="preview-card__header">
+                  <span class="preview-card__label">Shopping List</span>
+                  <span class="preview-card__count" id="dashShoppingCount">0 items</span>
+                </div>
+                <div class="preview-card__content" id="dashShoppingPreview">
+                  <div class="preview-card__empty">Shopping list empty</div>
+                </div>
+                <div class="preview-card__footer">
+                  <span class="preview-card__link">View List</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </div>
               </div>
+
             </div>
 
-            <!-- Category Filter -->
-            <div class="inventory-header">
-              <div class="filter-tabs" id="categoryFilter">
-                <button class="filter-tab active" data-category="all">All Items</button>
-                <button class="filter-tab" data-category="proteins">Proteins</button>
-                <button class="filter-tab" data-category="dairy">Dairy</button>
-                <button class="filter-tab" data-category="vegetables">Vegetables</button>
-                <button class="filter-tab" data-category="fruits">Fruits</button>
-                <button class="filter-tab" data-category="grains">Grains</button>
+            <!-- Weekly Nutrition Summary Widget -->
+            <div class="nutrition-widget" id="nutritionWidget">
+              <div class="nutrition-widget__header">
+                <h3 class="nutrition-widget__title">Weekly Nutrition</h3>
+                <button class="btn btn--small btn--ghost" id="openNutritionPrefs">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                  </svg>
+                  Goals
+                </button>
               </div>
-            </div>
-
-            <!-- Ingredient Browser Grid -->
-            <div class="grid" id="browserGrid">
-              <!-- Pantry items rendered dynamically -->
+              <div class="nutrition-widget__content" id="nutritionWidgetContent">
+                <div class="nutrition-widget__empty">
+                  <p>Set your nutrition goals to track weekly progress</p>
+                  <button class="btn btn--small btn--primary" id="setupNutritionGoals">Set Up Goals</button>
+                </div>
+              </div>
             </div>
 
             <!-- Legacy hidden elements for compatibility -->
@@ -151,6 +188,12 @@
               <div id="ingredientBrowser"></div>
               <h3 id="browserTitle">Browse</h3>
               <button id="closeBrowser"></button>
+              <div id="browserGrid"></div>
+              <div id="categoryFilter"></div>
+              <button id="addIngredientBtn" class="hidden"></button>
+              <button id="exportPantryBtn" class="hidden"></button>
+              <button id="importPantryBtn" class="hidden"></button>
+              <input type="file" id="importFileInput" accept=".json" hidden>
             </div>
           </div>
 
@@ -171,10 +214,18 @@
               </div>
             </header>
 
-            <!-- Category Filter Buttons -->
-            <div class="category-filter" id="pantryCategories">
-              <button class="category-btn category-btn--active" data-category="all">All</button>
-              <!-- Categories populated dynamically -->
+            <!-- Category Tabs - Squared Swiss style -->
+            <div class="pantry-tabs" id="pantryTabs">
+              <button class="pantry-tab active" data-category="all">All</button>
+              <button class="pantry-tab" data-category="proteins">Proteins</button>
+              <button class="pantry-tab" data-category="dairy">Dairy</button>
+              <button class="pantry-tab" data-category="vegetables">Vegetables</button>
+              <button class="pantry-tab" data-category="fruits">Fruits</button>
+              <button class="pantry-tab" data-category="grains">Grains</button>
+              <button class="pantry-tab" data-category="spices">Spices</button>
+              <button class="pantry-tab" data-category="condiments">Condiments</button>
+              <button class="pantry-tab" data-category="baking">Baking</button>
+              <button class="pantry-tab" data-category="beverages">Beverages</button>
             </div>
 
             <!-- Pantry Grid -->
@@ -277,6 +328,155 @@
               <button class="week-nav__btn" id="nextWeekBtn" title="Next week">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
               </button>
+            </div>
+
+            <!-- Macro Tracking Section -->
+            <div class="macro-tracking" id="macroTrackingSection">
+              <!-- Planned Section -->
+              <div class="macro-tracking__section">
+                <div class="macro-tracking__section-title">📋 Planned</div>
+                <!-- Weekly Total -->
+                <div class="macro-overview macro-overview--weekly" id="weeklyMacroOverview">
+                  <div class="macro-overview__header">
+                    <span class="macro-overview__title">Weekly Total</span>
+                  </div>
+                  <div class="macro-overview__items">
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Calories</span>
+                      <span class="macro-overview__value" id="weeklyCalories">0</span>
+                      <span class="macro-overview__goal" id="weeklyCaloriesGoal">/ 0</span>
+                    </div>
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Protein</span>
+                      <span class="macro-overview__value" id="weeklyProtein">0g</span>
+                      <span class="macro-overview__goal" id="weeklyProteinGoal">/ 0g</span>
+                    </div>
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Carbs</span>
+                      <span class="macro-overview__value" id="weeklyCarbs">0g</span>
+                      <span class="macro-overview__goal" id="weeklyCarbsGoal">/ 0g</span>
+                    </div>
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Fat</span>
+                      <span class="macro-overview__value" id="weeklyFat">0g</span>
+                      <span class="macro-overview__goal" id="weeklyFatGoal">/ 0g</span>
+                    </div>
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Fiber</span>
+                      <span class="macro-overview__value" id="weeklyFiber">0g</span>
+                      <span class="macro-overview__goal" id="weeklyFiberGoal">/ 0g</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Daily View -->
+                <div class="macro-overview macro-overview--daily" id="dailyMacroOverview">
+                  <div class="macro-overview__header">
+                    <span class="macro-overview__title" id="dailyMacroTitle">Today</span>
+                    <span class="macro-overview__hint">Click a day to view</span>
+                  </div>
+                  <div class="macro-overview__items">
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Calories</span>
+                      <span class="macro-overview__value" id="dailyCalories">0</span>
+                      <span class="macro-overview__goal" id="dailyCaloriesGoal">/ 0</span>
+                    </div>
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Protein</span>
+                      <span class="macro-overview__value" id="dailyProtein">0g</span>
+                      <span class="macro-overview__goal" id="dailyProteinGoal">/ 0g</span>
+                    </div>
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Carbs</span>
+                      <span class="macro-overview__value" id="dailyCarbs">0g</span>
+                      <span class="macro-overview__goal" id="dailyCarbsGoal">/ 0g</span>
+                    </div>
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Fat</span>
+                      <span class="macro-overview__value" id="dailyFat">0g</span>
+                      <span class="macro-overview__goal" id="dailyFatGoal">/ 0g</span>
+                    </div>
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Fiber</span>
+                      <span class="macro-overview__value" id="dailyFiber">0g</span>
+                      <span class="macro-overview__goal" id="dailyFiberGoal">/ 0g</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Actual Consumed Section -->
+              <div class="macro-tracking__section macro-tracking__section--actual" id="actualMacroSection">
+                <div class="macro-tracking__section-title">✓ Actually Eaten</div>
+                <!-- Weekly Actual -->
+                <div class="macro-overview macro-overview--weekly macro-overview--actual" id="weeklyActualOverview">
+                  <div class="macro-overview__header">
+                    <span class="macro-overview__title">Weekly Consumed</span>
+                  </div>
+                  <div class="macro-overview__items">
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Calories</span>
+                      <span class="macro-overview__value" id="weeklyActualCalories">0</span>
+                      <span class="macro-overview__goal" id="weeklyActualCaloriesGoal">/ 0</span>
+                    </div>
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Protein</span>
+                      <span class="macro-overview__value" id="weeklyActualProtein">0g</span>
+                      <span class="macro-overview__goal" id="weeklyActualProteinGoal">/ 0g</span>
+                    </div>
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Carbs</span>
+                      <span class="macro-overview__value" id="weeklyActualCarbs">0g</span>
+                      <span class="macro-overview__goal" id="weeklyActualCarbsGoal">/ 0g</span>
+                    </div>
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Fat</span>
+                      <span class="macro-overview__value" id="weeklyActualFat">0g</span>
+                      <span class="macro-overview__goal" id="weeklyActualFatGoal">/ 0g</span>
+                    </div>
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Fiber</span>
+                      <span class="macro-overview__value" id="weeklyActualFiber">0g</span>
+                      <span class="macro-overview__goal" id="weeklyActualFiberGoal">/ 0g</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Daily Actual -->
+                <div class="macro-overview macro-overview--daily macro-overview--actual" id="dailyActualOverview">
+                  <div class="macro-overview__header">
+                    <span class="macro-overview__title" id="dailyActualTitle">Today</span>
+                    <span class="macro-overview__hint">Eaten meals only</span>
+                  </div>
+                  <div class="macro-overview__items">
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Calories</span>
+                      <span class="macro-overview__value" id="dailyActualCalories">0</span>
+                      <span class="macro-overview__goal" id="dailyActualCaloriesGoal">/ 0</span>
+                    </div>
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Protein</span>
+                      <span class="macro-overview__value" id="dailyActualProtein">0g</span>
+                      <span class="macro-overview__goal" id="dailyActualProteinGoal">/ 0g</span>
+                    </div>
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Carbs</span>
+                      <span class="macro-overview__value" id="dailyActualCarbs">0g</span>
+                      <span class="macro-overview__goal" id="dailyActualCarbsGoal">/ 0g</span>
+                    </div>
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Fat</span>
+                      <span class="macro-overview__value" id="dailyActualFat">0g</span>
+                      <span class="macro-overview__goal" id="dailyActualFatGoal">/ 0g</span>
+                    </div>
+                    <div class="macro-overview__item">
+                      <span class="macro-overview__label">Fiber</span>
+                      <span class="macro-overview__value" id="dailyActualFiber">0g</span>
+                      <span class="macro-overview__goal" id="dailyActualFiberGoal">/ 0g</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- Planner Layout -->
@@ -419,22 +619,18 @@
               <h3 class="profile-section-title">Cooking Stats</h3>
               <div class="profile-stats-grid">
                 <div class="profile-stat-card">
-                  <span class="profile-stat-card__icon">📅</span>
                   <span class="profile-stat-card__number" id="statMealsPlannedProfile">0</span>
                   <span class="profile-stat-card__label">Meals Planned</span>
                 </div>
                 <div class="profile-stat-card">
-                  <span class="profile-stat-card__icon">🍳</span>
                   <span class="profile-stat-card__number" id="statRecipesTried">0</span>
                   <span class="profile-stat-card__label">Recipes Tried</span>
                 </div>
                 <div class="profile-stat-card">
-                  <span class="profile-stat-card__icon">🔥</span>
                   <span class="profile-stat-card__number" id="statCurrentStreak">0</span>
                   <span class="profile-stat-card__label">Day Streak</span>
                 </div>
                 <div class="profile-stat-card">
-                  <span class="profile-stat-card__icon">🏆</span>
                   <span class="profile-stat-card__number" id="statLongestStreak">0</span>
                   <span class="profile-stat-card__label">Best Streak</span>
                 </div>
@@ -510,33 +706,7 @@
           </div>
         </div>
 
-        <!-- Selection Panel (shows when ingredient selected) -->
-        <div class="ingredient-browser__selection" id="ingredientSelectionPanel" style="display: none;">
-          <div class="selection-info">
-            <span class="selection-name" id="selectionName">Selected Ingredient</span>
-          </div>
-          <div class="selection-controls">
-            <input type="number" id="ingredientQuantity" class="form-input" value="1" min="0.1" step="0.5" style="width: 80px;">
-            <select id="ingredientUnit" class="form-input" style="width: 100px;">
-              <option value="pieces">pieces</option>
-              <option value="cup">cups</option>
-              <option value="tbsp">tbsp</option>
-              <option value="tsp">tsp</option>
-              <option value="oz">oz</option>
-              <option value="lb">lb</option>
-              <option value="g">grams</option>
-              <option value="kg">kg</option>
-              <option value="ml">ml</option>
-              <option value="l">liters</option>
-              <option value="cloves">cloves</option>
-              <option value="stalks">stalks</option>
-              <option value="can">can</option>
-            </select>
-            <button type="button" class="btn btn--primary" id="submitAddIngredient">
-              Add to Pantry
-            </button>
-          </div>
-        </div>
+        <!-- Selection panel removed - inline +/- controls now handle adding -->
       </div>
     </div>
 
@@ -569,34 +739,35 @@
       </div>
     </div>
 
-    <!-- Recipe Browser Modal (Full Screen) -->
+    <!-- Recipe Browser Modal (Full Screen) - Swiss Design -->
     <div class="modal" id="recipeBrowserModal">
       <div class="modal__backdrop"></div>
       <div class="modal__container modal__container--xlarge">
         <button class="modal__close" aria-label="Close modal">&times;</button>
 
         <div class="modal__header">
-          <h2 class="modal__title">Choose a Recipe</h2>
-          <span class="recipe-browser__date" id="browserSelectedDate">Monday, January 20</span>
+          <h2 class="modal__title">Select Recipe</h2>
+          <span class="recipe-browser__date" id="browserSelectedDate"></span>
         </div>
 
-        <div class="modal__body">
-          <div class="recipe-filters mb-lg">
-            <div class="recipe-search">
+        <div class="modal__body recipe-browser-body">
+          <!-- Filters Row -->
+          <div class="recipe-browser__filters">
+            <div class="recipe-browser__search">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
               <input type="text" id="browserSearchInput" class="form-input" placeholder="Search recipes...">
             </div>
-            <select id="browserCuisineFilter" class="filter-select">
+            <select id="browserCuisineFilter" class="recipe-browser__select">
               <option value="">All Cuisines</option>
             </select>
-            <select id="browserMealTypeFilter" class="filter-select">
+            <select id="browserMealTypeFilter" class="recipe-browser__select">
               <option value="">All Meals</option>
               <option value="breakfast">Breakfast</option>
               <option value="lunch">Lunch</option>
               <option value="dinner">Dinner</option>
               <option value="snack">Snack</option>
             </select>
-            <select id="browserDifficultyFilter" class="filter-select">
+            <select id="browserDifficultyFilter" class="recipe-browser__select">
               <option value="">Any Difficulty</option>
               <option value="easy">Easy</option>
               <option value="medium">Medium</option>
@@ -604,35 +775,70 @@
             </select>
           </div>
 
-          <div class="mb-md" id="browserResultsCount">0 recipes found</div>
+          <!-- Nutrition Filters Row -->
+          <div class="recipe-browser__nutrition-filters">
+            <div class="nutrition-filter">
+              <label for="browserMaxCalories">Max Calories</label>
+              <input type="number" id="browserMaxCalories" class="form-input form-input--small" placeholder="e.g. 500" min="0" step="50">
+            </div>
+            <div class="nutrition-filter">
+              <label for="browserMinProtein">Min Protein (g)</label>
+              <input type="number" id="browserMinProtein" class="form-input form-input--small" placeholder="e.g. 20" min="0" step="5">
+            </div>
+            <button type="button" class="btn btn--small btn--ghost nutrition-filter__btn" id="browserFitsRemaining">
+              Fits Today's Budget
+            </button>
+          </div>
 
-          <div class="grid" id="browserRecipesGrid">
-            <!-- Recipe cards rendered dynamically -->
+          <!-- Results Count -->
+          <div class="recipe-browser__count" id="browserResultsCount">0 recipes</div>
+
+          <!-- Recipe List -->
+          <div class="recipe-browser__list" id="browserRecipesGrid">
+            <!-- Recipe rows rendered dynamically -->
           </div>
         </div>
 
-        <!-- Recipe Selection Confirmation Panel -->
-        <div class="modal__footer" id="recipeConfirmPanel" style="display: none;">
-          <div style="flex: 1;">
-            <strong id="confirmRecipeName">Recipe Name</strong>
-            <div id="confirmNutrition" style="font-size: var(--font-size-sm); color: var(--text-body);"></div>
+        <!-- Recipe Preview Panel -->
+        <div class="recipe-preview" id="recipeConfirmPanel">
+          <div class="recipe-preview__header">
+            <div class="recipe-preview__title-row">
+              <h3 class="recipe-preview__title" id="confirmRecipeName">Recipe Name</h3>
+              <button type="button" class="recipe-preview__close" id="cancelSelectRecipe">&times;</button>
+            </div>
+            <div class="recipe-preview__meta" id="confirmNutrition"></div>
           </div>
-          <select id="confirmMealType" class="filter-select">
-            <option value="breakfast">Breakfast</option>
-            <option value="lunch">Lunch</option>
-            <option value="dinner" selected>Dinner</option>
-            <option value="snack">Snack</option>
-          </select>
-          <input type="number" id="confirmServings" class="form-input" value="4" min="1" max="20" style="width: 80px;">
-          <button type="button" class="btn btn--secondary" id="cancelSelectRecipe">Cancel</button>
-          <button type="button" class="btn btn--primary" id="confirmAddMeal">Add to Plan</button>
-        </div>
 
-        <!-- Hidden elements for compatibility -->
-        <div class="hidden">
-          <div id="confirmPanelBody"></div>
-          <div id="confirmIngredientsList"></div>
-          <div id="confirmInstructionsList"></div>
+          <div class="recipe-preview__body">
+            <!-- Ingredients Column -->
+            <div class="recipe-preview__section">
+              <div class="recipe-preview__section-header">
+                <span class="recipe-preview__section-label">Ingredients</span>
+                <div class="recipe-preview__servings">
+                  <label>Servings</label>
+                  <input type="number" id="confirmServings" class="form-input" value="4" min="1" max="20">
+                </div>
+              </div>
+              <div class="recipe-preview__ingredients" id="confirmIngredientsList">
+                <!-- Ingredients rendered here -->
+              </div>
+            </div>
+
+            <!-- Instructions Column -->
+            <div class="recipe-preview__section">
+              <span class="recipe-preview__section-label">Instructions</span>
+              <div class="recipe-preview__instructions" id="confirmInstructionsList">
+                <!-- Instructions rendered here -->
+              </div>
+            </div>
+          </div>
+
+          <div class="recipe-preview__footer">
+            <button type="button" class="btn btn--primary btn--lg" id="confirmAddMeal">Add to Meal Plan</button>
+          </div>
+
+          <!-- Hidden meal type - default to dinner -->
+          <input type="hidden" id="confirmMealType" value="dinner">
         </div>
       </div>
     </div>
@@ -802,6 +1008,147 @@
       </div>
     </div>
 
+    <!-- Nutrition Preferences Modal -->
+    <div class="modal" id="nutritionPrefsModal">
+      <div class="modal__backdrop"></div>
+      <div class="modal__container modal__container--large">
+        <button class="modal__close" aria-label="Close modal">&times;</button>
+
+        <div class="modal__header">
+          <h2 class="modal__title">Nutrition Goals</h2>
+          <p class="modal__subtitle">Set your daily macro targets</p>
+        </div>
+
+        <div class="modal__body nutrition-prefs">
+          <!-- Enable/Disable Toggle -->
+          <div class="nutrition-prefs__toggle">
+            <label class="toggle-switch">
+              <input type="checkbox" id="nutritionTrackingEnabled" checked>
+              <span class="toggle-switch__slider"></span>
+            </label>
+            <span>Enable nutrition tracking</span>
+          </div>
+
+          <!-- Presets -->
+          <div class="nutrition-prefs__presets">
+            <span class="nutrition-prefs__label">Quick Presets</span>
+            <div class="preset-buttons" id="nutritionPresetButtons">
+              <button class="preset-btn" data-preset="weightLoss">Weight Loss</button>
+              <button class="preset-btn" data-preset="maintenance">Maintenance</button>
+              <button class="preset-btn" data-preset="muscleGain">Muscle Gain</button>
+              <button class="preset-btn" data-preset="lowCarb">Low Carb</button>
+              <button class="preset-btn" data-preset="highProtein">High Protein</button>
+            </div>
+          </div>
+
+          <!-- Calorie Slider -->
+          <div class="nutrition-prefs__section">
+            <div class="nutrition-prefs__row">
+              <label for="goalCalories">Daily Calories</label>
+              <div class="goal-type-toggle">
+                <button class="goal-type-btn active" data-type="limit" data-macro="calories">Limit</button>
+              </div>
+            </div>
+            <div class="slider-group">
+              <input type="range" id="goalCaloriesSlider" min="1200" max="4000" step="50" value="2000" class="slider-input">
+              <input type="number" id="goalCalories" class="form-input form-input--small" min="1200" max="4000" value="2000">
+              <span class="slider-unit">cal</span>
+            </div>
+          </div>
+
+          <!-- Protein -->
+          <div class="nutrition-prefs__section">
+            <div class="nutrition-prefs__row">
+              <label for="goalProtein">Protein</label>
+              <div class="goal-type-toggle">
+                <button class="goal-type-btn" data-type="limit" data-macro="protein">Limit</button>
+                <button class="goal-type-btn active" data-type="minimum" data-macro="protein">Minimum</button>
+              </div>
+            </div>
+            <div class="slider-group">
+              <input type="range" id="goalProteinSlider" min="30" max="300" step="5" value="120" class="slider-input">
+              <input type="number" id="goalProtein" class="form-input form-input--small" min="30" max="300" value="120">
+              <span class="slider-unit">g</span>
+            </div>
+          </div>
+
+          <!-- Carbs -->
+          <div class="nutrition-prefs__section">
+            <div class="nutrition-prefs__row">
+              <label for="goalCarbs">Carbohydrates</label>
+              <div class="goal-type-toggle">
+                <button class="goal-type-btn active" data-type="limit" data-macro="carbs">Limit</button>
+                <button class="goal-type-btn" data-type="minimum" data-macro="carbs">Minimum</button>
+              </div>
+            </div>
+            <div class="slider-group">
+              <input type="range" id="goalCarbsSlider" min="20" max="500" step="10" value="250" class="slider-input">
+              <input type="number" id="goalCarbs" class="form-input form-input--small" min="20" max="500" value="250">
+              <span class="slider-unit">g</span>
+            </div>
+          </div>
+
+          <!-- Fat -->
+          <div class="nutrition-prefs__section">
+            <div class="nutrition-prefs__row">
+              <label for="goalFat">Fat</label>
+              <div class="goal-type-toggle">
+                <button class="goal-type-btn active" data-type="limit" data-macro="fat">Limit</button>
+                <button class="goal-type-btn" data-type="minimum" data-macro="fat">Minimum</button>
+              </div>
+            </div>
+            <div class="slider-group">
+              <input type="range" id="goalFatSlider" min="20" max="200" step="5" value="65" class="slider-input">
+              <input type="number" id="goalFat" class="form-input form-input--small" min="20" max="200" value="65">
+              <span class="slider-unit">g</span>
+            </div>
+          </div>
+
+          <!-- Fiber -->
+          <div class="nutrition-prefs__section">
+            <div class="nutrition-prefs__row">
+              <label for="goalFiber">Fiber</label>
+              <div class="goal-type-toggle">
+                <button class="goal-type-btn" data-type="limit" data-macro="fiber">Limit</button>
+                <button class="goal-type-btn active" data-type="minimum" data-macro="fiber">Minimum</button>
+              </div>
+            </div>
+            <div class="slider-group">
+              <input type="range" id="goalFiberSlider" min="10" max="60" step="5" value="30" class="slider-input">
+              <input type="number" id="goalFiber" class="form-input form-input--small" min="10" max="60" value="30">
+              <span class="slider-unit">g</span>
+            </div>
+          </div>
+
+          <!-- Display Settings -->
+          <div class="nutrition-prefs__section nutrition-prefs__section--display">
+            <span class="nutrition-prefs__label">Display Settings</span>
+            <div class="display-options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="showNutritionOnCalendar" checked>
+                <span>Show nutrition on calendar</span>
+              </label>
+              <div class="select-group">
+                <label for="primaryMacroSelect">Primary display:</label>
+                <select id="primaryMacroSelect" class="form-input form-input--small">
+                  <option value="calories" selected>Calories</option>
+                  <option value="protein">Protein</option>
+                  <option value="carbs">Carbs</option>
+                  <option value="fat">Fat</option>
+                  <option value="fiber">Fiber</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal__footer">
+          <button class="btn btn--secondary" id="resetNutritionPrefs">Reset to Defaults</button>
+          <button class="btn btn--primary" id="saveNutritionPrefs">Save Goals</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Auth Modal -->
     <div class="modal" id="authModal">
       <div class="modal__backdrop"></div>
@@ -809,7 +1156,6 @@
         <button class="modal__close" aria-label="Close modal">&times;</button>
 
         <div class="auth-modal__header">
-          <span class="auth-modal__icon">🍳</span>
           <h2 class="auth-modal__title" id="authModalTitle">Welcome Back</h2>
         </div>
 

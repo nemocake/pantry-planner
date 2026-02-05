@@ -116,7 +116,14 @@ export async function syncMealPlansToCloud(localMeals) {
           recipe_id: meal.recipeId,
           meal_type: meal.mealType,
           servings: meal.servings || 4,
-          notes: meal.notes || null
+          notes: meal.notes || null,
+          is_leftover: meal.isLeftover || false,
+          source_date: meal.sourceDate || null,
+          // Status tracking fields
+          status: meal.status || 'planned',
+          consumed_servings: meal.consumedServings,
+          consumed_at: meal.consumedAt,
+          moved_to: meal.movedTo
         });
       });
     }
@@ -175,7 +182,15 @@ export async function fetchMealPlansFromCloud() {
       mealType: meal.meal_type,
       servings: meal.servings,
       notes: meal.notes,
-      addedAt: meal.created_at
+      addedAt: meal.created_at,
+      isLeftover: meal.is_leftover || false,
+      sourceDate: meal.source_date,
+      sourceMealId: meal.source_meal_id ? `meal_${meal.source_meal_id}` : null,
+      // Status tracking fields
+      status: meal.status || 'planned',
+      consumedServings: meal.consumed_servings,
+      consumedAt: meal.consumed_at,
+      movedTo: meal.moved_to
     });
   });
 
@@ -277,6 +292,78 @@ export async function updateProfileStats(stats) {
   return { success: true };
 }
 
+/**
+ * Sync nutrition preferences to cloud
+ * @param {Object} prefs - Nutrition preferences object
+ * @returns {Promise<{success: boolean, error?: string}>}
+ */
+export async function syncNutritionPrefsToCloud(prefs) {
+  if (!isSupabaseConfigured()) {
+    return { success: false, error: 'Supabase not configured' };
+  }
+
+  const user = await getCurrentUser();
+  if (!user) {
+    return { success: false, error: 'Not authenticated' };
+  }
+
+  const { error } = await supabase
+    .from('nutrition_preferences')
+    .upsert({
+      user_id: user.id,
+      enabled: prefs.enabled,
+      goals: prefs.goals,
+      display_settings: prefs.displaySettings,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+
+  if (error) {
+    console.error('Nutrition prefs sync error:', error);
+    return { success: false, error: error.message };
+  }
+
+  return { success: true };
+}
+
+/**
+ * Fetch nutrition preferences from cloud
+ * @returns {Promise<{success: boolean, prefs: Object|null, error?: string}>}
+ */
+export async function fetchNutritionPrefsFromCloud() {
+  if (!isSupabaseConfigured()) {
+    return { success: false, prefs: null, error: 'Supabase not configured' };
+  }
+
+  const user = await getCurrentUser();
+  if (!user) {
+    return { success: false, prefs: null, error: 'Not authenticated' };
+  }
+
+  const { data, error } = await supabase
+    .from('nutrition_preferences')
+    .select('*')
+    .eq('user_id', user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error('Nutrition prefs fetch error:', error);
+    return { success: false, prefs: null, error: error.message };
+  }
+
+  if (!data) {
+    return { success: true, prefs: null };
+  }
+
+  return {
+    success: true,
+    prefs: {
+      enabled: data.enabled,
+      goals: data.goals,
+      displaySettings: data.display_settings
+    }
+  };
+}
+
 export default {
   syncPantryToCloud,
   fetchPantryFromCloud,
@@ -284,5 +371,7 @@ export default {
   fetchMealPlansFromCloud,
   deletePantryItemFromCloud,
   deleteMealPlanFromCloud,
-  updateProfileStats
+  updateProfileStats,
+  syncNutritionPrefsToCloud,
+  fetchNutritionPrefsFromCloud
 };

@@ -1,9 +1,10 @@
 /**
  * Ingredient Browser Component
  * Displays browsable ingredients by category with quick add/remove functionality
+ * Clean Swiss Style - No emojis, list layout
  */
 
-import { getIngredientsByCategory, getIngredientIcon, getCategories } from '../modules/ingredientManager.js';
+import { getIngredientsByCategory, getCategories } from '../modules/ingredientManager.js';
 import { getPantryItems } from '../modules/pantryManager.js';
 
 // Track if event listener has been added to avoid duplicates
@@ -19,21 +20,42 @@ function getPantryQuantity(ingredientId, pantryItems) {
 
 /**
  * Create a single ingredient item for the browser
+ * Clean row layout with +/- controls and unit dropdown
  */
-function createBrowserItem(ingredient, quantity) {
+function createBrowserItem(ingredient, quantity, unit = null) {
   const item = document.createElement('div');
   item.className = `browser-item ${quantity > 0 ? 'browser-item--in-pantry' : ''}`;
   item.dataset.ingredientId = ingredient.id;
 
-  const icon = getIngredientIcon(ingredient);
+  const currentUnit = unit || ingredient.defaultUnit || 'pieces';
 
   item.innerHTML = `
     <div class="browser-item__content">
-      <span class="browser-item__icon">${icon}</span>
       <span class="browser-item__name">${ingredient.name}</span>
-      <span class="browser-item__quantity ${quantity > 0 ? 'browser-item__quantity--visible' : ''}">${quantity}</span>
+      <span class="browser-item__quantity ${quantity > 0 ? 'browser-item__quantity--visible' : ''}">${quantity > 0 ? 'In pantry: ' + quantity + ' ' + currentUnit : ''}</span>
     </div>
-    <button class="browser-item__btn browser-item__btn--add" data-action="add" title="Add to pantry">+</button>
+    <div class="browser-item__controls">
+      <select class="browser-item__unit" data-action="unit">
+        <option value="pieces" ${currentUnit === 'pieces' ? 'selected' : ''}>pieces</option>
+        <option value="cup" ${currentUnit === 'cup' ? 'selected' : ''}>cups</option>
+        <option value="tbsp" ${currentUnit === 'tbsp' ? 'selected' : ''}>tbsp</option>
+        <option value="tsp" ${currentUnit === 'tsp' ? 'selected' : ''}>tsp</option>
+        <option value="oz" ${currentUnit === 'oz' ? 'selected' : ''}>oz</option>
+        <option value="lb" ${currentUnit === 'lb' ? 'selected' : ''}>lb</option>
+        <option value="g" ${currentUnit === 'g' ? 'selected' : ''}>grams</option>
+        <option value="kg" ${currentUnit === 'kg' ? 'selected' : ''}>kg</option>
+        <option value="ml" ${currentUnit === 'ml' ? 'selected' : ''}>ml</option>
+        <option value="l" ${currentUnit === 'l' ? 'selected' : ''}>liters</option>
+        <option value="cloves" ${currentUnit === 'cloves' ? 'selected' : ''}>cloves</option>
+        <option value="stalks" ${currentUnit === 'stalks' ? 'selected' : ''}>stalks</option>
+        <option value="can" ${currentUnit === 'can' ? 'selected' : ''}>can</option>
+      </select>
+      <div class="browser-item__qty-group">
+        <button class="browser-item__btn browser-item__btn--decrease" data-action="decrease" title="Decrease">−</button>
+        <span class="browser-item__qty-display">${quantity}</span>
+        <button class="browser-item__btn browser-item__btn--increase" data-action="increase" title="Increase">+</button>
+      </div>
+    </div>
   `;
 
   return item;
@@ -48,11 +70,11 @@ function updateBrowserItemDisplay(item, quantity) {
   if (quantity > 0) {
     item.classList.add('browser-item--in-pantry');
     quantityEl.classList.add('browser-item__quantity--visible');
-    quantityEl.textContent = quantity;
+    quantityEl.textContent = 'In pantry: ' + quantity;
   } else {
     item.classList.remove('browser-item--in-pantry');
     quantityEl.classList.remove('browser-item__quantity--visible');
-    quantityEl.textContent = '0';
+    quantityEl.textContent = '';
   }
 }
 

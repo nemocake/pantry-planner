@@ -1,12 +1,14 @@
 /**
  * Calendar View Component
- * Renders week view for meal planning
+ * Renders week view for meal planning with nutrition tracking
  */
 
 import gsap from 'gsap';
 import { getRecipeById } from '../modules/recipeManager.js';
-import { checkRecipeAvailability, formatDate, parseDate, getWeekDates, getMealsForDate } from '../modules/mealPlanManager.js';
+import { checkRecipeAvailability, formatDate, parseDate, getWeekDates, getMealsForDate, MEAL_STATUS } from '../modules/mealPlanManager.js';
 import { getCategoryIcon } from '../modules/ingredientManager.js';
+import { getDayNutritionSummary, getNutritionStatusColor } from '../modules/nutritionAggregator.js';
+import { isTrackingEnabled, getNutritionPrefs } from '../modules/nutritionPrefsManager.js';
 
 /**
  * Escape HTML to prevent XSS
@@ -30,8 +32,6 @@ const MEAL_TYPE_ICONS = {
   dinner: '🍽️',
   snack: '🍪'
 };
-
-const MEAL_TYPE_ORDER = ['breakfast', 'lunch', 'dinner', 'snack'];
 
 /**
  * Format week title (e.g., "Jan 20 - 26, 2026")
@@ -62,6 +62,18 @@ function isToday(dateStr) {
 }
 
 /**
+ * Format leftover source date for display
+ * Returns format like "Mon 20"
+ */
+function formatLeftoverSourceDate(dateStr) {
+  const date = parseDate(dateStr);
+  const dayIndex = (date.getDay() + 6) % 7; // Convert Sunday=0 to Monday=0
+  const dayName = DAY_NAMES[dayIndex];
+  const dayNum = date.getDate();
+  return `${dayName} ${dayNum}`;
+}
+
+/**
  * Create a meal card element
  */
 function createMealCard(meal, recipe, onMealClick, onRemoveClick) {
@@ -69,10 +81,29 @@ function createMealCard(meal, recipe, onMealClick, onRemoveClick) {
   card.className = 'meal-card';
   card.dataset.mealId = meal.id;
 
-  // Check availability
-  const availability = checkRecipeAvailability(recipe, meal.servings);
-  if (!availability.canMake) {
-    card.classList.add('meal-card--warning');
+  // Get meal status
+  const mealStatus = meal.status || MEAL_STATUS.PLANNED;
+  const isEaten = mealStatus === MEAL_STATUS.EATEN;
+  const isDismissed = mealStatus === MEAL_STATUS.DISMISSED;
+
+  // Add status classes
+  if (isEaten) {
+    card.classList.add('meal-card--eaten');
+  } else if (isDismissed) {
+    card.classList.add('meal-card--dismissed');
+  }
+
+  // Check if this is a leftover
+  if (meal.isLeftover) {
+    card.classList.add('meal-card--leftover');
+  }
+
+  // Check availability (skip for leftovers and dismissed meals)
+  if (!meal.isLeftover && !isDismissed && !isEaten) {
+    const availability = checkRecipeAvailability(recipe, meal.servings);
+    if (!availability.canMake) {
+      card.classList.add('meal-card--warning');
+    }
   }
 
   // Get meal type icon
@@ -84,13 +115,34 @@ function createMealCard(meal, recipe, onMealClick, onRemoveClick) {
     ? safeTitle.substring(0, 16) + '...'
     : safeTitle;
 
+  // Build leftover tag if applicable
+  const leftoverTag = meal.isLeftover && meal.sourceDate
+    ? `<div class="meal-card__leftover-tag">[L] from ${formatLeftoverSourceDate(meal.sourceDate)}</div>`
+    : '';
+
+  // Check availability for warning (only for non-leftovers and planned meals)
+  let showWarning = false;
+  if (!meal.isLeftover && !isEaten && !isDismissed) {
+    const availability = checkRecipeAvailability(recipe, meal.servings);
+    showWarning = !availability.canMake;
+  }
+
+  // Build status icon
+  let statusIcon = '';
+  if (isEaten) {
+    statusIcon = '<span class="meal-card__status-icon meal-card__status-icon--eaten" title="Eaten">✓</span>';
+  } else if (isDismissed) {
+    statusIcon = '<span class="meal-card__status-icon meal-card__status-icon--dismissed" title="Dismissed">✗</span>';
+  }
+
   card.innerHTML = `
     <div class="meal-card__icon">${mealIcon}</div>
     <div class="meal-card__info">
       <div class="meal-card__name" title="${safeTitle}">${displayName}</div>
-      <div class="meal-card__servings">${meal.servings} servings</div>
+      ${leftoverTag || `<div class="meal-card__servings">${meal.servings} servings</div>`}
     </div>
-    ${!availability.canMake ? '<span class="meal-card__warning" title="Insufficient ingredients">⚠️</span>' : ''}
+    ${statusIcon}
+    ${showWarning ? '<span class="meal-card__warning" title="Insufficient ingredients">⚠️</span>' : ''}
     <button class="meal-card__remove" data-action="remove" title="Remove meal">&times;</button>
   `;
 
@@ -118,7 +170,44 @@ function createMealCard(meal, recipe, onMealClick, onRemoveClick) {
 }
 
 /**
- * Create a day card element with meal slots
+ * Generate nutrition bar HTML for a day
+ */
+function generateNutritionBar(dateStr) {
+  if (!isTrackingEnabled()) {
+    return '';
+  }
+
+  const summary = getDayNutritionSummary(dateStr);
+  if (!summary || summary.mealCount === 0) {
+    return '';
+  }
+
+  const { primary } = summary;
+  const percent = Math.min(primary.percent, 100); // Cap at 100% for bar width
+  const colorClass = getNutritionStatusColor(primary.percent, primary.type);
+
+  // Format display value
+  const consumed = primary.macro === 'calories'
+    ? primary.consumed.toLocaleString()
+    : Math.round(primary.consumed * 10) / 10 + 'g';
+  const goal = primary.macro === 'calories'
+    ? primary.goal.toLocaleString()
+    : primary.goal + 'g';
+
+  const label = primary.macro === 'calories' ? 'cal' : primary.macro;
+
+  return `
+    <div class="day-card__nutrition">
+      <div class="nutrition-bar nutrition-bar--${colorClass}">
+        <div class="nutrition-bar__fill" style="width: ${percent}%"></div>
+      </div>
+      <span class="nutrition-bar__text">${consumed} / ${goal} ${label}</span>
+    </div>
+  `;
+}
+
+/**
+ * Create a day card element with flexible meal list
  */
 function createDayCard(dateStr, dayIndex, meals, onAddClick, onMealClick, onRemoveClick) {
   const date = parseDate(dateStr);
@@ -131,75 +220,48 @@ function createDayCard(dateStr, dayIndex, meals, onAddClick, onMealClick, onRemo
   card.className = `day-card ${today ? 'day-card--today' : ''}`;
   card.dataset.date = dateStr;
 
-  // Group meals by type
-  const mealsByType = {
-    breakfast: meals.filter(m => m.mealType === 'breakfast'),
-    lunch: meals.filter(m => m.mealType === 'lunch'),
-    dinner: meals.filter(m => m.mealType === 'dinner'),
-    snack: meals.filter(m => m.mealType === 'snack')
-  };
+  // Generate nutrition bar if tracking is enabled
+  const nutritionBarHtml = generateNutritionBar(dateStr);
 
   card.innerHTML = `
     <div class="day-card__header">
       <span class="day-card__name">${dayName}</span>
       <span class="day-card__date">${month} ${dayNum}</span>
     </div>
-    <div class="day-card__slots">
-      <div class="meal-slot" data-meal-type="breakfast">
-        <span class="meal-slot__label">Breakfast</span>
-        <div class="meal-slot__content"></div>
-      </div>
-      <div class="meal-slot" data-meal-type="lunch">
-        <span class="meal-slot__label">Lunch</span>
-        <div class="meal-slot__content"></div>
-      </div>
-      <div class="meal-slot" data-meal-type="dinner">
-        <span class="meal-slot__label">Dinner</span>
-        <div class="meal-slot__content"></div>
-      </div>
-      <div class="meal-slot" data-meal-type="snack">
-        <span class="meal-slot__label">Snack</span>
-        <div class="meal-slot__content"></div>
-      </div>
-    </div>
+    ${nutritionBarHtml}
+    <div class="day-card__meals"></div>
+    <button class="day-card__add-btn" type="button">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Add Meal
+    </button>
   `;
 
-  // Add meals to their respective slots
-  MEAL_TYPE_ORDER.forEach(mealType => {
-    const slotContent = card.querySelector(`.meal-slot[data-meal-type="${mealType}"] .meal-slot__content`);
-    const mealsForType = mealsByType[mealType];
+  const mealsContainer = card.querySelector('.day-card__meals');
 
-    if (mealsForType.length === 0) {
-      // Empty slot with add button
-      const emptySlot = document.createElement('div');
-      emptySlot.className = 'empty-slot';
-      emptySlot.innerHTML = '+';
-      emptySlot.addEventListener('click', (e) => {
-        e.stopPropagation();
-        onAddClick(dateStr, mealType);
-      });
-      slotContent.appendChild(emptySlot);
-    } else {
-      // Add meal cards
-      mealsForType.forEach(meal => {
-        const recipe = getRecipeById(meal.recipeId);
-        if (recipe) {
-          const mealCard = createMealCard(meal, recipe, onMealClick, onRemoveClick);
-          slotContent.appendChild(mealCard);
-        }
-      });
-      // Add another slot if they want more of same type
-      if (mealsForType.length < 2) {
-        const addMore = document.createElement('div');
-        addMore.className = 'empty-slot empty-slot--small';
-        addMore.innerHTML = '+';
-        addMore.addEventListener('click', (e) => {
-          e.stopPropagation();
-          onAddClick(dateStr, mealType);
-        });
-        slotContent.appendChild(addMore);
+  // Add all meals in order
+  if (meals.length === 0) {
+    const emptyState = document.createElement('div');
+    emptyState.className = 'day-card__empty';
+    emptyState.textContent = 'No meals planned';
+    mealsContainer.appendChild(emptyState);
+  } else {
+    meals.forEach(meal => {
+      const recipe = getRecipeById(meal.recipeId);
+      if (recipe) {
+        const mealCard = createMealCard(meal, recipe, onMealClick, onRemoveClick);
+        mealsContainer.appendChild(mealCard);
       }
-    }
+    });
+  }
+
+  // Add meal button
+  const addBtn = card.querySelector('.day-card__add-btn');
+  addBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    onAddClick(dateStr, null);
   });
 
   return card;
@@ -240,50 +302,31 @@ export function updateDayMeals(container, dateStr, onAddClick, onMealClick, onRe
   if (!dayCard) return;
 
   const meals = getMealsForDate(dateStr);
+  const mealsContainer = dayCard.querySelector('.day-card__meals');
+  if (!mealsContainer) return;
 
-  // Group meals by type
-  const mealsByType = {
-    breakfast: meals.filter(m => m.mealType === 'breakfast'),
-    lunch: meals.filter(m => m.mealType === 'lunch'),
-    dinner: meals.filter(m => m.mealType === 'dinner'),
-    snack: meals.filter(m => m.mealType === 'snack')
-  };
+  mealsContainer.innerHTML = '';
 
-  // Update each slot
-  MEAL_TYPE_ORDER.forEach(mealType => {
-    const slotContent = dayCard.querySelector(`.meal-slot[data-meal-type="${mealType}"] .meal-slot__content`);
-    if (!slotContent) return;
+  if (meals.length === 0) {
+    const emptyState = document.createElement('div');
+    emptyState.className = 'day-card__empty';
+    emptyState.textContent = 'No meals planned';
+    mealsContainer.appendChild(emptyState);
+  } else {
+    meals.forEach(meal => {
+      const recipe = getRecipeById(meal.recipeId);
+      if (recipe) {
+        const mealCard = createMealCard(meal, recipe, onMealClick, onRemoveClick);
+        mealsContainer.appendChild(mealCard);
 
-    slotContent.innerHTML = '';
-    const mealsForType = mealsByType[mealType];
-
-    if (mealsForType.length === 0) {
-      // Empty slot with add button
-      const emptySlot = document.createElement('div');
-      emptySlot.className = 'empty-slot';
-      emptySlot.innerHTML = '+';
-      emptySlot.addEventListener('click', (e) => {
-        e.stopPropagation();
-        onAddClick(dateStr, mealType);
-      });
-      slotContent.appendChild(emptySlot);
-    } else {
-      // Render meals for this slot
-      mealsForType.forEach(meal => {
-        const recipe = getRecipeById(meal.recipeId);
-        if (recipe) {
-          const mealCard = createMealCard(meal, recipe, onMealClick, onRemoveClick);
-          slotContent.appendChild(mealCard);
-
-          // Animate in
-          gsap.fromTo(mealCard,
-            { opacity: 0, scale: 0.8 },
-            { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(1.5)' }
-          );
-        }
-      });
-    }
-  });
+        // Animate in
+        gsap.fromTo(mealCard,
+          { opacity: 0, scale: 0.8 },
+          { opacity: 1, scale: 1, duration: 0.3, ease: 'back.out(1.5)' }
+        );
+      }
+    });
+  }
 }
 
 /**

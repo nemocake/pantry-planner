@@ -4,6 +4,7 @@
  */
 
 import { getIngredientById } from './ingredientManager.js';
+import { schedulePushToCloud } from '../services/syncOrchestrator.js';
 
 const STORAGE_KEY = 'pantry_planner_items';
 const EXPORT_VERSION = '1.0.0';
@@ -12,7 +13,61 @@ let pantryItems = new Map(); // ingredientId -> item data
 let listeners = []; // Change listeners
 
 /**
- * Initialize pantry from localStorage
+ * Default pantry items for new users / testing
+ */
+const DEFAULT_PANTRY = [
+  // Proteins
+  { ingredientId: 'ing_protein_chicken_breast', quantity: 2, unit: 'lb', storage: 'fridge' },
+  { ingredientId: 'ing_protein_ground_beef', quantity: 1, unit: 'lb', storage: 'fridge' },
+  { ingredientId: 'ing_protein_eggs', quantity: 12, unit: 'pieces', storage: 'fridge' },
+  { ingredientId: 'ing_protein_bacon', quantity: 1, unit: 'lb', storage: 'fridge' },
+  // Dairy
+  { ingredientId: 'ing_dairy_milk', quantity: 1, unit: 'l', storage: 'fridge' },
+  { ingredientId: 'ing_dairy_butter', quantity: 1, unit: 'lb', storage: 'fridge' },
+  { ingredientId: 'ing_dairy_cheddar', quantity: 8, unit: 'oz', storage: 'fridge' },
+  { ingredientId: 'ing_dairy_parmesan', quantity: 4, unit: 'oz', storage: 'fridge' },
+  { ingredientId: 'ing_dairy_cream', quantity: 1, unit: 'cup', storage: 'fridge' },
+  // Vegetables
+  { ingredientId: 'ing_veg_onion', quantity: 4, unit: 'pieces', storage: 'pantry' },
+  { ingredientId: 'ing_veg_garlic', quantity: 2, unit: 'pieces', storage: 'pantry' },
+  { ingredientId: 'ing_veg_tomato', quantity: 4, unit: 'pieces', storage: 'fridge' },
+  { ingredientId: 'ing_veg_bell_pepper', quantity: 3, unit: 'pieces', storage: 'fridge' },
+  { ingredientId: 'ing_veg_carrot', quantity: 6, unit: 'pieces', storage: 'fridge' },
+  { ingredientId: 'ing_veg_celery', quantity: 1, unit: 'pieces', storage: 'fridge' },
+  { ingredientId: 'ing_veg_potato', quantity: 5, unit: 'pieces', storage: 'pantry' },
+  { ingredientId: 'ing_veg_broccoli', quantity: 2, unit: 'pieces', storage: 'fridge' },
+  { ingredientId: 'ing_veg_spinach', quantity: 1, unit: 'pieces', storage: 'fridge' },
+  { ingredientId: 'ing_veg_mushroom', quantity: 8, unit: 'oz', storage: 'fridge' },
+  // Fruits
+  { ingredientId: 'ing_fruit_lemon', quantity: 3, unit: 'pieces', storage: 'fridge' },
+  { ingredientId: 'ing_fruit_lime', quantity: 2, unit: 'pieces', storage: 'fridge' },
+  // Grains
+  { ingredientId: 'ing_grain_pasta_spaghetti', quantity: 1, unit: 'lb', storage: 'pantry' },
+  { ingredientId: 'ing_grain_pasta_penne', quantity: 1, unit: 'lb', storage: 'pantry' },
+  { ingredientId: 'ing_grain_rice_white', quantity: 2, unit: 'lb', storage: 'pantry' },
+  { ingredientId: 'ing_grain_bread', quantity: 1, unit: 'pieces', storage: 'pantry' },
+  // Canned goods
+  { ingredientId: 'ing_canned_tomatoes', quantity: 2, unit: 'can', storage: 'pantry' },
+  { ingredientId: 'ing_canned_tomato_paste', quantity: 1, unit: 'can', storage: 'pantry' },
+  { ingredientId: 'ing_canned_chicken_broth', quantity: 2, unit: 'can', storage: 'pantry' },
+  { ingredientId: 'ing_canned_black_beans', quantity: 2, unit: 'can', storage: 'pantry' },
+  // Condiments & oils
+  { ingredientId: 'ing_condiment_olive_oil', quantity: 16, unit: 'oz', storage: 'pantry' },
+  // Spices & seasonings
+  { ingredientId: 'ing_spice_salt', quantity: 1, unit: 'pieces', storage: 'pantry' },
+  { ingredientId: 'ing_spice_black_pepper', quantity: 1, unit: 'pieces', storage: 'pantry' },
+  { ingredientId: 'ing_spice_garlic_powder', quantity: 1, unit: 'pieces', storage: 'pantry' },
+  { ingredientId: 'ing_spice_onion_powder', quantity: 1, unit: 'pieces', storage: 'pantry' },
+  { ingredientId: 'ing_spice_paprika', quantity: 1, unit: 'pieces', storage: 'pantry' },
+  { ingredientId: 'ing_spice_cumin', quantity: 1, unit: 'pieces', storage: 'pantry' },
+  { ingredientId: 'ing_spice_italian_seasoning', quantity: 1, unit: 'pieces', storage: 'pantry' },
+  { ingredientId: 'ing_spice_oregano', quantity: 1, unit: 'pieces', storage: 'pantry' },
+  { ingredientId: 'ing_spice_basil', quantity: 1, unit: 'pieces', storage: 'pantry' },
+  { ingredientId: 'ing_spice_red_pepper_flakes', quantity: 1, unit: 'pieces', storage: 'pantry' },
+];
+
+/**
+ * Initialize pantry from localStorage (with defaults if empty)
  */
 export function initPantry() {
   try {
@@ -20,6 +75,18 @@ export function initPantry() {
     if (stored) {
       const data = JSON.parse(stored);
       pantryItems = new Map(data.map(item => [item.ingredientId, item]));
+    } else {
+      // Load default pantry for new users
+      console.log('Loading default pantry items...');
+      pantryItems = new Map();
+      DEFAULT_PANTRY.forEach(item => {
+        pantryItems.set(item.ingredientId, {
+          ...item,
+          addedAt: new Date().toISOString(),
+          notes: ''
+        });
+      });
+      savePantry();
     }
   } catch (error) {
     console.error('Failed to load pantry from storage:', error);
@@ -35,6 +102,7 @@ function savePantry() {
   try {
     const data = Array.from(pantryItems.values());
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    schedulePushToCloud();
   } catch (error) {
     console.error('Failed to save pantry:', error);
   }

@@ -10,32 +10,34 @@ import { addMealToDate, checkRecipeAvailability } from '../modules/mealPlanManag
 import { getIngredientsMap, getIngredientById } from '../modules/ingredientManager.js';
 import { getPantryItems } from '../modules/pantryManager.js';
 import { calculateRecipeNutrition, formatNutritionBadge } from '../modules/nutritionCalculator.js';
+import { getRemainingNutrition, checkRecipeFitsNutrition } from '../modules/nutritionAggregator.js';
+import { isTrackingEnabled } from '../modules/nutritionPrefsManager.js';
 
 const MODAL_ID = 'recipeBrowserModal';
 
-// Filter options
+// Filter options - Clean text labels, no emojis
 const CUISINES = [
   { value: '', label: 'All Cuisines' },
-  { value: 'italian', label: '🇮🇹 Italian' },
-  { value: 'mexican', label: '🇲🇽 Mexican' },
-  { value: 'asian', label: '🥢 Asian' },
-  { value: 'american', label: '🇺🇸 American' },
-  { value: 'chinese', label: '🇨🇳 Chinese' },
-  { value: 'japanese', label: '🇯🇵 Japanese' },
-  { value: 'indian', label: '🇮🇳 Indian' },
-  { value: 'mediterranean', label: '🫒 Mediterranean' },
-  { value: 'french', label: '🇫🇷 French' },
-  { value: 'thai', label: '🇹🇭 Thai' },
-  { value: 'greek', label: '🇬🇷 Greek' },
-  { value: 'korean', label: '🇰🇷 Korean' }
+  { value: 'italian', label: 'Italian' },
+  { value: 'mexican', label: 'Mexican' },
+  { value: 'asian', label: 'Asian' },
+  { value: 'american', label: 'American' },
+  { value: 'chinese', label: 'Chinese' },
+  { value: 'japanese', label: 'Japanese' },
+  { value: 'indian', label: 'Indian' },
+  { value: 'mediterranean', label: 'Mediterranean' },
+  { value: 'french', label: 'French' },
+  { value: 'thai', label: 'Thai' },
+  { value: 'greek', label: 'Greek' },
+  { value: 'korean', label: 'Korean' }
 ];
 
 const MEAL_TYPES = [
   { value: '', label: 'All Meals' },
-  { value: 'breakfast', label: '🍳 Breakfast' },
-  { value: 'lunch', label: '🥗 Lunch' },
-  { value: 'dinner', label: '🍽️ Dinner' },
-  { value: 'snack', label: '🍪 Snack' }
+  { value: 'breakfast', label: 'Breakfast' },
+  { value: 'lunch', label: 'Lunch' },
+  { value: 'dinner', label: 'Dinner' },
+  { value: 'snack', label: 'Snack' }
 ];
 
 const DIFFICULTIES = [
@@ -47,7 +49,15 @@ const DIFFICULTIES = [
 
 // State
 let selectedDate = null;
-let currentFilters = { search: '', cuisine: '', mealType: '', difficulty: '' };
+let currentFilters = {
+  search: '',
+  cuisine: '',
+  mealType: '',
+  difficulty: '',
+  maxCalories: null,
+  minProtein: null,
+  fitsRemaining: false
+};
 let onMealAddedCallback = null;
 let searchDebounceTimer = null;
 
@@ -56,6 +66,9 @@ let searchInput = null;
 let cuisineSelect = null;
 let mealTypeSelect = null;
 let difficultySelect = null;
+let maxCaloriesInput = null;
+let minProteinInput = null;
+let fitsRemainingBtn = null;
 let recipesGrid = null;
 let resultsCount = null;
 
@@ -103,6 +116,29 @@ export function initRecipeBrowserModal(onMealAdded) {
     renderFilteredRecipes();
   });
 
+  // Nutrition filters
+  maxCaloriesInput = document.getElementById('browserMaxCalories');
+  minProteinInput = document.getElementById('browserMinProtein');
+  fitsRemainingBtn = document.getElementById('browserFitsRemaining');
+
+  maxCaloriesInput?.addEventListener('input', (e) => {
+    const val = parseInt(e.target.value);
+    currentFilters.maxCalories = val > 0 ? val : null;
+    renderFilteredRecipes();
+  });
+
+  minProteinInput?.addEventListener('input', (e) => {
+    const val = parseInt(e.target.value);
+    currentFilters.minProtein = val > 0 ? val : null;
+    renderFilteredRecipes();
+  });
+
+  fitsRemainingBtn?.addEventListener('click', () => {
+    currentFilters.fitsRemaining = !currentFilters.fitsRemaining;
+    fitsRemainingBtn.classList.toggle('active', currentFilters.fitsRemaining);
+    renderFilteredRecipes();
+  });
+
   // Close on backdrop click or close button
   const modal = document.getElementById(MODAL_ID);
   modal?.querySelector('.modal__backdrop')?.addEventListener('click', closeRecipeBrowserModal);
@@ -122,11 +158,22 @@ export function openRecipeBrowserModal(date, mealType = '') {
   selectedDate = date;
 
   // Reset filters, but pre-select meal type if provided
-  currentFilters = { search: '', cuisine: '', mealType: mealType || '', difficulty: '' };
+  currentFilters = {
+    search: '',
+    cuisine: '',
+    mealType: mealType || '',
+    difficulty: '',
+    maxCalories: null,
+    minProtein: null,
+    fitsRemaining: false
+  };
   if (searchInput) searchInput.value = '';
   if (cuisineSelect) cuisineSelect.value = '';
   if (mealTypeSelect) mealTypeSelect.value = mealType || '';
   if (difficultySelect) difficultySelect.value = '';
+  if (maxCaloriesInput) maxCaloriesInput.value = '';
+  if (minProteinInput) minProteinInput.value = '';
+  if (fitsRemainingBtn) fitsRemainingBtn.classList.remove('active');
 
   // Also pre-select the confirmation meal type
   const confirmMealType = document.getElementById('confirmMealType');
@@ -175,6 +222,7 @@ function formatDisplayDate(dateStr) {
  */
 function getFilteredRecipes() {
   let recipes = getRecipes();
+  const ingredientsMap = getIngredientsMap();
 
   // Search filter
   if (currentFilters.search) {
@@ -199,99 +247,133 @@ function getFilteredRecipes() {
     recipes = recipes.filter(r => r.difficulty === currentFilters.difficulty);
   }
 
+  // Max calories per serving filter
+  if (currentFilters.maxCalories) {
+    recipes = recipes.filter(r => {
+      const nutrition = calculateRecipeNutrition(r, ingredientsMap);
+      if (!nutrition || !nutrition.perServing) return true; // Keep if no data
+      return nutrition.perServing.calories <= currentFilters.maxCalories;
+    });
+  }
+
+  // Min protein per serving filter
+  if (currentFilters.minProtein) {
+    recipes = recipes.filter(r => {
+      const nutrition = calculateRecipeNutrition(r, ingredientsMap);
+      if (!nutrition || !nutrition.perServing) return true; // Keep if no data
+      return nutrition.perServing.protein >= currentFilters.minProtein;
+    });
+  }
+
+  // Fits remaining nutrition budget filter
+  if (currentFilters.fitsRemaining && selectedDate && isTrackingEnabled()) {
+    recipes = recipes.filter(r => {
+      const fitCheck = checkRecipeFitsNutrition(r, selectedDate);
+      return fitCheck.fits;
+    });
+  }
+
   return recipes;
 }
 
 /**
- * Render filtered recipes to the grid
+ * Render filtered recipes as clean list rows
  */
 function renderFilteredRecipes() {
   const recipes = getFilteredRecipes();
 
   // Update count
   if (resultsCount) {
-    resultsCount.textContent = `${recipes.length} recipe${recipes.length !== 1 ? 's' : ''} found`;
+    resultsCount.textContent = `${recipes.length} recipe${recipes.length !== 1 ? 's' : ''}`;
   }
 
   if (recipes.length === 0) {
     recipesGrid.innerHTML = `
-      <div class="browser-empty">
-        <span class="browser-empty__icon">🔍</span>
+      <div class="recipe-browser__empty">
         <p>No recipes match your filters</p>
-        <button class="btn btn--secondary" onclick="document.getElementById('browserSearchInput').value=''; document.getElementById('browserCuisineFilter').value=''; document.getElementById('browserMealTypeFilter').value=''; document.getElementById('browserDifficultyFilter').value='';">
+        <button class="btn btn--secondary" id="clearAllFiltersBtn">
           Clear Filters
         </button>
       </div>
     `;
+
+    // Add event listener for clear filters button
+    document.getElementById('clearAllFiltersBtn')?.addEventListener('click', () => {
+      if (searchInput) searchInput.value = '';
+      if (cuisineSelect) cuisineSelect.value = '';
+      if (mealTypeSelect) mealTypeSelect.value = '';
+      if (difficultySelect) difficultySelect.value = '';
+      if (maxCaloriesInput) maxCaloriesInput.value = '';
+      if (minProteinInput) minProteinInput.value = '';
+      if (fitsRemainingBtn) fitsRemainingBtn.classList.remove('active');
+      currentFilters = {
+        search: '',
+        cuisine: '',
+        mealType: '',
+        difficulty: '',
+        maxCalories: null,
+        minProtein: null,
+        fitsRemaining: false
+      };
+      renderFilteredRecipes();
+    });
     return;
   }
 
+  // Render as clean rows with nutrition info
   const ingredientsMap = getIngredientsMap();
 
   recipesGrid.innerHTML = recipes.slice(0, 50).map(recipe => {
     const totalTime = recipe.prepTime + recipe.cookTime;
     const nutrition = calculateRecipeNutrition(recipe, ingredientsMap);
-    const nutritionBadge = formatNutritionBadge(nutrition);
-    const cuisineEmoji = getCuisineEmoji(recipe.cuisine);
 
-    const imageHtml = recipe.imageUrl
-      ? `<div class="browser-card__image-wrap">
-           <img src="${recipe.imageUrl}" alt="${escapeHtml(recipe.title)}" class="browser-card__image" loading="lazy">
-           <div class="browser-card__image-title">${escapeHtml(recipe.title)}</div>
-         </div>`
-      : `<div class="browser-card__image-wrap">
-           <div class="browser-card__image browser-card__image--placeholder">${getMealEmoji(recipe.mealType)}</div>
-           <div class="browser-card__image-title">${escapeHtml(recipe.title)}</div>
-         </div>`;
+    // Generate nutrition badge
+    let nutritionBadge = '';
+    if (nutrition && nutrition.perServing) {
+      const cal = nutrition.perServing.calories;
+      const protein = nutrition.perServing.protein;
+      nutritionBadge = `<span class="recipe-row__nutrition">${cal} cal | ${protein}g protein</span>`;
+    }
+
+    // Check if fits remaining budget (if tracking enabled)
+    let fitsClass = '';
+    if (selectedDate && isTrackingEnabled()) {
+      const fitCheck = checkRecipeFitsNutrition(recipe, selectedDate);
+      fitsClass = fitCheck.fits ? 'recipe-row--fits' : 'recipe-row--exceeds';
+    }
 
     return `
-      <div class="browser-card" data-recipe-id="${recipe.id}">
-        ${imageHtml}
-        <div class="browser-card__content">
-          <h3 class="browser-card__title">${escapeHtml(recipe.title)}</h3>
-          <div class="browser-card__meta">
-            <span>${cuisineEmoji} ${capitalize(recipe.cuisine)}</span>
-            <span>⏱️ ${totalTime} min</span>
-          </div>
-          <div class="browser-card__details">
-            <span class="browser-card__difficulty browser-card__difficulty--${recipe.difficulty}">${capitalize(recipe.difficulty)}</span>
-            <span class="browser-card__servings">👥 ${recipe.servings}</span>
-          </div>
-          <div class="browser-card__nutrition">${nutritionBadge}</div>
-        </div>
-        <button class="browser-card__select" data-recipe-id="${recipe.id}">
-          Select Recipe
-        </button>
+      <div class="recipe-row ${fitsClass}" data-recipe-id="${recipe.id}">
+        <span class="recipe-row__title">${escapeHtml(recipe.title)}</span>
+        <span class="recipe-row__cuisine">${capitalize(recipe.cuisine || 'Other')}</span>
+        ${nutritionBadge}
+        <span class="recipe-row__time">${totalTime} min</span>
+        <span class="recipe-row__difficulty recipe-row__difficulty--${recipe.difficulty}">${capitalize(recipe.difficulty)}</span>
       </div>
     `;
   }).join('');
 
-  // Add click handlers
-  recipesGrid.querySelectorAll('.browser-card__select').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const recipeId = btn.dataset.recipeId;
+  // Row click selects recipe
+  recipesGrid.querySelectorAll('.recipe-row').forEach(row => {
+    row.addEventListener('click', () => {
+      // Remove previous selection
+      recipesGrid.querySelectorAll('.recipe-row').forEach(r => r.classList.remove('selected'));
+      row.classList.add('selected');
+
+      const recipeId = row.dataset.recipeId;
       showRecipeConfirmation(recipeId);
     });
   });
 
-  // Card click also selects
-  recipesGrid.querySelectorAll('.browser-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const recipeId = card.dataset.recipeId;
-      showRecipeConfirmation(recipeId);
-    });
-  });
-
-  // Animate cards in
-  gsap.fromTo('.browser-card',
-    { opacity: 0, y: 20 },
-    { opacity: 1, y: 0, duration: 0.3, stagger: 0.03, ease: 'power2.out' }
+  // Animate rows in
+  gsap.fromTo('.recipe-row',
+    { opacity: 0, x: -10 },
+    { opacity: 1, x: 0, duration: 0.2, stagger: 0.02, ease: 'power2.out' }
   );
 }
 
 /**
- * Show recipe confirmation panel
+ * Show recipe preview panel with ingredients and instructions
  */
 function showRecipeConfirmation(recipeId) {
   const recipe = getRecipeById(recipeId);
@@ -300,7 +382,7 @@ function showRecipeConfirmation(recipeId) {
   const panel = document.getElementById('recipeConfirmPanel');
   const nameEl = document.getElementById('confirmRecipeName');
   const servingsInput = document.getElementById('confirmServings');
-  const mealTypeSelect = document.getElementById('confirmMealType');
+  const mealTypeInput = document.getElementById('confirmMealType');
   const ingredientsEl = document.getElementById('confirmIngredientsList');
   const instructionsEl = document.getElementById('confirmInstructionsList');
   const nutritionEl = document.getElementById('confirmNutrition');
@@ -312,13 +394,17 @@ function showRecipeConfirmation(recipeId) {
   nameEl.textContent = recipe.title;
   servingsInput.value = recipe.servings;
 
-  // Set meal type based on recipe
+  // Set meal type based on recipe (hidden field)
   const defaultMealType = Array.isArray(recipe.mealType) ? recipe.mealType[0] : recipe.mealType || 'dinner';
-  mealTypeSelect.value = defaultMealType;
+  if (mealTypeInput) mealTypeInput.value = defaultMealType;
 
-  // Render all sections
-  renderIngredientList(recipe, recipe.servings, ingredientsEl);
+  // Render meta info
   renderNutritionBadge(recipe, recipe.servings, nutritionEl);
+
+  // Render ingredients with availability colors
+  renderIngredientList(recipe, recipe.servings, ingredientsEl);
+
+  // Render instructions
   renderInstructions(recipe, instructionsEl);
 
   // Listen for servings change
@@ -331,8 +417,8 @@ function showRecipeConfirmation(recipeId) {
   // Show panel with animation
   panel.classList.add('active');
   gsap.fromTo(panel,
-    { opacity: 0, y: 20 },
-    { opacity: 1, y: 0, duration: 0.3, ease: 'power2.out' }
+    { opacity: 0 },
+    { opacity: 1, duration: 0.2, ease: 'power2.out' }
   );
 }
 
@@ -348,66 +434,54 @@ function hideRecipeConfirmation() {
 }
 
 /**
- * Render nutrition badge next to title
+ * Render nutrition info as clean text
  */
 function renderNutritionBadge(recipe, servings, container) {
+  if (!container) return;
+
   const ingredientsMap = getIngredientsMap();
   const nutrition = calculateRecipeNutrition(recipe, ingredientsMap);
+  const totalTime = recipe.prepTime + recipe.cookTime;
 
   if (!nutrition || !nutrition.perServing) {
-    container.innerHTML = '';
+    container.textContent = `${totalTime} min · ${servings} servings`;
     return;
   }
 
   const scaleFactor = servings / recipe.servings;
   const calories = Math.round(nutrition.perServing.calories * scaleFactor);
-  const protein = Math.round(nutrition.perServing.protein * scaleFactor * 10) / 10;
-  const carbs = Math.round(nutrition.perServing.carbs * scaleFactor * 10) / 10;
-  const fat = Math.round(nutrition.perServing.fat * scaleFactor * 10) / 10;
+  const protein = Math.round(nutrition.perServing.protein * scaleFactor);
 
-  container.innerHTML = `
-    <div class="nutrition-badge">
-      <span class="nutrition-badge__item"><strong>${calories}</strong> cal</span>
-      <span class="nutrition-badge__item"><strong>${protein}g</strong> protein</span>
-      <span class="nutrition-badge__item"><strong>${carbs}g</strong> carbs</span>
-      <span class="nutrition-badge__item"><strong>${fat}g</strong> fat</span>
-    </div>
-  `;
+  container.textContent = `${totalTime} min · ${calories} cal · ${protein}g protein`;
 }
 
 /**
- * Render cooking instructions
+ * Render cooking instructions - clean numbered list
  */
 function renderInstructions(recipe, container) {
+  if (!container) return;
+
   if (!recipe.instructions || recipe.instructions.length === 0) {
-    container.innerHTML = '<p class="no-instructions">No instructions available</p>';
+    container.innerHTML = '<p class="preview-empty">No instructions available</p>';
     return;
   }
 
-  const totalTime = recipe.prepTime + recipe.cookTime;
-
   const stepsHtml = recipe.instructions.map((inst, idx) => `
-    <div class="instruction-step">
-      <span class="instruction-step__number">${idx + 1}</span>
-      <span class="instruction-step__text">${escapeHtml(inst.text)}</span>
+    <div class="preview-step">
+      <span class="preview-step__number">${idx + 1}</span>
+      <span class="preview-step__text">${escapeHtml(inst.text)}</span>
     </div>
   `).join('');
 
-  container.innerHTML = `
-    <div class="instructions-header">
-      <h4>Cooking Steps</h4>
-      <span class="instructions-time">⏱️ ${recipe.prepTime} prep + ${recipe.cookTime} cook = ${totalTime} min</span>
-    </div>
-    <div class="instructions-list">
-      ${stepsHtml}
-    </div>
-  `;
+  container.innerHTML = stepsHtml;
 }
 
 /**
  * Render ingredient list with availability color coding
  */
 function renderIngredientList(recipe, servings, container) {
+  if (!container) return;
+
   const ingredientsMap = getIngredientsMap();
   const pantryItems = getPantryItems();
   const pantryMap = new Map(pantryItems.map(p => [p.ingredientId, p]));
@@ -433,46 +507,44 @@ function renderIngredientList(recipe, servings, container) {
     let statusIcon = '';
 
     if (ing.optional) {
-      statusClass = 'ingredient--optional';
-      statusIcon = '○';
+      statusClass = 'preview-ingredient--optional';
+      statusIcon = '~';
     } else if (haveQty >= neededQty && neededQty > 0) {
-      statusClass = 'ingredient--have';
-      statusIcon = '✓';
+      statusClass = 'preview-ingredient--have';
+      statusIcon = '+';
       haveCount++;
     } else if (haveQty > 0) {
-      statusClass = 'ingredient--low';
-      statusIcon = '◐';
+      statusClass = 'preview-ingredient--low';
+      statusIcon = '!';
       missingCount++;
     } else {
-      statusClass = 'ingredient--missing';
-      statusIcon = '✗';
+      statusClass = 'preview-ingredient--missing';
+      statusIcon = '-';
       missingCount++;
     }
 
-    // Format quantities
-    const neededStr = neededQty > 0 ? `${formatQty(neededQty)} ${ing.unit}` : ing.unit;
-    const haveStr = haveQty > 0 ? `(have ${formatQty(haveQty)})` : '(none)';
+    // Format quantity
+    const qtyStr = neededQty > 0 ? `${formatQty(neededQty)} ${ing.unit}` : ing.unit;
 
     return `
-      <div class="confirm-ingredient ${statusClass}">
-        <span class="confirm-ingredient__status">${statusIcon}</span>
-        <span class="confirm-ingredient__name">${escapeHtml(ingredientName)}</span>
-        <span class="confirm-ingredient__qty">${neededStr}</span>
-        <span class="confirm-ingredient__have">${haveStr}</span>
+      <div class="preview-ingredient ${statusClass}">
+        <span class="preview-ingredient__status">${statusIcon}</span>
+        <span class="preview-ingredient__name">${escapeHtml(ingredientName)}</span>
+        <span class="preview-ingredient__qty">${qtyStr}</span>
       </div>
     `;
   }).join('');
 
-  // Summary
+  // Summary bar
   const totalRequired = recipe.ingredients.filter(i => !i.optional).length;
-  const summaryClass = missingCount === 0 ? 'summary--ok' : 'summary--warning';
+  const summaryClass = missingCount === 0 ? 'preview-ingredients__summary--ok' : 'preview-ingredients__summary--warning';
   const summaryText = missingCount === 0
-    ? `✓ All ${totalRequired} ingredients available`
-    : `⚠️ ${haveCount}/${totalRequired} ingredients available (${missingCount} missing)`;
+    ? `All ${totalRequired} ingredients in pantry`
+    : `${missingCount} of ${totalRequired} ingredients missing`;
 
   container.innerHTML = `
-    <div class="confirm-ingredients-summary ${summaryClass}">${summaryText}</div>
-    <div class="confirm-ingredients-list">${ingredientsHtml}</div>
+    ${ingredientsHtml}
+    <div class="preview-ingredients__summary ${summaryClass}">${summaryText}</div>
   `;
 }
 
@@ -526,21 +598,6 @@ function escapeHtml(str) {
 function capitalize(str) {
   if (!str) return '';
   return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-function getCuisineEmoji(cuisine) {
-  const emojis = {
-    italian: '🇮🇹', mexican: '🇲🇽', asian: '🥢', american: '🇺🇸',
-    chinese: '🇨🇳', japanese: '🇯🇵', indian: '🇮🇳', mediterranean: '🫒',
-    french: '🇫🇷', thai: '🇹🇭', greek: '🇬🇷', korean: '🇰🇷', spanish: '🇪🇸'
-  };
-  return emojis[cuisine?.toLowerCase()] || '🍽️';
-}
-
-function getMealEmoji(mealType) {
-  const type = Array.isArray(mealType) ? mealType[0] : mealType;
-  const emojis = { breakfast: '🍳', lunch: '🥗', dinner: '🍽️', snack: '🍪' };
-  return emojis[type] || '🍲';
 }
 
 export default {

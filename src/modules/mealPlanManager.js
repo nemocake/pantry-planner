@@ -7,9 +7,17 @@ import { getIngredientById } from './ingredientManager.js';
 import { getRecipeById } from './recipeManager.js';
 import { getPantryItem, getPantryItems, onPantryChange } from './pantryManager.js';
 import { convertQuantity, areUnitsCompatible } from './unitConverter.js';
+import { schedulePushToCloud } from '../services/syncOrchestrator.js';
 
 const STORAGE_KEY = 'pantry_planner_meals';
 const EXPORT_VERSION = '1.0.0';
+
+// Meal status constants
+export const MEAL_STATUS = {
+  PLANNED: 'planned',
+  EATEN: 'eaten',
+  DISMISSED: 'dismissed'
+};
 
 let mealPlanData = {
   version: EXPORT_VERSION,
@@ -93,6 +101,7 @@ export function initMealPlan() {
 function saveMealPlan() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(mealPlanData));
+    schedulePushToCloud();
   } catch (error) {
     console.error('Failed to save meal plan:', error);
   }
@@ -157,8 +166,14 @@ export function getAllMeals() {
 
 /**
  * Add a meal to a specific date
+ * @param {string} dateStr - Date in YYYY-MM-DD format
+ * @param {string} recipeId - Recipe ID
+ * @param {string} mealType - breakfast | lunch | dinner | snack
+ * @param {number|null} servings - Number of servings (defaults to recipe servings)
+ * @param {string} notes - Optional notes
+ * @param {Object} leftoverData - Optional leftover data { isLeftover, sourceDate, sourceMealId }
  */
-export function addMealToDate(dateStr, recipeId, mealType = 'dinner', servings = null, notes = '') {
+export function addMealToDate(dateStr, recipeId, mealType = 'dinner', servings = null, notes = '', leftoverData = null) {
   const recipe = getRecipeById(recipeId);
   if (!recipe) {
     console.error('Unknown recipe:', recipeId);
@@ -171,7 +186,16 @@ export function addMealToDate(dateStr, recipeId, mealType = 'dinner', servings =
     mealType, // breakfast | lunch | dinner | snack
     servings: servings || recipe.servings,
     notes,
-    addedAt: new Date().toISOString()
+    addedAt: new Date().toISOString(),
+    // Leftover fields
+    isLeftover: leftoverData?.isLeftover || false,
+    sourceDate: leftoverData?.sourceDate || null,
+    sourceMealId: leftoverData?.sourceMealId || null,
+    // Status tracking fields
+    status: MEAL_STATUS.PLANNED,
+    consumedServings: null,
+    consumedAt: null,
+    movedTo: null
   };
 
   if (!mealPlanData.meals[dateStr]) {
@@ -183,6 +207,55 @@ export function addMealToDate(dateStr, recipeId, mealType = 'dinner', servings =
   notifyListeners('add', { date: dateStr, meal });
 
   return meal;
+}
+
+/**
+ * Find which date a meal belongs to
+ * @param {string} mealId - The meal ID to find
+ * @returns {string|null} The date string (YYYY-MM-DD) or null if not found
+ */
+export function getMealDate(mealId) {
+  for (const [dateStr, meals] of Object.entries(mealPlanData.meals)) {
+    if (meals.some(m => m.id === mealId)) {
+      return dateStr;
+    }
+  }
+  return null;
+}
+
+/**
+ * Create a leftover entry from an existing meal
+ * @param {Object} sourceMeal - The original meal object
+ * @param {string} sourceDate - The date of the original meal (YYYY-MM-DD)
+ * @param {string} targetDate - The date to place the leftover (YYYY-MM-DD)
+ * @returns {Object|null} The created leftover meal or null on failure
+ */
+export function createLeftover(sourceMeal, sourceDate, targetDate) {
+  if (!sourceMeal || !sourceDate || !targetDate) {
+    console.error('createLeftover: Missing required parameters');
+    return null;
+  }
+
+  // Don't create leftover from a leftover
+  if (sourceMeal.isLeftover) {
+    console.error('createLeftover: Cannot create leftover from a leftover');
+    return null;
+  }
+
+  const leftoverData = {
+    isLeftover: true,
+    sourceDate: sourceDate,
+    sourceMealId: sourceMeal.id
+  };
+
+  return addMealToDate(
+    targetDate,
+    sourceMeal.recipeId,
+    sourceMeal.mealType,
+    1, // Leftovers are always 1 serving (what you're eating that day)
+    sourceMeal.notes,
+    leftoverData
+  );
 }
 
 /**
@@ -247,12 +320,16 @@ export function clearWeek(startDate) {
 
 /**
  * Calculate reserved quantity for an ingredient across all planned meals
+ * Skips leftovers since ingredients are already counted in the original meal
  */
 export function getReservedQuantity(ingredientId) {
   let reserved = 0;
 
   Object.values(mealPlanData.meals).forEach(dayMeals => {
     dayMeals.forEach(meal => {
+      // Skip leftovers - ingredients already counted in original meal
+      if (meal.isLeftover) return;
+
       const recipe = getRecipeById(meal.recipeId);
       if (!recipe) return;
 
@@ -363,6 +440,7 @@ export function checkRecipeAvailability(recipe, servings = null) {
 /**
  * Get shopping list for a date range
  * Returns ingredients needed but not available in pantry
+ * Skips leftovers since ingredients are already purchased for original meal
  */
 export function getShoppingList(startDate, endDate = null) {
   const endDateStr = endDate ? formatDate(endDate) : null;
@@ -375,6 +453,9 @@ export function getShoppingList(startDate, endDate = null) {
     if (endDateStr && dateStr > endDateStr) return;
 
     dayMeals.forEach(meal => {
+      // Skip leftovers - ingredients already purchased for original meal
+      if (meal.isLeftover) return;
+
       const recipe = getRecipeById(meal.recipeId);
       if (!recipe) return;
 
@@ -535,6 +616,123 @@ export function importMealPlan(data, mode = 'merge') {
   }
 }
 
+// ============================================
+// Meal Status Management Functions
+// ============================================
+
+/**
+ * Mark a meal as eaten
+ * @param {string} mealId - The meal ID
+ * @param {number} servingsConsumed - How many servings were eaten (default: 1)
+ * @returns {Object|null} Updated meal or null if not found
+ */
+export function markMealAsEaten(mealId, servingsConsumed = 1) {
+  return updateMeal(mealId, {
+    status: MEAL_STATUS.EATEN,
+    consumedServings: servingsConsumed,
+    consumedAt: new Date().toISOString()
+  });
+}
+
+/**
+ * Dismiss a meal (not eaten, removed from tracking)
+ * @param {string} mealId - The meal ID
+ * @returns {Object|null} Updated meal or null if not found
+ */
+export function dismissMeal(mealId) {
+  return updateMeal(mealId, {
+    status: MEAL_STATUS.DISMISSED,
+    consumedAt: new Date().toISOString()
+  });
+}
+
+/**
+ * Move a meal to a different date
+ * Creates new meal on target date, marks original as dismissed
+ * @param {string} mealId - The meal ID
+ * @param {string} targetDate - Target date (YYYY-MM-DD)
+ * @returns {Object|null} The new meal on target date, or null on failure
+ */
+export function moveMeal(mealId, targetDate) {
+  // Find the original meal
+  const originalDate = getMealDate(mealId);
+  if (!originalDate) return null;
+
+  const originalMeals = getMealsForDate(originalDate);
+  const original = originalMeals.find(m => m.id === mealId);
+
+  if (!original) return null;
+
+  // Create new meal on target date
+  const newMeal = addMealToDate(
+    targetDate,
+    original.recipeId,
+    original.mealType,
+    original.servings,
+    original.notes,
+    original.isLeftover ? {
+      isLeftover: true,
+      sourceDate: original.sourceDate,
+      sourceMealId: original.sourceMealId
+    } : null
+  );
+
+  // Mark original as dismissed with movedTo reference
+  updateMeal(mealId, {
+    status: MEAL_STATUS.DISMISSED,
+    consumedAt: new Date().toISOString(),
+    movedTo: targetDate
+  });
+
+  return newMeal;
+}
+
+/**
+ * Undo meal status (reset to planned)
+ * @param {string} mealId - The meal ID
+ * @returns {Object|null} Updated meal or null if not found
+ */
+export function undoMealStatus(mealId) {
+  return updateMeal(mealId, {
+    status: MEAL_STATUS.PLANNED,
+    consumedServings: null,
+    consumedAt: null,
+    movedTo: null
+  });
+}
+
+/**
+ * Get meals by status for a date
+ * @param {string} dateStr - Date in YYYY-MM-DD format
+ * @param {string} status - Status to filter by (planned, eaten, dismissed)
+ * @returns {Array} Meals matching the status
+ */
+export function getMealsByStatus(dateStr, status) {
+  return getMealsForDate(dateStr).filter(m =>
+    (m.status || MEAL_STATUS.PLANNED) === status
+  );
+}
+
+/**
+ * Get consumed (eaten) meals for a date
+ * @param {string} dateStr - Date in YYYY-MM-DD format
+ * @returns {Array} Meals with status 'eaten'
+ */
+export function getConsumedMeals(dateStr) {
+  return getMealsByStatus(dateStr, MEAL_STATUS.EATEN);
+}
+
+/**
+ * Get active meals for a date (planned + eaten, excludes dismissed)
+ * @param {string} dateStr - Date in YYYY-MM-DD format
+ * @returns {Array} Meals that are planned or eaten
+ */
+export function getActiveMeals(dateStr) {
+  return getMealsForDate(dateStr).filter(m =>
+    (m.status || MEAL_STATUS.PLANNED) !== MEAL_STATUS.DISMISSED
+  );
+}
+
 export default {
   initMealPlan,
   onMealPlanChange,
@@ -556,5 +754,16 @@ export default {
   getMealPlanStats,
   exportMealPlan,
   downloadMealPlanJson,
-  importMealPlan
+  importMealPlan,
+  getMealDate,
+  createLeftover,
+  // Status management
+  MEAL_STATUS,
+  markMealAsEaten,
+  dismissMeal,
+  moveMeal,
+  undoMealStatus,
+  getMealsByStatus,
+  getConsumedMeals,
+  getActiveMeals
 };
